@@ -30,3 +30,94 @@
 *.exe
 *.out
 *.app
+
+# ThirdParty
+thirdparty/**/
+
+
+# Build files
+bin/
+obj/
+build/
+out/
+**/bin/
+**/obj/
+**/build
+**/out
+
+# Install files:
+
+install/
+
+# Visual Studio user-specific files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+.vscode/BROWSE.VC.DB
+.vscode/BROWSE.VC.DB-shm
+.vscode/BROWSE.VC.DB-wal
+
+# Visual Studio generated files
+*.csproj.user
+*.csproj.nuget.g.props
+*.csproj.nuget.g.targets
+
+# Configuration files
+launchSettings.json
+
+# Package files
+packages/
+*.nupkg
+*.snupkg
+
+# Publish files
+publish/
+publishoutput/
+**/publish/
+**/publishoutput/
+
+# Temporary files
+*.log
+*.tlog
+*.cache
+*.tmp
+*.tmp_proj
+
+# Resharper files
+_ReSharper*/
+*.DotSettings.user
+
+# Global configuration files
+.DS_Store
+.idea/
+*.sln.ide
+*.pidb
+
+# Rider files
+.idea/
+.idea/*
+.idea/modules.xml
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries
+.idea/vcs.xml
+.idea/.idea.oss
+
+# Code coverage files
+coverage/
+*.coverage
+*.coveragexml
+*.result.xml
+TestResults/
+
+# Documentation tool generated files (e.g., DocFX)
+docfx/_site/
+
+# Crash log files
+hs_err_pid*
+
+# others
+**/.editorconfig

@@ -1,0 +1,69 @@
+{
+  "env": {
+    "myIncludePath": [
+      "${default}",
+      "${workspaceFolder}/src",
+      "${workspaceFolder}/include"
+    ],
+    "myDefines": ["DEBUG", "MY_FEATURE=1"]
+  },
+  "configurations": [
+    {
+      "name": "Linux x64",
+      "compilerPath": "/usr/bin/gcc",
+      "compilerArgs": [],
+      "intelliSenseMode": "linux-gcc-x64",
+      "includePath": ["${myIncludePath}", "/usr/include"],
+      "defines": ["${myDefines}"],
+      "cStandard": "gnu23",
+      "cppStandard": "gnu++23",
+      "configurationProvider": "ms-vscode.cmake-tools",
+      "forcedInclude": ["${workspaceFolder}/common.h"],
+      "compileCommands": "${workspaceFolder}/build/compile_commands.json",
+      "dotConfig": "${workspaceFolder}/.config",
+      "mergeConfigurations": true,
+      "customConfigurationVariables": {
+        "myVar": "myvalue"
+      },
+      "browse": {
+        "path": ["${myIncludePath}", "/usr/include", "${workspaceFolder}"],
+        "limitSymbolsToIncludedHeaders": true,
+        "databaseFilename": "${workspaceFolder}/.vscode/browse.vc.db"
+      }
+    },
+    {
+      "name": "Mac",
+      "compilerPath": "/usr/bin/clang",
+      "intelliSenseMode": "macos-clang-x86",
+      "compileCommands": "${workspaceFolder}/build/macOS-build-debug/compile_commands.json",
+      "includePath": [
+        "${myIncludePath}",
+        "/usr/include",
+        "/usr/local/include",
+        "${workspaceFolder}/build/macOS-build-debug"
+      ],
+      "defines": ["${myDefines}", "DEBUG", "MY_FEATURE=1"],
+      "cStandard": "c23",
+      "cppStandard": "c++23",
+      "macFrameworkPath": ["/System/Library/Frameworks", "/Library/Frameworks"],
+      "browse": {
+        "path": ["${myIncludePath}", "${workspaceFolder}"]
+      }
+    },
+    {
+      "name": "Win32-GCC",
+      "compilerPath": "${default}",
+      "intelliSenseMode": "windows-gcc-x64",
+      "includePath": ["${myIncludePath}"],
+      "defines": ["${myDefines}", "_WINDOWS", "_DEBUG", "UNICODE", "_UNICODE"],
+      "cStandard": "c23",
+      "cppStandard": "c++23",
+      "windowsSdkVersion": "10.0.22621.0",
+      "browse": {
+        "path": ["${myIncludePath}", "${workspaceFolder}"]
+      }
+    }
+  ],
+  "version": 4,
+  "enableConfigurationSquiggles": true
+}

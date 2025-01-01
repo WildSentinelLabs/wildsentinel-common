@@ -1,0 +1,259 @@
+{
+  "version": 9,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 22,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "base",
+      "description": "Sets generator, build and install directory, vcpkg",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_CXX_STANDARD": "23"
+      }
+    },
+    {
+      "name": "windows-base",
+      "displayName": "Windows x64 Debug",
+      "description": "Sets compilers, x64 architecture",
+      "hidden": true,
+      "inherits": ["base"],
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": ["Windows"]
+        }
+      }
+    },
+    {
+      "name": "windows-debug",
+      "displayName": "Windows x64 Debug",
+      "description": "Sets debug build type",
+      "inherits": ["windows-base"],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      },
+      "warnings": {
+        "dev": true,
+        "deprecated": true
+      },
+      "errors": {
+        "deprecated": true,
+        "dev": true
+      },
+      "debug": {
+        "find": false,
+        "tryCompile": true,
+        "output": true
+      }
+    },
+    {
+      "name": "windows-release",
+      "displayName": "Windows x64 Release",
+      "description": "Sets release build type",
+      "inherits": ["windows-base"],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "linux-base",
+      "description": "Sets compilers",
+      "hidden": true,
+      "inherits": ["base"],
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": ["Linux"]
+        },
+        "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
+          "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
+        }
+      }
+    },
+    {
+      "name": "linux-debug",
+      "displayName": "Linux Debug",
+      "description": "Sets debug build type",
+      "inherits": ["linux-base"],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      },
+      "warnings": {
+        "dev": true,
+        "deprecated": true
+      },
+      "errors": {
+        "deprecated": true,
+        "dev": true
+      },
+      "debug": {
+        "find": false,
+        "tryCompile": true,
+        "output": true
+      }
+    },
+    {
+      "name": "linux-warnings",
+      "description": "Enables dev warnnings (-wdev)",
+      "inherits": ["linux-debug"],
+      "warnings": {
+        "dev": true
+      }
+    },
+    {
+      "name": "linux-release",
+      "displayName": "Linux Release",
+      "description": "Sets release build type",
+      "inherits": ["linux-base"],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "macOS-base",
+      "description": "Sets compilers for macOS",
+      "hidden": true,
+      "inherits": ["base"],
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "/usr/bin/clang",
+        "CMAKE_CXX_COMPILER": "/usr/bin/clang++",
+        "CMAKE_OSX_SYSROOT": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/install/macOS",
+        "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/bin"
+      },
+      "binaryDir": "${sourceDir}/build/macOS",
+      "installDir": "${sourceDir}/install/macOS",
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": ["macOS"]
+        },
+        "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
+          "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
+        }
+      }
+    },
+    {
+      "name": "macOS-debug",
+      "displayName": "macOS Debug",
+      "description": "Sets debug build type",
+      "inherits": ["macOS-base"],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "macOS-release",
+      "displayName": "macOS x64 Release",
+      "description": "Sets release build type",
+      "inherits": ["macOS-base"],
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "core-build",
+      "description": "Inherits environment from base configurePreset",
+      "configurePreset": "base",
+      "hidden": true,
+      "inheritConfigureEnvironment": true
+    },
+    {
+      "name": "windows-build-debug",
+      "description": "Debug build",
+      "configurePreset": "windows-debug",
+      "inherits": ["core-build"],
+      "cleanFirst": false,
+      "verbose": true
+    },
+    {
+      "name": "windows-build-release",
+      "description": "Build windows release version",
+      "configurePreset": "windows-release",
+      "inherits": ["core-build"],
+      "cleanFirst": true,
+      "verbose": false
+    },
+    {
+      "name": "linux-build-debug",
+      "description": "Debug build",
+      "configurePreset": "linux-base",
+      "inherits": ["core-build"],
+      "cleanFirst": false,
+      "verbose": true
+    },
+    {
+      "name": "linux-build-release",
+      "description": "Build linux release version",
+      "configurePreset": "linux-release",
+      "inherits": ["core-build"],
+      "cleanFirst": true,
+      "verbose": false
+    },
+    {
+      "name": "macOS-build-debug",
+      "description": "Verbose and clean before build (--clean-first)",
+      "configurePreset": "macOS-debug",
+      "inherits": ["core-build"],
+      "cleanFirst": false,
+      "verbose": true
+    },
+    {
+      "name": "macOS-build-release",
+      "description": "Build macOS release version",
+      "configurePreset": "macOS-release",
+      "inherits": ["core-build"],
+      "cleanFirst": true,
+      "verbose": false
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "core-test",
+      "description": "Enable output on failure",
+      "configurePreset": "base",
+      "hidden": false,
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "windows-exec-test",
+      "inherits": ["core-test"],
+      "configurePreset": "windows-release",
+      "execution": { "noTestsAction": "error", "stopOnFailure": true }
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "windows-debug-clean",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "windows-debug"
+        },
+        {
+          "type": "build",
+          "name": "windows-build-debug"
+        }
+      ]
+    }
+  ],
+  "vendor": {
+    "microsoft.com/VisualStudioSettings/CMake/1.0": {
+      "autoFormat": false
+    }
+  }
+}
