@@ -78,10 +78,3 @@ std::ostream& operator<<(std::ostream& os, const EncodingMode& mode);
 const std::string ImageTagToString(const ImageTag& tag);
 
 std::ostream& operator<<(std::ostream& os, const ImageTag& context);
-
-using JPEGInstanceHandler = struct tjinstance*;
-using JP2ImageHandler = struct opj_instance*;
-using JP2CodecHandler = struct opj_codec*;
-using JP2CodecParams = struct opj_params*;
-using HTJ2KCodecHandler = struct ojph_codestream*;
-using HTJ2KCodecParams = struct ojph_param_cod*;
