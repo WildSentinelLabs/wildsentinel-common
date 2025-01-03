@@ -1,14 +1,12 @@
 #include "imaging/image_context.h"
 
-ImageContext::ImageContext(const ImageFormat& format) : format(format) {}
+ImageContext::ImageContext() {}
 
-ImageContext::ImageContext(const std::map<ImageTag, long>& tags,
-                           const ImageFormat& format)
-    : data(tags), format(format) {}
+ImageContext::ImageContext(const std::map<ImageTag, long> tags) : data(tags) {}
 
 ImageContext::~ImageContext() { Dispose(); }
 
-void ImageContext::Add(const ImageTag& key, const long& value) {
+void ImageContext::Add(const ImageTag key, const long value) {
   data.insert_or_assign(key, value);
 }
 
@@ -23,8 +21,6 @@ std::optional<long> ImageContext::Get(const ImageTag& key) const {
   }
   return std::nullopt;
 }
-
-ImageFormat ImageContext::GetImageFormat() const { return format; }
 
 std::string ImageContext::ToString() const {
   std::ostringstream ss;

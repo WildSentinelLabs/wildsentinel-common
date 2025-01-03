@@ -5,9 +5,9 @@
 
 class Image {
  public:
-  Image(IPixelBuffer* buffer, const ImageFormat& format);
+  explicit Image(IPixelBuffer* buffer);
 
-  Image(IPixelBuffer* buffer, ImageContext* context);
+  explicit Image(IPixelBuffer* buffer, ImageContext* context);
 
   ~Image();
 

@@ -1,14 +1,14 @@
 #include "imaging/pixel_buffer.h"
 
 template <typename T>
-PixelBuffer<T>::PixelBuffer(T* buffer, const size_t& size, const uint8_t& depth,
-                            const uint32_t& width, const uint32_t& height,
-                            const PixelFormat& format, const uint8_t alignment,
-                            const bool is_planar)
+PixelBuffer<T>::PixelBuffer(T* buffer, const size_t& size,
+                            const uint8_t& bit_depth, const uint32_t& width,
+                            const uint32_t& height, const PixelFormat& format,
+                            const uint8_t alignment, const bool is_planar)
     : pixel_source_(buffer),
       pixel_format_(format),
       size_(size),
-      bit_depth_(depth),
+      bit_depth_(bit_depth),
       width_(width),
       height_(height),
       alignment_(alignment),
