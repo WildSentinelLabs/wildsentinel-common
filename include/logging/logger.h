@@ -13,7 +13,7 @@ class Logger {
 
   ~Logger() = default;
 
-  void LogInfomation(const std::string& message) const;
+  void LogInformation(const std::string& message) const;
 
   void LogVerbose(const std::string& message) const;
 

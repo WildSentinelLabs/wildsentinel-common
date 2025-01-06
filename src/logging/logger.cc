@@ -44,7 +44,7 @@ std::string Logger::LevelToString(Level level) const {
 
 Logger::Logger(const std::string context) : context_(context) {};
 
-void Logger::LogInfomation(const std::string& message) const {
+void Logger::LogInformation(const std::string& message) const {
   Log(Level::kINFO, message);
 }
 
