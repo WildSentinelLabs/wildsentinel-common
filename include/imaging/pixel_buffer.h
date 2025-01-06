@@ -26,7 +26,7 @@ class IPixelBuffer {
 template <typename T>
 class PixelBuffer : public IPixelBuffer {
  public:
-  PixelBuffer(T* buffer, const size_t& size, const uint8_t& depth,
+  PixelBuffer(T* buffer, const size_t& size, const uint8_t& bit_depth,
               const uint32_t& width, const uint32_t& height,
               const PixelFormat& format, const uint8_t alignment = 1,
               const bool is_planar = false);
