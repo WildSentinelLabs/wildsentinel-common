@@ -1,6 +1,6 @@
 #include "imaging/image_context.h"
 
-ImageContext::ImageContext() {}
+ImageContext::ImageContext() : data(std::map<ImageTag, long>()) {}
 
 ImageContext::ImageContext(const std::map<ImageTag, long> tags) : data(tags) {}
 
@@ -28,6 +28,7 @@ std::string ImageContext::ToString() const {
     const std::string tagStr = ImageTagToString(tag);
     ss << tagStr << ": " << value << "\n";
   }
+
   return ss.str();
 }
 
