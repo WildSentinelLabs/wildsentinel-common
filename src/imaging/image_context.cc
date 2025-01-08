@@ -1,21 +1,22 @@
 #include "imaging/image_context.h"
 
-ImageContext::ImageContext() : data(std::map<ImageTag, long>()) {}
+ImageContext::ImageContext() : data(std::map<std::string, int32_t>()) {}
 
-ImageContext::ImageContext(const std::map<ImageTag, long> tags) : data(tags) {}
+ImageContext::ImageContext(const std::map<std::string, int32_t> tags)
+    : data(tags) {}
 
 ImageContext::~ImageContext() { Dispose(); }
 
-void ImageContext::Add(const ImageTag key, const long value) {
+void ImageContext::Add(const std::string key, const int32_t value) {
   data.insert_or_assign(key, value);
 }
 
-bool ImageContext::Contains(const ImageTag& key) const {
+bool ImageContext::Contains(const std::string& key) const {
   return data.find(key) != data.end();
 }
 
-std::optional<long> ImageContext::Get(const ImageTag& key) const {
-  std::map<ImageTag, long>::const_iterator it = data.find(key);
+std::optional<int32_t> ImageContext::Get(const std::string& key) const {
+  std::map<std::string, int32_t>::const_iterator it = data.find(key);
   if (it != data.end()) {
     return it->second;
   }
@@ -25,8 +26,7 @@ std::optional<long> ImageContext::Get(const ImageTag& key) const {
 std::string ImageContext::ToString() const {
   std::ostringstream ss;
   for (const auto& [tag, value] : data) {
-    const std::string tagStr = ImageTagToString(tag);
-    ss << tagStr << ": " << value << "\n";
+    ss << tag << ": " << value << "\n";
   }
 
   return ss.str();
