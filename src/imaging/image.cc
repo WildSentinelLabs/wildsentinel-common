@@ -1,30 +1,27 @@
 #include "imaging/image.h"
 
-Image::Image(ImageCore* buffer)
-    : pixel_buffer_(buffer), context_(new ImageContext()) {
+Image::Image(ImageCore* core) : core_(core), context_(new ImageContext()) {
   if (!IsValid()) throw std::runtime_error("Image is not valid");
 }
 
-Image::Image(ImageCore* buffer, ImageContext* context)
-    : pixel_buffer_(buffer), context_(context) {
+Image::Image(ImageCore* core, ImageContext* context)
+    : core_(core), context_(context) {
   if (!IsValid()) throw std::runtime_error("Image is not valid");
 }
 
 Image::~Image() { Dispose(); }
 
-const ImageCore& Image::GetPixelBuffer() const { return *pixel_buffer_; }
+const ImageCore& Image::GetCore() const { return *core_; }
 
 const ImageContext& Image::GetContext() const { return *context_; }
 
-bool Image::IsValid() const {
-  return pixel_buffer_ && context_ && pixel_buffer_->IsValid();
-}
+bool Image::IsValid() const { return core_ && context_ && core_->IsValid(); }
 
 void Image::Dispose() {
-  if (pixel_buffer_) {
-    pixel_buffer_->Dispose();
-    delete pixel_buffer_;
-    pixel_buffer_ = nullptr;
+  if (core_) {
+    core_->Dispose();
+    delete core_;
+    core_ = nullptr;
   }
 
   if (context_) {

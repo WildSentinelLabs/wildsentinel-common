@@ -5,13 +5,13 @@
 
 class Image {
  public:
-  explicit Image(ImageCore* buffer);
+  explicit Image(ImageCore* core);
 
-  explicit Image(ImageCore* buffer, ImageContext* context);
+  explicit Image(ImageCore* core, ImageContext* context);
 
   ~Image();
 
-  const ImageCore& GetPixelBuffer() const;
+  const ImageCore& GetCore() const;
 
   const ImageContext& GetContext() const;
 
@@ -20,6 +20,6 @@ class Image {
   void Dispose();
 
  private:
-  ImageCore* pixel_buffer_;
+  ImageCore* core_;
   ImageContext* context_;
 };

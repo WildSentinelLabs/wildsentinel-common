@@ -1,9 +1,5 @@
 #include "imaging/pixel_component.h"
 
-// template <typename T>
-// PixelComponent<T>::PixelComponent()
-//     : buffer_(nullptr), width_(0), height_(0), bit_depth_(0) {}
-
 template <typename T>
 PixelComponent<T>::PixelComponent(T* buffer, uint32_t width, uint32_t height,
                                   uint8_t bit_depth, uint8_t dx, uint8_t dy)
