@@ -54,8 +54,8 @@ const PixelFormat kPF_EYCC444 =
 const PixelFormat kPF_CMYK =
     PixelFormat(ColorSpace::kCMYK, 4, ChromaSubsampling::kSAMP_444);
 const PixelFormat kPF_SRGBA =
-    PixelFormat(ColorSpace::kRGBA, 4, ChromaSubsampling::kSAMP_444);
+    PixelFormat(ColorSpace::kRGB, 4, ChromaSubsampling::kSAMP_444);
 const PixelFormat kPF_SBGRA =
-    PixelFormat(ColorSpace::kBGRA, 4, ChromaSubsampling::kSAMP_444);
+    PixelFormat(ColorSpace::kBGR, 4, ChromaSubsampling::kSAMP_444);
 const PixelFormat kPF_CMYK_Alpha =
     PixelFormat(ColorSpace::kCMYK, 5, ChromaSubsampling::kSAMP_444);

@@ -8,10 +8,6 @@ const std::string ColorSpaceToString(const ColorSpace& color_space) {
       return "RGB";
     case ColorSpace::kBGR:
       return "BGR";
-    case ColorSpace::kRGBA:
-      return "RGBA";
-    case ColorSpace::kBGRA:
-      return "BGRA";
     case ColorSpace::kCMYK:
       return "CMYK";
     case ColorSpace::kYUV:

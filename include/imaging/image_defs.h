@@ -7,8 +7,6 @@ enum class ColorSpace {
   kGRAYSCALE,
   kRGB,
   kBGR,
-  kRGBA,
-  kBGRA,
   kCMYK,
   kYUV,
   kYCbCr,
