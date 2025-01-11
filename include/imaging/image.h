@@ -1,17 +1,17 @@
 #pragma once
 #include "imaging/image_context.h"
+#include "imaging/image_core.h"
 #include "imaging/image_defs.h"
-#include "imaging/pixel_buffer.h"
 
 class Image {
  public:
-  explicit Image(IPixelBuffer* buffer);
+  explicit Image(ImageCore* buffer);
 
-  explicit Image(IPixelBuffer* buffer, ImageContext* context);
+  explicit Image(ImageCore* buffer, ImageContext* context);
 
   ~Image();
 
-  const IPixelBuffer& GetPixelBuffer() const;
+  const ImageCore& GetPixelBuffer() const;
 
   const ImageContext& GetContext() const;
 
@@ -20,6 +20,6 @@ class Image {
   void Dispose();
 
  private:
-  IPixelBuffer* pixel_buffer_;
+  ImageCore* pixel_buffer_;
   ImageContext* context_;
 };

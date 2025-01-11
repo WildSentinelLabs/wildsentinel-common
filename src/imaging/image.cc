@@ -1,18 +1,18 @@
 #include "imaging/image.h"
 
-Image::Image(IPixelBuffer* buffer)
+Image::Image(ImageCore* buffer)
     : pixel_buffer_(buffer), context_(new ImageContext()) {
   if (!IsValid()) throw std::runtime_error("Image is not valid");
 }
 
-Image::Image(IPixelBuffer* buffer, ImageContext* context)
+Image::Image(ImageCore* buffer, ImageContext* context)
     : pixel_buffer_(buffer), context_(context) {
   if (!IsValid()) throw std::runtime_error("Image is not valid");
 }
 
 Image::~Image() { Dispose(); }
 
-const IPixelBuffer& Image::GetPixelBuffer() const { return *pixel_buffer_; }
+const ImageCore& Image::GetPixelBuffer() const { return *pixel_buffer_; }
 
 const ImageContext& Image::GetContext() const { return *context_; }
 
