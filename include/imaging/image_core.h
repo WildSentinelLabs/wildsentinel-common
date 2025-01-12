@@ -7,7 +7,7 @@
 
 class ImageCore {
  public:
-  ImageCore(IPixelComponent* components, const uint8_t num_components,
+  ImageCore(IPixelComponent** components, const uint8_t num_components,
             const uint32_t width, const uint32_t height,
             const uint8_t bit_depth, const ColorSpace color_space,
             const ChromaSubsampling subsampling, const uint8_t alignment = 0);
@@ -59,7 +59,7 @@ class ImageCore {
 
  private:
   uint8_t num_components_;
-  IPixelComponent* components_;
+  IPixelComponent** components_;
   uint32_t width_;
   uint32_t height_;
   uint8_t bit_depth_;
