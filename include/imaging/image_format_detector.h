@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-#include "image_format.h"
+#include "imaging/image_format.h"
 #include "streams/stream.h"
 
 class ImageFormatDetector {
