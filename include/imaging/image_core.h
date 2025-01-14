@@ -66,12 +66,6 @@ class ImageCore {
   ChromaSubsampling chroma_subsampling_;
   uint8_t alignment_;
 
-  static bool GetComponentDimensions(uint32_t width, uint32_t height,
-                                     uint8_t num_components,
-                                     ChromaSubsampling chroma_subsampling,
-                                     uint32_t*& comps_width,
-                                     uint32_t*& comps_height);
-
   template <typename T>
   static ImageCore* InnerLoadFromInterleavedBuffer(
       T* buffer, size_t size, uint32_t width, uint32_t height,

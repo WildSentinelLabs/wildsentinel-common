@@ -17,18 +17,16 @@ static constexpr uint8_t kGRAYOrder[1] = {0};   // Grayscale (only Y)
 static constexpr uint8_t kYAOrder[2] = {0, 1};  // Y, A (Alpha)
 
 // YUV and YCbCr formats, standard orders for these
-static constexpr uint8_t kUYVYIOrder[4] = {1, 0, 0, 2};  // Y, U, Y, V
-static constexpr uint8_t kYUY2IOrder[4] = {0, 1, 0, 2};  // Y, U, Y, V
-static constexpr uint8_t kNV12IOrder[3] = {0, 1, 2};     // Y, Cb, Cr
-static constexpr uint8_t kNV21IOrder[3] = {0, 2, 1};     // Y, Cr, Cb
-static constexpr uint8_t kI420POrder[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
-static constexpr uint8_t kI422POrder[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
-static constexpr uint8_t kI444POrder[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
-static constexpr uint8_t kI400POrder[1] = {0};           // Y, Cb, Cr (planar)
-static constexpr uint8_t kI411POrder[3] = {
-    0, 1, 2};  // Y, Cb, Cr (Planar) with 4:1:1 sub-sampling
-static constexpr uint8_t kI440POrder[3] = {
-    0, 1, 2};  // Y, Cb, Cr (Planar) with 4:4:0 sub-sampling
+static constexpr uint8_t kUYVYOrder[4] = {1, 0, 0, 2};  // Y, U, Y, V
+static constexpr uint8_t kYUY2Order[4] = {0, 1, 0, 2};  // Y, U, Y, V
+static constexpr uint8_t kNV12Order[3] = {0, 1, 2};     // Y, Cb, Cr
+static constexpr uint8_t kNV21Order[3] = {0, 2, 1};     // Y, Cr, Cb
+static constexpr uint8_t kI420Order[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
+static constexpr uint8_t kI422Order[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
+static constexpr uint8_t kI444Order[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
+static constexpr uint8_t kI400Order[1] = {0};           // Y, Cb, Cr (planar)
+static constexpr uint8_t kI411Order[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
+static constexpr uint8_t kI440Order[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
 
 class PixelFormatConstraints {
  public:
@@ -105,96 +103,96 @@ class PixelFormatConstraints {
                                              2,
                                              1};
 
-  static constexpr PixelFormatDetails kUYVYI = {PixelFormat::kUYVYI,
-                                                ColorSpace::kSYCC,
-                                                ChromaSubsampling::kSAMP_422,
-                                                3,
-                                                kUYVYIOrder,
-                                                4,
-                                                -1};
+  static constexpr PixelFormatDetails kUYVY = {PixelFormat::kUYVY,
+                                               ColorSpace::kSYCC,
+                                               ChromaSubsampling::kSAMP_422,
+                                               3,
+                                               kUYVYOrder,
+                                               4,
+                                               -1};
 
-  static constexpr PixelFormatDetails kYUY2I = {PixelFormat::kYUY2I,
-                                                ColorSpace::kSYCC,
-                                                ChromaSubsampling::kSAMP_422,
-                                                3,
-                                                kYUY2IOrder,
-                                                4,
-                                                -1};
+  static constexpr PixelFormatDetails kYUY2 = {PixelFormat::kYUY2,
+                                               ColorSpace::kSYCC,
+                                               ChromaSubsampling::kSAMP_422,
+                                               3,
+                                               kYUY2Order,
+                                               4,
+                                               -1};
 
-  static constexpr PixelFormatDetails kNV12I = {PixelFormat::kNV12I,
-                                                ColorSpace::kSYCC,
-                                                ChromaSubsampling::kSAMP_420,
-                                                3,
-                                                kNV12IOrder,
-                                                4,
-                                                -1};
+  static constexpr PixelFormatDetails kNV12 = {PixelFormat::kNV12,
+                                               ColorSpace::kSYCC,
+                                               ChromaSubsampling::kSAMP_420,
+                                               3,
+                                               kNV12Order,
+                                               4,
+                                               -1};
 
-  static constexpr PixelFormatDetails kNV21I = {PixelFormat::kNV21I,
-                                                ColorSpace::kSYCC,
-                                                ChromaSubsampling::kSAMP_420,
-                                                3,
-                                                kNV21IOrder,
-                                                4,
-                                                -1};
+  static constexpr PixelFormatDetails kNV21 = {PixelFormat::kNV21,
+                                               ColorSpace::kSYCC,
+                                               ChromaSubsampling::kSAMP_420,
+                                               3,
+                                               kNV21Order,
+                                               4,
+                                               -1};
 
-  static constexpr PixelFormatDetails kI400P = {PixelFormat::kI400P,
-                                                ColorSpace::kGRAY,
-                                                ChromaSubsampling::kSAMP_400,
-                                                1,
-                                                kI400POrder,
-                                                1,
-                                                -1};
+  static constexpr PixelFormatDetails kI400 = {PixelFormat::kI400,
+                                               ColorSpace::kGRAY,
+                                               ChromaSubsampling::kSAMP_400,
+                                               1,
+                                               kI400Order,
+                                               1,
+                                               -1};
 
-  static constexpr PixelFormatDetails kI411P = {PixelFormat::kI411P,
-                                                ColorSpace::kSYCC,
-                                                ChromaSubsampling::kSAMP_411,
-                                                3,
-                                                kI411POrder,
-                                                3,
-                                                -1};
+  static constexpr PixelFormatDetails kI411 = {PixelFormat::kI411,
+                                               ColorSpace::kSYCC,
+                                               ChromaSubsampling::kSAMP_411,
+                                               3,
+                                               kI411Order,
+                                               3,
+                                               -1};
 
-  static constexpr PixelFormatDetails kI420P = {PixelFormat::kI420P,
-                                                ColorSpace::kSYCC,
-                                                ChromaSubsampling::kSAMP_420,
-                                                3,
-                                                kI420POrder,
-                                                3,
-                                                -1};
+  static constexpr PixelFormatDetails kI420 = {PixelFormat::kI420,
+                                               ColorSpace::kSYCC,
+                                               ChromaSubsampling::kSAMP_420,
+                                               3,
+                                               kI420Order,
+                                               3,
+                                               -1};
 
-  static constexpr PixelFormatDetails kI422P = {PixelFormat::kI422P,
-                                                ColorSpace::kSYCC,
-                                                ChromaSubsampling::kSAMP_422,
-                                                3,
-                                                kI422POrder,
-                                                3,
-                                                -1};
+  static constexpr PixelFormatDetails kI422 = {PixelFormat::kI422,
+                                               ColorSpace::kSYCC,
+                                               ChromaSubsampling::kSAMP_422,
+                                               3,
+                                               kI422Order,
+                                               3,
+                                               -1};
 
-  static constexpr PixelFormatDetails kI440P = {PixelFormat::kI440P,
-                                                ColorSpace::kSYCC,
-                                                ChromaSubsampling::kSAMP_440,
-                                                3,
-                                                kI440POrder,
-                                                3,
-                                                -1};
+  static constexpr PixelFormatDetails kI440 = {PixelFormat::kI440,
+                                               ColorSpace::kSYCC,
+                                               ChromaSubsampling::kSAMP_440,
+                                               3,
+                                               kI440Order,
+                                               3,
+                                               -1};
 
-  static constexpr PixelFormatDetails kI444P = {PixelFormat::kI444P,
-                                                ColorSpace::kSYCC,
-                                                ChromaSubsampling::kSAMP_444,
-                                                3,
-                                                kI444POrder,
-                                                3,
-                                                -1};
+  static constexpr PixelFormatDetails kI444 = {PixelFormat::kI444,
+                                               ColorSpace::kSYCC,
+                                               ChromaSubsampling::kSAMP_444,
+                                               3,
+                                               kI444Order,
+                                               3,
+                                               -1};
 
   // Planar formats
   static constexpr const PixelFormatDetails* kPlanarFormats[] = {
-      &kI400P,  // Grayscale (Planar)
-      &kI411P,  // YUV 4:1:1 (Planar)
-      &kI420P,  // YUV 4:2:0 (Planar)
-      &kI422P,  // YUV 4:2:2 (Planar)
-      &kI440P,  // YUV 4:4:0 (Planar)
-      &kI444P,  // YUV 4:4:4 (Planar)
-      &kGRAY,   // Grayscale (just Y component)
-      &kYA,     // Grayscale with Alpha
+      &kI400,  // Grayscale (Planar)
+      &kI411,  // YUV 4:1:1 (Planar)
+      &kI420,  // YUV 4:2:0 (Planar)
+      &kI422,  // YUV 4:2:2 (Planar)
+      &kI440,  // YUV 4:4:0 (Planar)
+      &kI444,  // YUV 4:4:4 (Planar)
+      &kGRAY,  // Grayscale (just Y component)
+      &kYA,    // Grayscale with Alpha
       // Formats that can be planar (supported as planar)
       &kRGB,    // RGB (Interleaved)
       &kRGBA,   // RGBA (Interleaved)
@@ -206,10 +204,10 @@ class PixelFormatConstraints {
 
   // Interleaved formats
   static constexpr const PixelFormatDetails* kInterleavedFormats[] = {
-      &kUYVYI,  // YUV 4:2:2 (Interleaved)
-      &kYUY2I,  // YUV 4:2:2 (Interleaved)
-      &kNV12I,  // YUV 4:2:0 (Interleaved)
-      &kNV21I,  // YUV 4:2:0 (Interleaved)
+      &kUYVY,  // YUV 4:2:2 (Interleaved)
+      &kYUY2,  // YUV 4:2:2 (Interleaved)
+      &kNV12,  // YUV 4:2:0 (Interleaved)
+      &kNV21,  // YUV 4:2:0 (Interleaved)
       // Formats that can be interleaved (supported as interleaved)
       &kRGB,    // RGB (Interleaved)
       &kRGBA,   // RGBA (Interleaved)
@@ -234,4 +232,10 @@ class PixelFormatConstraints {
       const ColorSpace& color_space,
       const ChromaSubsampling& chroma_subsampling,
       const uint8_t& num_components, const bool& has_alpha, uint8_t& size);
+
+  static bool GetComponentDimensions(uint32_t width, uint32_t height,
+                                     uint8_t num_components,
+                                     ChromaSubsampling chroma_subsampling,
+                                     uint32_t*& comps_width,
+                                     uint32_t*& comps_height);
 };

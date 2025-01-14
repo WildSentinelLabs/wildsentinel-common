@@ -79,3 +79,73 @@ const PixelFormatDetails** PixelFormatConstraints::GetInterleavedFormats(
 
   return supported_formats;
 }
+
+bool PixelFormatConstraints::GetComponentDimensions(
+    uint32_t width, uint32_t height, uint8_t num_comps,
+    ChromaSubsampling chroma_subsampling, uint32_t*& comps_width,
+    uint32_t*& comps_height) {
+  comps_width = new uint32_t[num_comps];
+  comps_height = new uint32_t[num_comps];
+  switch (chroma_subsampling) {
+    case ChromaSubsampling::kSAMP_444:
+      for (uint8_t c = 0; c < num_comps; ++c) {
+        comps_width[c] = width;
+        comps_height[c] = height;
+      }
+
+      return true;
+      break;
+
+    case ChromaSubsampling::kSAMP_422:
+      if (num_comps != 3) break;
+      comps_width[0] = width;
+      comps_height[0] = height;
+      comps_width[1] = comps_width[2] = width / 2;
+      comps_height[1] = comps_height[2] = height;
+      return true;
+      break;
+
+    case ChromaSubsampling::kSAMP_420:
+      if (num_comps != 3) break;
+      comps_width[0] = width;
+      comps_height[0] = height;
+      comps_width[1] = comps_width[2] = width / 2;
+      comps_height[1] = comps_height[2] = height / 2;
+      return true;
+      break;
+
+    case ChromaSubsampling::kSAMP_400:
+      if (num_comps != 1) break;
+      comps_width[0] = width;
+      comps_height[0] = height;
+      return true;
+      break;
+
+    case ChromaSubsampling::kSAMP_440:
+      if (num_comps != 3) break;
+      comps_width[0] = width;
+      comps_height[0] = height;
+      comps_width[1] = comps_width[2] = width;
+      comps_height[1] = comps_height[2] = height / 2;
+      return true;
+      break;
+
+    case ChromaSubsampling::kSAMP_411:
+      if (num_comps != 3) break;
+      comps_width[0] = width;
+      comps_height[0] = height;
+      comps_width[1] = comps_width[2] = width / 4;
+      comps_height[1] = comps_height[2] = height;
+      return true;
+      break;
+
+    default:
+      delete[] comps_width;
+      delete[] comps_height;
+      throw std::invalid_argument("Unsupported chroma subsampling.");
+  }
+
+  delete[] comps_width;
+  delete[] comps_height;
+  return false;
+}

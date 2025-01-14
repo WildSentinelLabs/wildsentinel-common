@@ -66,26 +66,26 @@ const std::string PixelFormatToString(const PixelFormat& pixel_format) {
       return "kCMYKAlpha";
     case PixelFormat::kYA:
       return "kYA";
-    case PixelFormat::kUYVYI:
-      return "kUYVYI";
-    case PixelFormat::kYUY2I:
-      return "kYUY2I";
-    case PixelFormat::kNV12I:
-      return "kNV12I";
-    case PixelFormat::kNV21I:
-      return "kNV21I";
-    case PixelFormat::kI400P:
-      return "kI400P";
-    case PixelFormat::kI411P:
-      return "kI411P";
-    case PixelFormat::kI420P:
-      return "kI420P";
-    case PixelFormat::kI422P:
-      return "kI422P";
-    case PixelFormat::kI440P:
-      return "kI440P";
-    case PixelFormat::kI444P:
-      return "kI444P";
+    case PixelFormat::kUYVY:
+      return "kUYVY";
+    case PixelFormat::kYUY2:
+      return "kYUY2";
+    case PixelFormat::kNV12:
+      return "kNV12";
+    case PixelFormat::kNV21:
+      return "kNV21";
+    case PixelFormat::kI400:
+      return "kI400";
+    case PixelFormat::kI411:
+      return "kI411";
+    case PixelFormat::kI420:
+      return "kI420";
+    case PixelFormat::kI422:
+      return "kI422";
+    case PixelFormat::kI440:
+      return "kI440";
+    case PixelFormat::kI444:
+      return "kI444";
     default:
       return "UNSUPPORTED";
   }
