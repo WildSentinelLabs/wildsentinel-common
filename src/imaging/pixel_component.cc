@@ -2,13 +2,8 @@
 
 template <typename T>
 PixelComponent<T>::PixelComponent(T* buffer, uint32_t width, uint32_t height,
-                                  uint8_t bit_depth, uint8_t dx, uint8_t dy)
-    : buffer_(buffer),
-      width_(width),
-      height_(height),
-      bit_depth_(bit_depth),
-      dx_(dx),
-      dy_(dy) {
+                                  uint8_t bit_depth)
+    : buffer_(buffer), width_(width), height_(height), bit_depth_(bit_depth) {
   if (!IsValid())
     throw std::invalid_argument("Invalid PixelComponent parameters");
 }
@@ -44,19 +39,9 @@ const uint8_t PixelComponent<T>::GetBitDepth() const {
 }
 
 template <typename T>
-const uint8_t PixelComponent<T>::GetDx() const {
-  return dx_;
-}
-
-template <typename T>
-const uint8_t PixelComponent<T>::GetDy() const {
-  return dy_;
-}
-
-template <typename T>
 bool PixelComponent<T>::IsValid() const {
   return !(buffer_ == nullptr || width_ == 0 || height_ == 0 ||
-           bit_depth_ == 0 || dx_ == 0 | dy_ == 0);
+           bit_depth_ == 0);
 }
 
 template <typename T>
@@ -90,4 +75,5 @@ template class PixelComponent<int32_t>;
 std::ostream& operator<<(std::ostream& os,
                          const IPixelComponent& pixel_component) {
   os << pixel_component.ToString();
+  return os;
 }

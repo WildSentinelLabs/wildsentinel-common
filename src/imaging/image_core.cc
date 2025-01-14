@@ -1,26 +1,26 @@
 #include "imaging/image_core.h"
 
-#include <iostream>
-
 ImageCore::ImageCore(IPixelComponent** components, const uint8_t num_components,
                      const uint32_t width, const uint32_t height,
                      const uint8_t bit_depth, const ColorSpace color_space,
-                     const ChromaSubsampling subsampling,
-                     const uint8_t alignment)
+                     const ChromaSubsampling chroma_subsampling,
+                     IPixelComponent* alpha, const uint8_t alignment)
     : components_(components),
+      alpha_(alpha),
       num_components_(num_components),
       width_(width),
       height_(height),
       bit_depth_(bit_depth),
       color_space_(color_space),
-      subsampling_(subsampling) {
+      chroma_subsampling_(chroma_subsampling) {
   if (!IsValid())
     throw std::invalid_argument(
         "Invalid parameters: buffers, dimensions, and bit depth must be "
         "non-null and non-zero");
-  if (alignment == 0) {
-    alignment_ = PixelAlign::GetBitAlignment(bit_depth) *
-                 PixelAlign::GetChromaAlignment(subsampling);
+  uint8_t min_alignment = PixelAlign::GetBitAlignment(bit_depth) *
+                          PixelAlign::GetChromaAlignment(chroma_subsampling);
+  if (alignment < min_alignment) {
+    alignment_ = min_alignment;
   } else {
     alignment_ = alignment;
   }
@@ -29,112 +29,29 @@ ImageCore::ImageCore(IPixelComponent** components, const uint8_t num_components,
 ImageCore::~ImageCore() { Dispose(); }
 
 template <typename T>
-ImageCore* ImageCore::LoadFromInterleavedBuffer(
-    T* buffer, size_t size, uint32_t width, uint32_t height, uint8_t num_comps,
-    uint8_t bit_depth, ColorSpace color_space, ChromaSubsampling subsamp) {
-  if (!buffer || size == 0 || num_comps == 0) return nullptr;
-  uint32_t* comps_width = nullptr;
-  uint32_t* comps_height = nullptr;
-  uint8_t* comps_dx = nullptr;
-  uint8_t* comps_dy = nullptr;
-  if (!GetComponentDimensions(width, height, num_comps, subsamp, comps_width,
-                              comps_height, comps_dx, comps_dy))
-    return nullptr;
-  size_t total_size = 0;
-  for (uint8_t c = 0; c < num_comps; ++c) {
-    total_size += comps_width[c] * comps_height[c];
-  }
-
-  if (total_size != size) {
-    delete[] comps_width;
-    delete[] comps_height;
-    delete[] comps_dx;
-    delete[] comps_dy;
-    return nullptr;
-  }
-
-  IPixelComponent** components = new IPixelComponent*[num_comps];
-  uint32_t comp_width;
-  uint32_t comp_height;
-  uint8_t comp_dx;
-  uint8_t comp_dy;
-  size_t comp_size;
-  uint32_t original_x;
-  uint32_t original_y;
-  size_t original_index;
-  for (uint8_t c = 0; c < num_comps; ++c) {
-    comp_width = comps_width[c];
-    comp_height = comps_height[c];
-    comp_dx = comps_dx[c];
-    comp_dy = comps_dy[c];
-    comp_size = comp_width * comp_height;
-    T* comp_buffer = new T[comp_size];
-    for (uint32_t y = 0; y < comp_height; y++) {
-      for (uint32_t x = 0; x < comp_width; x++) {
-        original_x = x * comp_dx;
-        original_y = y * comp_dy;
-        original_index = (original_y * width + original_x) * num_comps + c;
-        comp_buffer[y * comp_width + x] = buffer[original_index];
-      }
-    }
-
-    components[c] = new PixelComponent<T>(comp_buffer, comp_width, comp_height,
-                                          bit_depth, comp_dx, comp_dy);
-  }
-
-  return new ImageCore(components, num_comps, width, height, bit_depth,
-                       color_space, subsamp);
+ImageCore* ImageCore::LoadFromInterleavedBuffer(T* buffer, size_t size,
+                                                uint32_t width, uint32_t height,
+                                                uint8_t bit_depth,
+                                                PixelFormat pixel_format) {
+  if (!buffer || size == 0 || width == 0 || height == 0) return nullptr;
+  const PixelFormatDetails* pixel_format_details =
+      PixelFormatConstraints::GetInterleavedFormat(pixel_format);
+  if (!pixel_format_details) return nullptr;
+  return InnerLoadFromInterleavedBuffer(buffer, size, width, height, bit_depth,
+                                        pixel_format_details);
 }
 
 template <typename T>
 ImageCore* ImageCore::LoadFromPlanarBuffer(T* buffer, size_t size,
                                            uint32_t width, uint32_t height,
-                                           uint8_t num_comps, uint8_t bit_depth,
-                                           ColorSpace color_space,
-                                           ChromaSubsampling subsamp) {
-  if (!buffer || size == 0 || num_comps == 0) return nullptr;
-  uint32_t* comps_width = nullptr;
-  uint32_t* comps_height = nullptr;
-  uint8_t* comps_dx = nullptr;
-  uint8_t* comps_dy = nullptr;
-  if (!GetComponentDimensions(width, height, num_comps, subsamp, comps_width,
-                              comps_height, comps_dx, comps_dy))
-    return nullptr;
-  size_t total_size = 0;
-  for (uint8_t c = 0; c < num_comps; ++c) {
-    total_size += comps_width[c] * comps_height[c];
-  }
-
-  if (total_size != size) {
-    delete[] comps_width;
-    delete[] comps_height;
-    delete[] comps_dx;
-    delete[] comps_dy;
-    return nullptr;
-  }
-
-  IPixelComponent** components = new IPixelComponent*[num_comps];
-  size_t offset = 0;
-  uint32_t comp_width = 0;
-  uint32_t comp_height = 0;
-  uint8_t comp_dx = 0;
-  uint8_t comp_dy = 0;
-  size_t comp_size = 0;
-  for (uint8_t c = 0; c < num_comps; ++c) {
-    comp_width = comps_width[c];
-    comp_height = comps_height[c];
-    comp_dx = comps_dx[c];
-    comp_dy = comps_dy[c];
-    comp_size = comp_width * comp_height;
-    T* comp_buffer = new T[comp_size];
-    std::memcpy(comp_buffer, buffer + offset, comp_size * sizeof(T));
-    components[c] = new PixelComponent<T>(comp_buffer, comp_width, comp_height,
-                                          bit_depth, comp_dx, comp_dy);
-    offset += comp_size;
-  }
-
-  return new ImageCore(components, num_comps, width, height, bit_depth,
-                       color_space, subsamp);
+                                           uint8_t bit_depth,
+                                           PixelFormat pixel_format) {
+  if (!buffer || size == 0 || width == 0 || height == 0) return nullptr;
+  const PixelFormatDetails* pixel_format_details =
+      PixelFormatConstraints::GetPlanarFormat(pixel_format);
+  if (!pixel_format_details) return nullptr;
+  return InnerLoadFromPlanarBuffer(buffer, size, width, height, bit_depth,
+                                   pixel_format_details);
 }
 
 const uint8_t ImageCore::GetNumComponents() const { return num_components_; }
@@ -153,13 +70,15 @@ const uint8_t ImageCore::GetBitDepth() const { return bit_depth_; }
 const ColorSpace& ImageCore::GetColorSpace() const { return color_space_; }
 
 const ChromaSubsampling& ImageCore::GetChromaSubsampling() const {
-  return subsampling_;
+  return chroma_subsampling_;
 }
 
 const uint8_t ImageCore::GetAlignment() const { return alignment_; }
 
 const bool ImageCore::IsValid() const {
-  bool result = !(components_ == nullptr || width_ == 0 || height_ == 0);
+  bool result = !(components_ == nullptr || width_ == 0 || height_ == 0 ||
+                  bit_depth_ == 0 || color_space_ == ColorSpace::kUNSUPPORTED ||
+                  chroma_subsampling_ == ChromaSubsampling::kUNSUPPORTED);
   for (uint8_t c = 0; c < num_components_; ++c) {
     result = result && components_[c]->IsValid();
   }
@@ -168,75 +87,107 @@ const bool ImageCore::IsValid() const {
 }
 
 template <typename T>
-T* ImageCore::AsInterleavedBuffer() const {
+T* ImageCore::AsInterleavedBuffer(const PixelFormat& pixel_format) const {
   if (!IsValid()) return nullptr;
-  size_t total_size = 0;
+  const PixelFormatDetails* pixel_format_details =
+      PixelFormatConstraints::GetInterleavedFormat(pixel_format);
+  if (!pixel_format_details) return nullptr;
+  bool has_alpha = alpha_ != nullptr;
+  if (color_space_ != pixel_format_details->color_space ||
+      chroma_subsampling_ != pixel_format_details->chroma_subsampling ||
+      num_components_ != pixel_format_details->num_components ||
+      has_alpha != pixel_format_details->has_alpha()) {
+    return nullptr;
+  }
+
+  const uint8_t components_order_size =
+      pixel_format_details->components_order_size;
+  const uint8_t* components_order_sequence =
+      pixel_format_details->components_order_sequence;
+  int8_t alpha_index = pixel_format_details->alpha_index;
+  uint8_t total_components = has_alpha ? num_components_ + 1 : num_components_;
   IPixelComponent* comp = nullptr;
-  for (uint8_t c = 0; c < num_components_; ++c) {
-    comp = components_[c];
+  T* comps_buffer[total_components];
+  size_t total_size = 0;
+  for (uint8_t i = 0; i < components_order_size; ++i) {
+    uint8_t c = components_order_sequence[i];
+    if (c == alpha_index) {
+      comp = alpha_;
+    } else if (comps_buffer[c]) {
+      continue;
+    } else {
+      comp = components_[c];
+    }
+
+    comps_buffer[c] = (T*)comp->GetBuffer();
     total_size += comp->GetSize();
   }
 
   T* buffer = new T[total_size];
   size_t offset = 0;
-  uint32_t width = components_[0]->GetWidth();
-  uint32_t height = components_[0]->GetHeight();
-  uint32_t comp_width;
-  uint32_t comp_height;
-  uint8_t comp_dx;
-  uint8_t comp_dy;
-  size_t comp_size;
-  uint32_t original_x;
-  uint32_t original_y;
-  size_t comp_index;
-  for (uint8_t c = 0; c < num_components_; ++c) {
-    comp = components_[c];
-    comp_width = comp->GetWidth();
-    comp_height = comp->GetHeight();
-    comp_dx = comp->GetDx();
-    comp_dy = comp->GetDy();
-    const T* comp_buffer = (T*)comp->GetBuffer();
-    for (uint32_t y = 0; y < comp_height; y++) {
-      for (uint32_t x = 0; x < comp_width; x++) {
-        original_x = x * comp_dx;
-        original_y = y * comp_dy;
-        if (original_y == 1532) {
-          std::cout << "original_y: " << (size_t)original_y;
-        }
-        comp_index = original_y * comp_width + original_x;
-        // << "original_x: " << original_x
-        buffer[offset++] = comp_buffer[comp_index];
-      }
+  size_t comps_index[total_components];
+  for (size_t i = 0; i < total_components; i++) {
+    comps_index[i] = 0;
+  }
+
+  while (offset < total_size) {
+    for (uint8_t i = 0; i < components_order_size; i++) {
+      uint8_t c = components_order_sequence[i];
+      buffer[offset] = comps_buffer[c][comps_index[c]++];
     }
-    offset += comp_size;
+
+    offset += components_order_size;
   }
 
   return buffer;
 };
 
 template <typename T>
-T* ImageCore::AsPlanarBuffer() const {
+T* ImageCore::AsPlanarBuffer(const PixelFormat& pixel_format) const {
   if (!IsValid()) return nullptr;
-  size_t total_size = 0;
+  const PixelFormatDetails* pixel_format_details =
+      PixelFormatConstraints::GetPlanarFormat(pixel_format);
+  if (!pixel_format_details) return nullptr;
+  bool has_alpha = alpha_ != nullptr;
+  if (color_space_ != pixel_format_details->color_space ||
+      chroma_subsampling_ != pixel_format_details->chroma_subsampling ||
+      num_components_ != pixel_format_details->num_components ||
+      has_alpha != pixel_format_details->has_alpha()) {
+    return nullptr;
+  }
+
+  const uint8_t components_order_size =
+      pixel_format_details->components_order_size;
+  const uint8_t* components_order_sequence =
+      pixel_format_details->components_order_sequence;
+  int8_t alpha_index = pixel_format_details->alpha_index;
+  uint8_t total_components = has_alpha ? num_components_ + 1 : num_components_;
   IPixelComponent* comp = nullptr;
-  for (uint8_t c = 0; c < num_components_; ++c) {
-    comp = components_[c];
-    total_size += comp->GetSize();
+  size_t comps_size[total_components];
+  T* comps_buffer[total_components];
+  size_t total_size = 0;
+  for (uint8_t i = 0; i < components_order_size; ++i) {
+    uint8_t c = components_order_sequence[i];
+    if (c == alpha_index) {
+      comp = alpha_;
+    } else if (comps_buffer[c]) {
+      continue;
+    } else {
+      comp = components_[c];
+    }
+
+    comps_buffer[c] = (T*)comp->GetBuffer();
+    comps_size[c] = comp->GetSize();
+    total_size += comps_size[c];
   }
 
   T* buffer = new T[total_size];
   size_t offset = 0;
-  uint32_t comp_width;
-  uint32_t comp_height;
-  size_t comp_size;
-  for (uint8_t c = 0; c < num_components_; ++c) {
-    comp = components_[c];
-    comp_width = comp->GetWidth();
-    comp_height = comp->GetHeight();
-    comp_size = comp_width * comp_height;
-    T* comp_buffer = (T*)comp->GetBuffer();
-    std::memcpy(buffer + offset, comp_buffer, comp_size * sizeof(T));
-    offset += comp_size;
+  for (uint8_t i = 0; i < components_order_size; ++i) {
+    uint8_t c = components_order_sequence[i];
+    std::memcpy(comps_buffer[c] + offset, comps_buffer[c],
+                comps_size[c] * sizeof(T));
+    offset += comps_size[c];
   }
 
   return buffer;
@@ -248,7 +199,7 @@ std::string ImageCore::ToString() const {
   ss << " Width: " << width_ << "\n";
   ss << " Height: " << height_ << "\n";
   ss << " ColorSpace: " << ColorSpaceToString(color_space_) << "\n";
-  ss << " ChromaSubsampling: " << ChromaSubsamplingToString(subsampling_)
+  ss << " ChromaSubsampling: " << ChromaSubsamplingToString(chroma_subsampling_)
      << "\n";
   ss << " Alignment: " << static_cast<int>(alignment_) << "\n";
   for (uint8_t c = 0; c < num_components_; ++c) {
@@ -273,21 +224,16 @@ void ImageCore::Dispose() {
 
 bool ImageCore::GetComponentDimensions(uint32_t width, uint32_t height,
                                        uint8_t num_comps,
-                                       ChromaSubsampling subsamp,
+                                       ChromaSubsampling chroma_subsampling,
                                        uint32_t*& comps_width,
-                                       uint32_t*& comps_height,
-                                       uint8_t*& comps_dx, uint8_t*& comps_dy) {
+                                       uint32_t*& comps_height) {
   comps_width = new uint32_t[num_comps];
   comps_height = new uint32_t[num_comps];
-  comps_dx = new uint8_t[num_comps];
-  comps_dy = new uint8_t[num_comps];
-  switch (subsamp) {
+  switch (chroma_subsampling) {
     case ChromaSubsampling::kSAMP_444:
       for (uint8_t c = 0; c < num_comps; ++c) {
         comps_width[c] = width;
         comps_height[c] = height;
-        comps_dx[c] = 1;
-        comps_dy[c] = 1;
       }
 
       return true;
@@ -297,13 +243,8 @@ bool ImageCore::GetComponentDimensions(uint32_t width, uint32_t height,
       if (num_comps != 3) break;
       comps_width[0] = width;
       comps_height[0] = height;
-      comps_dx[0] = 1;
-      comps_dy[0] = 1;
-
       comps_width[1] = comps_width[2] = width / 2;
       comps_height[1] = comps_height[2] = height;
-      comps_dx[1] = comps_dx[2] = 2;
-      comps_dy[1] = comps_dy[2] = 1;
       return true;
       break;
 
@@ -311,13 +252,8 @@ bool ImageCore::GetComponentDimensions(uint32_t width, uint32_t height,
       if (num_comps != 3) break;
       comps_width[0] = width;
       comps_height[0] = height;
-      comps_dx[0] = 1;
-      comps_dy[0] = 1;
-
       comps_width[1] = comps_width[2] = width / 2;
       comps_height[1] = comps_height[2] = height / 2;
-      comps_dx[1] = comps_dx[2] = 2;
-      comps_dy[1] = comps_dy[2] = 2;
       return true;
       break;
 
@@ -325,8 +261,6 @@ bool ImageCore::GetComponentDimensions(uint32_t width, uint32_t height,
       if (num_comps != 1) break;
       comps_width[0] = width;
       comps_height[0] = height;
-      comps_dx[0] = 1;
-      comps_dy[0] = 1;
       return true;
       break;
 
@@ -334,13 +268,8 @@ bool ImageCore::GetComponentDimensions(uint32_t width, uint32_t height,
       if (num_comps != 3) break;
       comps_width[0] = width;
       comps_height[0] = height;
-      comps_dx[0] = 1;
-      comps_dy[0] = 1;
-
       comps_width[1] = comps_width[2] = width;
       comps_height[1] = comps_height[2] = height / 2;
-      comps_dx[1] = comps_dx[2] = 1;
-      comps_dy[1] = comps_dy[2] = 2;
       return true;
       break;
 
@@ -348,84 +277,261 @@ bool ImageCore::GetComponentDimensions(uint32_t width, uint32_t height,
       if (num_comps != 3) break;
       comps_width[0] = width;
       comps_height[0] = height;
-      comps_dx[0] = 1;
-      comps_dy[0] = 1;
-
       comps_width[1] = comps_width[2] = width / 4;
       comps_height[1] = comps_height[2] = height;
-      comps_dx[1] = comps_dx[2] = 4;
-      comps_dy[1] = comps_dy[2] = 1;
       return true;
       break;
 
     default:
       delete[] comps_width;
       delete[] comps_height;
-      delete[] comps_dx;
-      delete[] comps_dy;
       throw std::invalid_argument("Unsupported chroma subsampling.");
   }
 
   delete[] comps_width;
   delete[] comps_height;
-  delete[] comps_dx;
-  delete[] comps_dy;
   return false;
 }
 
-template uint8_t* ImageCore::AsInterleavedBuffer<uint8_t>() const;
-template int16_t* ImageCore::AsInterleavedBuffer<int16_t>() const;
-template uint16_t* ImageCore::AsInterleavedBuffer<uint16_t>() const;
-template int32_t* ImageCore::AsInterleavedBuffer<int32_t>() const;
-template uint32_t* ImageCore::AsInterleavedBuffer<uint32_t>() const;
+template <typename T>
+ImageCore* ImageCore::InnerLoadFromInterleavedBuffer(
+    T* buffer, size_t size, uint32_t width, uint32_t height, uint8_t bit_depth,
+    const PixelFormatDetails* pixel_format_details) {
+  uint32_t* comps_width = nullptr;
+  uint32_t* comps_height = nullptr;
+  uint8_t num_components = pixel_format_details->num_components;
+  ChromaSubsampling chroma_subsampling =
+      pixel_format_details->chroma_subsampling;
+  ColorSpace color_space = pixel_format_details->color_space;
+  const uint8_t components_order_size =
+      pixel_format_details->components_order_size;
+  const uint8_t* components_order_sequence =
+      pixel_format_details->components_order_sequence;
+  if (!GetComponentDimensions(width, height, num_components, chroma_subsampling,
+                              comps_width, comps_height))
+    return nullptr;
 
-template uint8_t* ImageCore::AsPlanarBuffer<uint8_t>() const;
-template int16_t* ImageCore::AsPlanarBuffer<int16_t>() const;
-template uint16_t* ImageCore::AsPlanarBuffer<uint16_t>() const;
-template int32_t* ImageCore::AsPlanarBuffer<int32_t>() const;
-template uint32_t* ImageCore::AsPlanarBuffer<uint32_t>() const;
+  size_t total_components = num_components;
+  size_t total_size = 0;
+  size_t alpha_size = 0;
+  int8_t alpha_index = pixel_format_details->alpha_index;
+  if (pixel_format_details->has_alpha()) {
+    alpha_size = width * height;
+    total_components++;
+    total_size += alpha_size;
+  }
+
+  T* comps_buffer[total_components];
+  size_t comp_size;
+  for (size_t i = 0; i < components_order_size; i++) {
+    uint8_t c = components_order_sequence[i];
+    if (c == alpha_index) {
+      comp_size = width * height;
+    } else if (comps_buffer[c]) {
+      continue;
+    } else {
+      comp_size = comps_width[c] * comps_height[c];
+    }
+
+    comps_buffer[c] = new T[comp_size];
+    total_size += comp_size;
+  }
+
+  if (total_size != size) {
+    delete[] comps_width;
+    delete[] comps_height;
+    for (size_t c = 0; c < total_components; c++) {
+      delete[] comps_buffer[c];
+    }
+
+    return nullptr;
+  }
+
+  IPixelComponent** components = new IPixelComponent*[num_components];
+  IPixelComponent* alpha = nullptr;
+  size_t offset = 0;
+  size_t comps_index[total_components];
+  for (size_t i = 0; i < total_components; i++) {
+    comps_index[i] = 0;
+  }
+
+  while (offset < total_size) {
+    for (uint8_t i = 0; i < components_order_size; i++) {
+      uint8_t c = components_order_sequence[i];
+      comps_buffer[c][comps_index[c]++] = buffer[offset];
+    }
+
+    offset += components_order_size;
+  }
+
+  for (size_t i = 0; i < total_components; i++) {
+    uint8_t c = components_order_sequence[i];
+    if (c == alpha_index) {
+      alpha = new PixelComponent<T>(comps_buffer[c], width, height, bit_depth);
+      continue;
+    };
+
+    components[c] = new PixelComponent<T>(comps_buffer[c], comps_width[c],
+                                          comps_height[c], bit_depth);
+  }
+
+  delete[] comps_width;
+  delete[] comps_height;
+  return new ImageCore(components, num_components, width, height, bit_depth,
+                       color_space, chroma_subsampling, alpha);
+}
+
+template <typename T>
+ImageCore* ImageCore::InnerLoadFromPlanarBuffer(
+    T* buffer, size_t size, uint32_t width, uint32_t height, uint8_t bit_depth,
+    const PixelFormatDetails* pixel_format_details) {
+  uint32_t* comps_width = nullptr;
+  uint32_t* comps_height = nullptr;
+  uint8_t num_components = pixel_format_details->num_components;
+  ChromaSubsampling chroma_subsampling =
+      pixel_format_details->chroma_subsampling;
+  ColorSpace color_space = pixel_format_details->color_space;
+  const uint8_t components_order_size =
+      pixel_format_details->components_order_size;
+  const uint8_t* components_order_sequence =
+      pixel_format_details->components_order_sequence;
+  if (!GetComponentDimensions(width, height, num_components, chroma_subsampling,
+                              comps_width, comps_height))
+    return nullptr;
+  size_t total_size = 0;
+  size_t alpha_size = 0;
+  int8_t alpha_index = pixel_format_details->alpha_index;
+  if (pixel_format_details->has_alpha()) {
+    alpha_size = width * height;
+    total_size += alpha_size;
+  }
+
+  for (uint8_t c = 0; c < num_components; ++c) {
+    total_size += comps_width[c] * comps_height[c];
+  }
+
+  if (total_size != size) {
+    delete[] comps_width;
+    delete[] comps_height;
+    return nullptr;
+  }
+
+  IPixelComponent** components = new IPixelComponent*[num_components];
+  IPixelComponent* alpha = nullptr;
+  size_t offset = 0;
+  uint32_t comp_width, comp_height;
+  size_t comp_size;
+  for (size_t i = 0; i < components_order_size; i++) {
+    uint8_t c = components_order_sequence[i];
+    if (c == alpha_index) {
+      comp_width = width;
+      comp_height = height;
+      comp_size = alpha_size;
+      continue;
+    } else {
+      comp_width = comps_width[c];
+      comp_height = comps_height[c];
+      comp_size = comp_width * comp_height;
+    }
+
+    T* comp_buffer = new T[comp_size];
+    std::memcpy(comp_buffer, buffer + offset, comp_size * sizeof(T));
+    components[c] =
+        new PixelComponent<T>(comp_buffer, comp_width, comp_height, bit_depth);
+    offset += comp_size;
+  }
+
+  delete[] comps_width;
+  delete[] comps_height;
+  return new ImageCore(components, num_components, width, height, bit_depth,
+                       color_space, chroma_subsampling, alpha);
+}
 
 template ImageCore* ImageCore::LoadFromInterleavedBuffer<uint8_t>(
     uint8_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t num_comps, uint8_t bit_depth, ColorSpace color_space,
-    ChromaSubsampling subsamp);
+    uint8_t bit_depth, PixelFormat pixel_format);
 template ImageCore* ImageCore::LoadFromInterleavedBuffer<int16_t>(
     int16_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t num_comps, uint8_t bit_depth, ColorSpace color_space,
-    ChromaSubsampling subsamp);
+    uint8_t bit_depth, PixelFormat pixel_format);
 template ImageCore* ImageCore::LoadFromInterleavedBuffer<uint16_t>(
     uint16_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t num_comps, uint8_t bit_depth, ColorSpace color_space,
-    ChromaSubsampling subsamp);
+    uint8_t bit_depth, PixelFormat pixel_format);
 template ImageCore* ImageCore::LoadFromInterleavedBuffer<int32_t>(
     int32_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t num_comps, uint8_t bit_depth, ColorSpace color_space,
-    ChromaSubsampling subsamp);
+    uint8_t bit_depth, PixelFormat pixel_format);
 template ImageCore* ImageCore::LoadFromInterleavedBuffer<uint32_t>(
     uint32_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t num_comps, uint8_t bit_depth, ColorSpace color_space,
-    ChromaSubsampling subsamp);
+    uint8_t bit_depth, PixelFormat pixel_format);
 
 template ImageCore* ImageCore::LoadFromPlanarBuffer<uint8_t>(
     uint8_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t num_comps, uint8_t bit_depth, ColorSpace color_space,
-    ChromaSubsampling subsamp);
+    uint8_t bit_depth, PixelFormat pixel_format);
 template ImageCore* ImageCore::LoadFromPlanarBuffer<int16_t>(
     int16_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t num_comps, uint8_t bit_depth, ColorSpace color_space,
-    ChromaSubsampling subsamp);
+    uint8_t bit_depth, PixelFormat pixel_format);
 template ImageCore* ImageCore::LoadFromPlanarBuffer<uint16_t>(
     uint16_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t num_comps, uint8_t bit_depth, ColorSpace color_space,
-    ChromaSubsampling subsamp);
+    uint8_t bit_depth, PixelFormat pixel_format);
 template ImageCore* ImageCore::LoadFromPlanarBuffer<int32_t>(
     int32_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t num_comps, uint8_t bit_depth, ColorSpace color_space,
-    ChromaSubsampling subsamp);
+    uint8_t bit_depth, PixelFormat pixel_format);
 template ImageCore* ImageCore::LoadFromPlanarBuffer<uint32_t>(
     uint32_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t num_comps, uint8_t bit_depth, ColorSpace color_space,
-    ChromaSubsampling subsamp);
+    uint8_t bit_depth, PixelFormat pixel_format);
+
+template uint8_t* ImageCore::AsInterleavedBuffer<uint8_t>(
+    const PixelFormat& pixel_format) const;
+template int16_t* ImageCore::AsInterleavedBuffer<int16_t>(
+    const PixelFormat& pixel_format) const;
+template uint16_t* ImageCore::AsInterleavedBuffer<uint16_t>(
+    const PixelFormat& pixel_format) const;
+template int32_t* ImageCore::AsInterleavedBuffer<int32_t>(
+    const PixelFormat& pixel_format) const;
+template uint32_t* ImageCore::AsInterleavedBuffer<uint32_t>(
+    const PixelFormat& pixel_format) const;
+
+template uint8_t* ImageCore::AsPlanarBuffer<uint8_t>(
+    const PixelFormat& pixel_format) const;
+template int16_t* ImageCore::AsPlanarBuffer<int16_t>(
+    const PixelFormat& pixel_format) const;
+template uint16_t* ImageCore::AsPlanarBuffer<uint16_t>(
+    const PixelFormat& pixel_format) const;
+template int32_t* ImageCore::AsPlanarBuffer<int32_t>(
+    const PixelFormat& pixel_format) const;
+template uint32_t* ImageCore::AsPlanarBuffer<uint32_t>(
+    const PixelFormat& pixel_format) const;
+
+template ImageCore* ImageCore::InnerLoadFromInterleavedBuffer<uint8_t>(
+    uint8_t* buffer, size_t size, uint32_t width, uint32_t height,
+    uint8_t bit_depth, const PixelFormatDetails* pixel_format_details);
+template ImageCore* ImageCore::InnerLoadFromInterleavedBuffer<int16_t>(
+    int16_t* buffer, size_t size, uint32_t width, uint32_t height,
+    uint8_t bit_depth, const PixelFormatDetails* pixel_format_details);
+template ImageCore* ImageCore::InnerLoadFromInterleavedBuffer<uint16_t>(
+    uint16_t* buffer, size_t size, uint32_t width, uint32_t height,
+    uint8_t bit_depth, const PixelFormatDetails* pixel_format_details);
+template ImageCore* ImageCore::InnerLoadFromInterleavedBuffer<int32_t>(
+    int32_t* buffer, size_t size, uint32_t width, uint32_t height,
+    uint8_t bit_depth, const PixelFormatDetails* pixel_format_details);
+template ImageCore* ImageCore::InnerLoadFromInterleavedBuffer<uint32_t>(
+    uint32_t* buffer, size_t size, uint32_t width, uint32_t height,
+    uint8_t bit_depth, const PixelFormatDetails* pixel_format_details);
+
+template ImageCore* ImageCore::InnerLoadFromPlanarBuffer<uint8_t>(
+    uint8_t* buffer, size_t size, uint32_t width, uint32_t height,
+    uint8_t bit_depth, const PixelFormatDetails* pixel_format_details);
+template ImageCore* ImageCore::InnerLoadFromPlanarBuffer<int16_t>(
+    int16_t* buffer, size_t size, uint32_t width, uint32_t height,
+    uint8_t bit_depth, const PixelFormatDetails* pixel_format_details);
+template ImageCore* ImageCore::InnerLoadFromPlanarBuffer<uint16_t>(
+    uint16_t* buffer, size_t size, uint32_t width, uint32_t height,
+    uint8_t bit_depth, const PixelFormatDetails* pixel_format_details);
+template ImageCore* ImageCore::InnerLoadFromPlanarBuffer<int32_t>(
+    int32_t* buffer, size_t size, uint32_t width, uint32_t height,
+    uint8_t bit_depth, const PixelFormatDetails* pixel_format_details);
+template ImageCore* ImageCore::InnerLoadFromPlanarBuffer<uint32_t>(
+    uint32_t* buffer, size_t size, uint32_t width, uint32_t height,
+    uint8_t bit_depth, const PixelFormatDetails* pixel_format_details);
 
 std::ostream& operator<<(std::ostream& os, const ImageCore& image_core) {
   os << image_core.ToString();

@@ -12,8 +12,6 @@ class IPixelComponent {
   virtual const uint32_t& GetHeight() const = 0;
   virtual const size_t GetSize() const = 0;
   virtual const uint8_t GetBitDepth() const = 0;
-  virtual const uint8_t GetDx() const = 0;
-  virtual const uint8_t GetDy() const = 0;
   virtual bool IsValid() const = 0;
   virtual std::string ToString() const = 0;
   virtual void Dispose() = 0;
@@ -24,8 +22,7 @@ class PixelComponent : public IPixelComponent {
  public:
   PixelComponent();
 
-  PixelComponent(T* buffer, uint32_t width, uint32_t height, uint8_t bit_depth,
-                 uint8_t dx, uint8_t dy);
+  PixelComponent(T* buffer, uint32_t width, uint32_t height, uint8_t bit_depth);
 
   ~PixelComponent();
 
@@ -38,10 +35,6 @@ class PixelComponent : public IPixelComponent {
   const size_t GetSize() const override;
 
   const uint8_t GetBitDepth() const override;
-
-  const uint8_t GetDx() const override;
-
-  const uint8_t GetDy() const override;
 
   bool IsValid() const override;
 
@@ -56,8 +49,6 @@ class PixelComponent : public IPixelComponent {
   uint32_t width_;
   uint32_t height_;
   uint8_t bit_depth_;
-  uint8_t dx_;
-  uint8_t dy_;
 };
 
 using PixelComponent8 = PixelComponent<uint8_t>;

@@ -4,12 +4,12 @@
 #include <string>
 
 enum class ColorSpace {
-  kGRAYSCALE,
+  kGRAY,
   kRGB,
   kCMYK,
-  kYUV,
-  kYCbCr,
+  kSYCC,
   kEYCC,
+  kUNKNOW,
   kUNSUPPORTED = -1,
 };
 
@@ -25,29 +25,26 @@ enum class ChromaSubsampling {
 };
 
 enum class PixelFormat {
+  kGRAY,
   kRGB,
   kRGBA,
   kBGR,
   kBGRA,
   kABGR,
   kCMYK,
-  kCMYK_Alpha,
-  kYUV444,
-  kYUV422,
-  kYUV420,
-  kYUV411,
-  kYUV440,
-  kYUV400,
+  kCMYKAlpha,
   kYA,
   kUYVYI,
   kYUY2I,
   kNV12I,
   kNV21I,
+  kI400P,
+  kI411P,
   kI420P,
   kI422P,
+  kI440P,
   kI444P,
-  kYCbCr,
-  kEYCC
+  kUNSUPPORTED = -1
 };
 
 enum class PixelType { kInterleaved, kPlanar };

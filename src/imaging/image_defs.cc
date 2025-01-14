@@ -2,20 +2,20 @@
 
 const std::string ColorSpaceToString(const ColorSpace& color_space) {
   switch (color_space) {
-    case ColorSpace::kGRAYSCALE:
-      return "Grayscale";
+    case ColorSpace::kGRAY:
+      return "GRAY";
     case ColorSpace::kRGB:
       return "RGB";
     case ColorSpace::kCMYK:
       return "CMYK";
-    case ColorSpace::kYUV:
-      return "YUV";
-    case ColorSpace::kYCbCr:
-      return "YCbCr";
+    case ColorSpace::kSYCC:
+      return "SYCC";
     case ColorSpace::kEYCC:
       return "E-YCC";
+    case ColorSpace::kUNKNOW:
+      return "UNKNOW";
     default:
-      return "Unsupported";
+      return "UNSUPPORTED";
   }
 }
 
@@ -36,7 +36,7 @@ const std::string ChromaSubsamplingToString(
     case ChromaSubsampling::kSAMP_400:
       return "SAMP_400";
     default:
-      return "Unsupported";
+      return "UNSUPPORTED";
   }
 }
 
@@ -48,6 +48,8 @@ std::ostream& operator<<(std::ostream& os,
 
 const std::string PixelFormatToString(const PixelFormat& pixel_format) {
   switch (pixel_format) {
+    case PixelFormat::kGRAY:
+      return "kGRAY";
     case PixelFormat::kRGB:
       return "kRGB";
     case PixelFormat::kRGBA:
@@ -60,20 +62,8 @@ const std::string PixelFormatToString(const PixelFormat& pixel_format) {
       return "kABGR";
     case PixelFormat::kCMYK:
       return "kCMYK";
-    case PixelFormat::kCMYK_Alpha:
-      return "kCMYK_Alpha";
-    case PixelFormat::kYUV444:
-      return "kYUV444";
-    case PixelFormat::kYUV422:
-      return "kYUV422";
-    case PixelFormat::kYUV420:
-      return "kYUV420";
-    case PixelFormat::kYUV411:
-      return "kYUV411";
-    case PixelFormat::kYUV440:
-      return "kYUV440";
-    case PixelFormat::kYUV400:
-      return "kYUV400";
+    case PixelFormat::kCMYKAlpha:
+      return "kCMYKAlpha";
     case PixelFormat::kYA:
       return "kYA";
     case PixelFormat::kUYVYI:
@@ -84,18 +74,20 @@ const std::string PixelFormatToString(const PixelFormat& pixel_format) {
       return "kNV12I";
     case PixelFormat::kNV21I:
       return "kNV21I";
+    case PixelFormat::kI400P:
+      return "kI400P";
+    case PixelFormat::kI411P:
+      return "kI411P";
     case PixelFormat::kI420P:
       return "kI420P";
     case PixelFormat::kI422P:
       return "kI422P";
+    case PixelFormat::kI440P:
+      return "kI440P";
     case PixelFormat::kI444P:
       return "kI444P";
-    case PixelFormat::kYCbCr:
-      return "kYCbCr";
-    case PixelFormat::kEYCC:
-      return "kEYC";
     default:
-      return "Unsupported";
+      return "UNSUPPORTED";
   }
 }
 
@@ -111,7 +103,7 @@ const std::string PixelTypeToString(const PixelType& pixel_type) {
     case PixelType::kPlanar:
       return "Planar";
     default:
-      return "Unsupported";
+      return "UNSUPPORTED";
   }
 }
 
