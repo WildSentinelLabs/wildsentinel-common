@@ -43,7 +43,11 @@ class ImageCore {
 
   const uint8_t GetAlignment() const;
 
-  const bool IsValid() const;
+  const IPixelComponent* GetAlpha() const;
+
+  bool HasAlpha() const;
+
+  bool IsValid() const;
 
   template <typename T>
   T* AsInterleavedBuffer(const PixelFormat& pixel_format) const;

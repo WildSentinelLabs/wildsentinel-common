@@ -8,12 +8,12 @@ const PixelFormatDetails** PixelFormatConstraints::GetPlanarFormats(
     if (details->color_space == color_space &&
         details->chroma_subsampling == chroma_subsampling &&
         details->num_components == num_components &&
-        (details->alpha_index != -1) == has_alpha) {
+        details->has_alpha() == has_alpha) {
       size++;
     }
   }
 
-  if (size = 0) return nullptr;
+  if (size == 0) return nullptr;
   const PixelFormatDetails** supported_formats =
       new const PixelFormatDetails*[size];
   uint8_t index = 0;
@@ -21,7 +21,7 @@ const PixelFormatDetails** PixelFormatConstraints::GetPlanarFormats(
     if (details->color_space == color_space &&
         details->chroma_subsampling == chroma_subsampling &&
         details->num_components == num_components &&
-        (details->alpha_index != -1) == has_alpha) {
+        details->has_alpha() == has_alpha) {
       supported_formats[index++] = details;
     }
   }
@@ -59,12 +59,12 @@ const PixelFormatDetails** PixelFormatConstraints::GetInterleavedFormats(
     if (details->color_space == color_space &&
         details->chroma_subsampling == chroma_subsampling &&
         details->num_components == num_components &&
-        (details->alpha_index != -1) == has_alpha) {
+        details->has_alpha() == has_alpha) {
       size++;
     }
   }
 
-  if (size = 0) return nullptr;
+  if (size == 0) return nullptr;
   const PixelFormatDetails** supported_formats =
       new const PixelFormatDetails*[size];
   uint8_t index = 0;
@@ -72,7 +72,7 @@ const PixelFormatDetails** PixelFormatConstraints::GetInterleavedFormats(
     if (details->color_space == color_space &&
         details->chroma_subsampling == chroma_subsampling &&
         details->num_components == num_components &&
-        (details->alpha_index != -1) == has_alpha) {
+        details->has_alpha() == has_alpha) {
       supported_formats[index++] = details;
     }
   }

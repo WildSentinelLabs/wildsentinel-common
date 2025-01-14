@@ -75,7 +75,11 @@ const ChromaSubsampling& ImageCore::GetChromaSubsampling() const {
 
 const uint8_t ImageCore::GetAlignment() const { return alignment_; }
 
-const bool ImageCore::IsValid() const {
+const IPixelComponent* ImageCore::GetAlpha() const { return alpha_; }
+
+bool ImageCore::HasAlpha() const { return alpha_ != nullptr; }
+
+bool ImageCore::IsValid() const {
   bool result = !(components_ == nullptr || width_ == 0 || height_ == 0 ||
                   bit_depth_ == 0 || color_space_ == ColorSpace::kUNSUPPORTED ||
                   chroma_subsampling_ == ChromaSubsampling::kUNSUPPORTED);
@@ -107,7 +111,7 @@ T* ImageCore::AsInterleavedBuffer(const PixelFormat& pixel_format) const {
   int8_t alpha_index = pixel_format_details->alpha_index;
   uint8_t total_components = has_alpha ? num_components_ + 1 : num_components_;
   IPixelComponent* comp = nullptr;
-  T* comps_buffer[total_components];
+  T* comps_buffer[total_components] = {nullptr};
   size_t total_size = 0;
   for (uint8_t i = 0; i < components_order_size; ++i) {
     uint8_t c = components_order_sequence[i];
@@ -134,9 +138,8 @@ T* ImageCore::AsInterleavedBuffer(const PixelFormat& pixel_format) const {
     for (uint8_t i = 0; i < components_order_size; i++) {
       uint8_t c = components_order_sequence[i];
       buffer[offset] = comps_buffer[c][comps_index[c]++];
+      offset++;
     }
-
-    offset += components_order_size;
   }
 
   return buffer;
@@ -164,7 +167,7 @@ T* ImageCore::AsPlanarBuffer(const PixelFormat& pixel_format) const {
   uint8_t total_components = has_alpha ? num_components_ + 1 : num_components_;
   IPixelComponent* comp = nullptr;
   size_t comps_size[total_components];
-  T* comps_buffer[total_components];
+  T* comps_buffer[total_components] = {nullptr};
   size_t total_size = 0;
   for (uint8_t i = 0; i < components_order_size; ++i) {
     uint8_t c = components_order_sequence[i];
@@ -185,8 +188,7 @@ T* ImageCore::AsPlanarBuffer(const PixelFormat& pixel_format) const {
   size_t offset = 0;
   for (uint8_t i = 0; i < components_order_size; ++i) {
     uint8_t c = components_order_sequence[i];
-    std::memcpy(comps_buffer[c] + offset, comps_buffer[c],
-                comps_size[c] * sizeof(T));
+    std::memcpy(buffer + offset, comps_buffer[c], comps_size[c] * sizeof(T));
     offset += comps_size[c];
   }
 
@@ -251,7 +253,7 @@ ImageCore* ImageCore::InnerLoadFromInterleavedBuffer(
     total_size += alpha_size;
   }
 
-  T* comps_buffer[total_components];
+  T* comps_buffer[total_components] = {nullptr};
   size_t comp_size;
   for (size_t i = 0; i < components_order_size; i++) {
     uint8_t c = components_order_sequence[i];
@@ -289,9 +291,8 @@ ImageCore* ImageCore::InnerLoadFromInterleavedBuffer(
     for (uint8_t i = 0; i < components_order_size; i++) {
       uint8_t c = components_order_sequence[i];
       comps_buffer[c][comps_index[c]++] = buffer[offset];
+      offset++;
     }
-
-    offset += components_order_size;
   }
 
   for (size_t i = 0; i < total_components; i++) {
