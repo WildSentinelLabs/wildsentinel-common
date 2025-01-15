@@ -96,7 +96,7 @@ class PixelFormatConstraints {
                                                -1};
 
   static constexpr PixelFormatDetails kYA = {PixelFormat::kYA,
-                                             ColorSpace::kGRAY,
+                                             ColorSpace::kSYCC,
                                              ChromaSubsampling::kSAMP_400,
                                              1,
                                              kYAOrder,
@@ -136,7 +136,7 @@ class PixelFormatConstraints {
                                                -1};
 
   static constexpr PixelFormatDetails kI400 = {PixelFormat::kI400,
-                                               ColorSpace::kGRAY,
+                                               ColorSpace::kSYCC,
                                                ChromaSubsampling::kSAMP_400,
                                                1,
                                                kI400Order,
@@ -185,12 +185,12 @@ class PixelFormatConstraints {
 
   // Planar formats
   static constexpr const PixelFormatDetails* kPlanarFormats[] = {
-      &kI400,  // Grayscale (Planar)
       &kI411,  // YUV 4:1:1 (Planar)
       &kI420,  // YUV 4:2:0 (Planar)
       &kI422,  // YUV 4:2:2 (Planar)
       &kI440,  // YUV 4:4:0 (Planar)
       &kI444,  // YUV 4:4:4 (Planar)
+      &kI400,  // Grayscale (Planar)
       &kGRAY,  // Grayscale (just Y component)
       &kYA,    // Grayscale with Alpha
       // Formats that can be planar (supported as planar)
@@ -215,6 +215,9 @@ class PixelFormatConstraints {
       &kABGR,   // ABGR (Interleaved)
       &kCMYK,   // CMYK (Interleaved)
       &kCMYKA,  // CMYK with Alpha (Interleaved)
+      &kI400,   // Grayscale (Planar)
+      &kGRAY,   // Grayscale (just Y component)
+      &kYA,     // Grayscale with Alpha
   };
 
   static const PixelFormatDetails* GetPlanarFormat(
