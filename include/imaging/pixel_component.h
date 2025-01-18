@@ -8,10 +8,10 @@ class IPixelComponent {
  public:
   virtual ~IPixelComponent() = default;
   virtual const void* GetBuffer() const = 0;
-  virtual const uint32_t GetWidth() const = 0;
-  virtual const uint32_t GetHeight() const = 0;
-  virtual const size_t GetSize() const = 0;
-  virtual const uint8_t GetBitDepth() const = 0;
+  virtual uint32_t GetWidth() const = 0;
+  virtual uint32_t GetHeight() const = 0;
+  virtual size_t GetSize() const = 0;
+  virtual uint8_t GetBitDepth() const = 0;
   virtual bool IsAlpha() const = 0;
   virtual bool IsValid() const = 0;
   virtual std::string ToString() const = 0;
@@ -30,13 +30,13 @@ class PixelComponent : public IPixelComponent {
 
   const void* GetBuffer() const override;
 
-  const uint32_t GetWidth() const override;
+  uint32_t GetWidth() const override;
 
-  const uint32_t GetHeight() const override;
+  uint32_t GetHeight() const override;
 
-  const size_t GetSize() const override;
+  size_t GetSize() const override;
 
-  const uint8_t GetBitDepth() const override;
+  uint8_t GetBitDepth() const override;
 
   bool IsAlpha() const override;
 

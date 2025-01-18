@@ -53,18 +53,18 @@ ImageCore* ImageCore::LoadFromPlanarBuffer(T* buffer, size_t size,
                                    pixel_format_details);
 }
 
-const uint8_t ImageCore::GetNumComponents() const { return num_components_; }
+uint8_t ImageCore::GetNumComponents() const { return num_components_; }
 
 const IPixelComponent* ImageCore::GetComponent(uint8_t comp_num) const {
   if (comp_num >= num_components_ || comp_num < 0) return nullptr;
   return components_[comp_num];
 }
 
-const uint32_t ImageCore::GetWidth() const { return width_; }
+uint32_t ImageCore::GetWidth() const { return width_; }
 
-const uint32_t ImageCore::GetHeight() const { return height_; }
+uint32_t ImageCore::GetHeight() const { return height_; }
 
-const uint8_t ImageCore::GetBitDepth() const { return bit_depth_; }
+uint8_t ImageCore::GetBitDepth() const { return bit_depth_; }
 
 const ColorSpace ImageCore::GetColorSpace() const { return color_space_; }
 
@@ -72,7 +72,7 @@ const ChromaSubsampling ImageCore::GetChromaSubsampling() const {
   return chroma_subsampling_;
 }
 
-const uint8_t ImageCore::GetAlignment() const { return alignment_; }
+uint8_t ImageCore::GetAlignment() const { return alignment_; }
 
 bool ImageCore::HasAlpha() const {
   for (uint8_t c = 0; c < num_components_; c++) {

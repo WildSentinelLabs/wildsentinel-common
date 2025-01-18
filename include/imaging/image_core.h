@@ -28,21 +28,21 @@ class ImageCore {
                                          uint32_t height, uint8_t bit_depth,
                                          PixelFormat pixel_format);
 
-  const uint8_t GetNumComponents() const;
+  uint8_t GetNumComponents() const;
 
   const IPixelComponent* GetComponent(uint8_t comp_num) const;
 
-  const uint32_t GetWidth() const;
+  uint32_t GetWidth() const;
 
-  const uint32_t GetHeight() const;
+  uint32_t GetHeight() const;
 
-  const uint8_t GetBitDepth() const;
+  uint8_t GetBitDepth() const;
 
   const ColorSpace GetColorSpace() const;
 
   const ChromaSubsampling GetChromaSubsampling() const;
 
-  const uint8_t GetAlignment() const;
+  uint8_t GetAlignment() const;
 
   bool HasAlpha() const;
 

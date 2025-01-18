@@ -23,22 +23,22 @@ const void* PixelComponent<T>::GetBuffer() const {
 }
 
 template <typename T>
-const uint32_t PixelComponent<T>::GetWidth() const {
+uint32_t PixelComponent<T>::GetWidth() const {
   return width_;
 }
 
 template <typename T>
-const uint32_t PixelComponent<T>::GetHeight() const {
-  return width_;
+uint32_t PixelComponent<T>::GetHeight() const {
+  return height_;
 }
 
 template <typename T>
-const size_t PixelComponent<T>::GetSize() const {
+size_t PixelComponent<T>::GetSize() const {
   return width_ * height_;
 }
 
 template <typename T>
-const uint8_t PixelComponent<T>::GetBitDepth() const {
+uint8_t PixelComponent<T>::GetBitDepth() const {
   return bit_depth_;
 }
 
@@ -58,7 +58,8 @@ std::string PixelComponent<T>::ToString() const {
   std::ostringstream ss;
   ss << "PixelComponent("
      << " Width: " << width_ << " Height: " << height_
-     << ", Bit Depth: " << static_cast<int>(bit_depth_) << ")";
+     << ", Bit Depth: " << static_cast<int>(bit_depth_)
+     << ", Alpha: " << (is_alpha_ ? "True" : "False") << ")";
   return ss.str();
 }
 
