@@ -2,8 +2,12 @@
 
 template <typename T>
 PixelComponent<T>::PixelComponent(T* buffer, uint32_t width, uint32_t height,
-                                  uint8_t bit_depth)
-    : buffer_(buffer), width_(width), height_(height), bit_depth_(bit_depth) {
+                                  uint8_t bit_depth, bool is_alpha)
+    : buffer_(buffer),
+      width_(width),
+      height_(height),
+      bit_depth_(bit_depth),
+      is_alpha_(is_alpha) {
   if (!IsValid())
     throw std::invalid_argument("Invalid PixelComponent parameters");
 }
@@ -19,12 +23,12 @@ const void* PixelComponent<T>::GetBuffer() const {
 }
 
 template <typename T>
-const uint32_t& PixelComponent<T>::GetWidth() const {
+const uint32_t PixelComponent<T>::GetWidth() const {
   return width_;
 }
 
 template <typename T>
-const uint32_t& PixelComponent<T>::GetHeight() const {
+const uint32_t PixelComponent<T>::GetHeight() const {
   return width_;
 }
 
@@ -36,6 +40,11 @@ const size_t PixelComponent<T>::GetSize() const {
 template <typename T>
 const uint8_t PixelComponent<T>::GetBitDepth() const {
   return bit_depth_;
+}
+
+template <typename T>
+bool PixelComponent<T>::IsAlpha() const {
+  return is_alpha_;
 }
 
 template <typename T>

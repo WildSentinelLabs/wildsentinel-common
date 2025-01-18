@@ -1,5 +1,6 @@
 #pragma once
 #include "imaging/image_defs.h"
+#include "pixel_format.h"
 
 struct PixelFormatDetails {
   const PixelFormat pixel_format;
@@ -10,5 +11,5 @@ struct PixelFormatDetails {
   const uint8_t components_order_size;
   int8_t alpha_index;
 
-  bool has_alpha() const;
+  bool HasAlpha() const;
 };

@@ -8,10 +8,11 @@ class IPixelComponent {
  public:
   virtual ~IPixelComponent() = default;
   virtual const void* GetBuffer() const = 0;
-  virtual const uint32_t& GetWidth() const = 0;
-  virtual const uint32_t& GetHeight() const = 0;
+  virtual const uint32_t GetWidth() const = 0;
+  virtual const uint32_t GetHeight() const = 0;
   virtual const size_t GetSize() const = 0;
   virtual const uint8_t GetBitDepth() const = 0;
+  virtual bool IsAlpha() const = 0;
   virtual bool IsValid() const = 0;
   virtual std::string ToString() const = 0;
   virtual void Dispose() = 0;
@@ -22,19 +23,22 @@ class PixelComponent : public IPixelComponent {
  public:
   PixelComponent();
 
-  PixelComponent(T* buffer, uint32_t width, uint32_t height, uint8_t bit_depth);
+  PixelComponent(T* buffer, uint32_t width, uint32_t height, uint8_t bit_depth,
+                 bool is_alpha = false);
 
   ~PixelComponent();
 
   const void* GetBuffer() const override;
 
-  const uint32_t& GetWidth() const override;
+  const uint32_t GetWidth() const override;
 
-  const uint32_t& GetHeight() const override;
+  const uint32_t GetHeight() const override;
 
   const size_t GetSize() const override;
 
   const uint8_t GetBitDepth() const override;
+
+  bool IsAlpha() const override;
 
   bool IsValid() const override;
 
@@ -49,6 +53,7 @@ class PixelComponent : public IPixelComponent {
   uint32_t width_;
   uint32_t height_;
   uint8_t bit_depth_;
+  bool is_alpha_;
 };
 
 using PixelComponent8 = PixelComponent<uint8_t>;

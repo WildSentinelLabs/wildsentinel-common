@@ -24,31 +24,6 @@ enum class ChromaSubsampling {
   kUNSUPPORTED = -1,
 };
 
-enum class PixelFormat {
-  kGRAY,
-  kRGB,
-  kRGBA,
-  kBGR,
-  kBGRA,
-  kABGR,
-  kCMYK,
-  kCMYKAlpha,
-  kYA,
-  kUYVY,
-  kYUY2,
-  kNV12,
-  kNV21,
-  kI400,
-  kI411,
-  kI420,
-  kI422,
-  kI440,
-  kI444,
-  kUNSUPPORTED = -1
-};
-
-enum class PixelType { kInterleaved, kPlanar };
-
 const std::string ColorSpaceToString(const ColorSpace& color_space);
 
 std::ostream& operator<<(std::ostream& os, const ColorSpace& color_space);
@@ -58,11 +33,3 @@ const std::string ChromaSubsamplingToString(
 
 std::ostream& operator<<(std::ostream& os,
                          const ChromaSubsampling& subsampling);
-
-const std::string PixelFormatToString(const PixelFormat& pixel_format);
-
-std::ostream& operator<<(std::ostream& os, const PixelFormat& pixel_format);
-
-const std::string PixelTypeToString(const PixelType& pixel_type);
-
-std::ostream& operator<<(std::ostream& os, const PixelType& pixel_type);

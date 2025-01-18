@@ -4,6 +4,7 @@
 #include "imaging/image_defs.h"
 #include "imaging/pixel_align.h"
 #include "imaging/pixel_component.h"
+#include "imaging/pixel_format.h"
 #include "imaging/pixel_format_constraints.h"
 
 class ImageCore {
@@ -12,7 +13,7 @@ class ImageCore {
             const uint32_t width, const uint32_t height,
             const uint8_t bit_depth, const ColorSpace color_space,
             const ChromaSubsampling chroma_subsampling,
-            IPixelComponent* alpha = nullptr, const uint8_t alignment = 0);
+            const uint8_t alignment = 0);
 
   ~ImageCore();
 
@@ -31,19 +32,17 @@ class ImageCore {
 
   const IPixelComponent* GetComponent(uint8_t comp_num) const;
 
-  const uint32_t& GetWidth() const;
+  const uint32_t GetWidth() const;
 
-  const uint32_t& GetHeight() const;
+  const uint32_t GetHeight() const;
 
   const uint8_t GetBitDepth() const;
 
-  const ColorSpace& GetColorSpace() const;
+  const ColorSpace GetColorSpace() const;
 
-  const ChromaSubsampling& GetChromaSubsampling() const;
+  const ChromaSubsampling GetChromaSubsampling() const;
 
   const uint8_t GetAlignment() const;
-
-  const IPixelComponent* GetAlpha() const;
 
   bool HasAlpha() const;
 
@@ -62,7 +61,6 @@ class ImageCore {
  private:
   uint8_t num_components_;
   IPixelComponent** components_;
-  IPixelComponent* alpha_;
   uint32_t width_;
   uint32_t height_;
   uint8_t bit_depth_;

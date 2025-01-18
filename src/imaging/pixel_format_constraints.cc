@@ -8,7 +8,7 @@ const PixelFormatDetails** PixelFormatConstraints::GetPlanarFormats(
     if (details->color_space == color_space &&
         details->chroma_subsampling == chroma_subsampling &&
         details->num_components == num_components &&
-        details->has_alpha() == has_alpha) {
+        details->HasAlpha() == has_alpha) {
       size++;
     }
   }
@@ -21,7 +21,7 @@ const PixelFormatDetails** PixelFormatConstraints::GetPlanarFormats(
     if (details->color_space == color_space &&
         details->chroma_subsampling == chroma_subsampling &&
         details->num_components == num_components &&
-        details->has_alpha() == has_alpha) {
+        details->HasAlpha() == has_alpha) {
       supported_formats[index++] = details;
     }
   }
@@ -59,7 +59,7 @@ const PixelFormatDetails** PixelFormatConstraints::GetInterleavedFormats(
     if (details->color_space == color_space &&
         details->chroma_subsampling == chroma_subsampling &&
         details->num_components == num_components &&
-        details->has_alpha() == has_alpha) {
+        details->HasAlpha() == has_alpha) {
       size++;
     }
   }
@@ -72,7 +72,7 @@ const PixelFormatDetails** PixelFormatConstraints::GetInterleavedFormats(
     if (details->color_space == color_space &&
         details->chroma_subsampling == chroma_subsampling &&
         details->num_components == num_components &&
-        details->has_alpha() == has_alpha) {
+        details->HasAlpha() == has_alpha) {
       supported_formats[index++] = details;
     }
   }
@@ -81,14 +81,14 @@ const PixelFormatDetails** PixelFormatConstraints::GetInterleavedFormats(
 }
 
 bool PixelFormatConstraints::GetComponentDimensions(
-    uint32_t width, uint32_t height, uint8_t num_comps,
-    ChromaSubsampling chroma_subsampling, uint32_t*& comps_width,
-    uint32_t*& comps_height) {
-  comps_width = new uint32_t[num_comps];
-  comps_height = new uint32_t[num_comps];
+    uint32_t width, uint32_t height, uint8_t num_components,
+    ChromaSubsampling chroma_subsampling, bool has_alpha,
+    uint32_t*& comps_width, uint32_t*& comps_height) {
+  comps_width = new uint32_t[num_components];
+  comps_height = new uint32_t[num_components];
   switch (chroma_subsampling) {
     case ChromaSubsampling::kSAMP_444:
-      for (uint8_t c = 0; c < num_comps; ++c) {
+      for (uint8_t c = 0; c < num_components; ++c) {
         comps_width[c] = width;
         comps_height[c] = height;
       }
@@ -97,7 +97,7 @@ bool PixelFormatConstraints::GetComponentDimensions(
       break;
 
     case ChromaSubsampling::kSAMP_422:
-      if (num_comps != 3) break;
+      if (num_components != 3) break;
       comps_width[0] = width;
       comps_height[0] = height;
       comps_width[1] = comps_width[2] = width / 2;
@@ -106,7 +106,7 @@ bool PixelFormatConstraints::GetComponentDimensions(
       break;
 
     case ChromaSubsampling::kSAMP_420:
-      if (num_comps != 3) break;
+      if (num_components != 3) break;
       comps_width[0] = width;
       comps_height[0] = height;
       comps_width[1] = comps_width[2] = width / 2;
@@ -115,14 +115,20 @@ bool PixelFormatConstraints::GetComponentDimensions(
       break;
 
     case ChromaSubsampling::kSAMP_400:
-      if (num_comps != 1) break;
-      comps_width[0] = width;
-      comps_height[0] = height;
+      if (has_alpha && num_components != 2)
+        break;
+      else if (num_components != 1)
+        break;
+      for (uint8_t c = 0; c < num_components; ++c) {
+        comps_width[c] = width;
+        comps_height[c] = height;
+      }
+
       return true;
       break;
 
     case ChromaSubsampling::kSAMP_440:
-      if (num_comps != 3) break;
+      if (num_components != 3) break;
       comps_width[0] = width;
       comps_height[0] = height;
       comps_width[1] = comps_width[2] = width;
@@ -131,7 +137,7 @@ bool PixelFormatConstraints::GetComponentDimensions(
       break;
 
     case ChromaSubsampling::kSAMP_411:
-      if (num_comps != 3) break;
+      if (num_components != 3) break;
       comps_width[0] = width;
       comps_height[0] = height;
       comps_width[1] = comps_width[2] = width / 4;

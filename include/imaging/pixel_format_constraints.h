@@ -1,4 +1,5 @@
 #include "imaging/image_defs.h"
+#include "imaging/pixel_format.h"
 #include "imaging/pixel_format_details.h"
 
 // Component orders for each PixelFormat
@@ -9,8 +10,7 @@ static constexpr uint8_t kBGROrder[3] = {2, 1, 0};      // B, G, R
 static constexpr uint8_t kBGRAOrder[4] = {2, 1, 0, 3};  // B, G, R, A (Alpha)
 static constexpr uint8_t kABGROrder[4] = {3, 2, 1, 0};  // A, B, G, R
 static constexpr uint8_t kCMYKOrder[4] = {0, 1, 2, 3};  // C, M, Y, K
-static constexpr uint8_t kCMYKAlphaOrder[5] = {0, 1, 2, 3,
-                                               4};  // C, M, Y, K, Alpha
+static constexpr uint8_t kCMYKAOrder[5] = {0, 1, 2, 3, 4};  // C, M, Y, K, Alpha
 
 // Grayscale and YA formats
 static constexpr uint8_t kGRAYOrder[1] = {0};   // Grayscale (only Y)
@@ -42,7 +42,7 @@ class PixelFormatConstraints {
   static constexpr PixelFormatDetails kRGBA = {PixelFormat::kRGBA,
                                                ColorSpace::kRGB,
                                                ChromaSubsampling::kSAMP_444,
-                                               3,
+                                               4,
                                                kRGBAOrder,
                                                4,
                                                3};
@@ -58,7 +58,7 @@ class PixelFormatConstraints {
   static constexpr PixelFormatDetails kBGRA = {PixelFormat::kBGRA,
                                                ColorSpace::kRGB,
                                                ChromaSubsampling::kSAMP_444,
-                                               3,
+                                               4,
                                                kBGRAOrder,
                                                4,
                                                3};
@@ -66,7 +66,7 @@ class PixelFormatConstraints {
   static constexpr PixelFormatDetails kABGR = {PixelFormat::kABGR,
                                                ColorSpace::kRGB,
                                                ChromaSubsampling::kSAMP_444,
-                                               3,
+                                               4,
                                                kABGROrder,
                                                4,
                                                3};
@@ -82,8 +82,8 @@ class PixelFormatConstraints {
   static constexpr PixelFormatDetails kCMYKA = {PixelFormat::kCMYKAlpha,
                                                 ColorSpace::kCMYK,
                                                 ChromaSubsampling::kSAMP_444,
-                                                4,
-                                                kCMYKAlphaOrder,
+                                                5,
+                                                kCMYKAOrder,
                                                 5,
                                                 4};
 
@@ -98,7 +98,7 @@ class PixelFormatConstraints {
   static constexpr PixelFormatDetails kYA = {PixelFormat::kYA,
                                              ColorSpace::kSYCC,
                                              ChromaSubsampling::kSAMP_400,
-                                             1,
+                                             2,
                                              kYAOrder,
                                              2,
                                              1};
@@ -239,6 +239,6 @@ class PixelFormatConstraints {
   static bool GetComponentDimensions(uint32_t width, uint32_t height,
                                      uint8_t num_components,
                                      ChromaSubsampling chroma_subsampling,
-                                     uint32_t*& comps_width,
+                                     bool has_alpha, uint32_t*& comps_width,
                                      uint32_t*& comps_height);
 };
