@@ -57,9 +57,9 @@ class PixelComponent : public IPixelComponent {
 };
 
 using PixelComponent8 = PixelComponent<uint8_t>;
-using PixelComponent10 = PixelComponent<int16_t>;
 using PixelComponent12 = PixelComponent<int16_t>;
 using PixelComponent16 = PixelComponent<uint16_t>;
+using PixelComponent24 = PixelComponent<int32_t>;
 using PixelComponent32 = PixelComponent<uint32_t>;
 
 std::ostream& operator<<(std::ostream& os,

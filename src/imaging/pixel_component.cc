@@ -77,10 +77,10 @@ const T* PixelComponent<T>::GetTypedBuffer() const {
 }
 
 template class PixelComponent<uint8_t>;
-template class PixelComponent<uint16_t>;
-template class PixelComponent<uint32_t>;
 template class PixelComponent<int16_t>;
+template class PixelComponent<uint16_t>;
 template class PixelComponent<int32_t>;
+template class PixelComponent<uint32_t>;
 
 std::ostream& operator<<(std::ostream& os,
                          const IPixelComponent& pixel_component) {
