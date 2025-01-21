@@ -36,8 +36,6 @@ class ImageCore {
 
   uint32_t GetHeight() const;
 
-  uint8_t GetBitDepth() const;
-
   const ColorSpace GetColorSpace() const;
 
   const ChromaSubsampling GetChromaSubsampling() const;

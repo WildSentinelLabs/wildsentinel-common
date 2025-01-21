@@ -1,6 +1,6 @@
-#include "imaging/pixel_align.h"
+#include "imaging/pixel_traits.h"
 
-uint8_t PixelAlign::GetBitAlignment(const uint8_t& bit_depth) {
+uint8_t PixelTraits::GetBitAlignment(const uint8_t& bit_depth) {
   if (bit_depth == 8) {
     return 1;
   } else if (bit_depth == 16) {
@@ -12,7 +12,7 @@ uint8_t PixelAlign::GetBitAlignment(const uint8_t& bit_depth) {
   return 1;
 }
 
-uint8_t PixelAlign::GetChromaAlignment(const ChromaSubsampling& subsampling) {
+uint8_t PixelTraits::GetChromaAlignment(const ChromaSubsampling& subsampling) {
   switch (subsampling) {
     case ChromaSubsampling::kSAMP_420:
     case ChromaSubsampling::kSAMP_422:
@@ -22,4 +22,8 @@ uint8_t PixelAlign::GetChromaAlignment(const ChromaSubsampling& subsampling) {
     default:
       return 1;
   }
+}
+
+bool PixelTraits::IsSigned(const uint8_t& bit_depth) {
+  return bit_depth >= 9 && bit_depth <= 12;
 }
