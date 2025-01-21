@@ -1,7 +1,8 @@
 #pragma once
 #include "imaging/image_context.h"
 #include "imaging/image_core.h"
-#include "imaging/image_defs.h"
+#include "pixel/chroma_subsampling.h"
+#include "pixel/color_space.h"
 
 class Image {
  public:

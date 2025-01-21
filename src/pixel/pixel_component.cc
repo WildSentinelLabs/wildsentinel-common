@@ -1,4 +1,4 @@
-#include "imaging/pixel_component.h"
+#include "pixel/pixel_component.h"
 
 template <typename T>
 PixelComponent<T>::PixelComponent(T* buffer, uint32_t width, uint32_t height,

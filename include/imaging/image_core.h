@@ -1,17 +1,18 @@
 #pragma once
 #include <cstring>
 
-#include "imaging/image_defs.h"
-#include "imaging/pixel_align.h"
-#include "imaging/pixel_component.h"
-#include "imaging/pixel_format.h"
-#include "imaging/pixel_format_constraints.h"
+#include "pixel/chroma_subsampling.h"
+#include "pixel/color_space.h"
+#include "pixel/pixel_component.h"
+#include "pixel/pixel_format.h"
+#include "pixel/pixel_format_constraints.h"
+#include "pixel/pixel_traits.h"
 
 class ImageCore {
  public:
   ImageCore(IPixelComponent** components, const uint8_t num_components,
             const uint32_t width, const uint32_t height,
-            const uint8_t bit_depth, const ColorSpace color_space,
+            const ColorSpace color_space,
             const ChromaSubsampling chroma_subsampling,
             const uint8_t alignment = 0);
 
@@ -61,7 +62,6 @@ class ImageCore {
   IPixelComponent** components_;
   uint32_t width_;
   uint32_t height_;
-  uint8_t bit_depth_;
   ColorSpace color_space_;
   ChromaSubsampling chroma_subsampling_;
   uint8_t alignment_;

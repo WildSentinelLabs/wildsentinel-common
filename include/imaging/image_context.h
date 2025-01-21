@@ -5,8 +5,6 @@
 #include <sstream>
 #include <string>
 
-#include "imaging/image_defs.h"
-
 struct ImageContext {
  public:
   explicit ImageContext();

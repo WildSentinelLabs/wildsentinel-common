@@ -1,4 +1,4 @@
-#include "imaging/pixel_format.h"
+#include "pixel/pixel_format.h"
 
 const std::string PixelFormatToString(const PixelFormat& pixel_format) {
   switch (pixel_format) {

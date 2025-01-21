@@ -1,4 +1,4 @@
-#include "imaging/pixel_format_constraints.h"
+#include "pixel/pixel_format_constraints.h"
 
 const PixelFormatDetails** PixelFormatConstraints::GetPlanarFormats(
     const ColorSpace& color_space, const ChromaSubsampling& chroma_subsampling,

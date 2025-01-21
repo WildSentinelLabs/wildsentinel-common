@@ -1,6 +1,7 @@
-#include "imaging/image_defs.h"
-#include "imaging/pixel_format.h"
-#include "imaging/pixel_format_details.h"
+#include "pixel/chroma_subsampling.h"
+#include "pixel/color_space.h"
+#include "pixel/pixel_format.h"
+#include "pixel/pixel_format_details.h"
 
 // Component orders for each PixelFormat
 // RGB and RGBA formats

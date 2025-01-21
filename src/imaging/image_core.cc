@@ -2,22 +2,22 @@
 
 ImageCore::ImageCore(IPixelComponent** components, const uint8_t num_components,
                      const uint32_t width, const uint32_t height,
-                     const uint8_t bit_depth, const ColorSpace color_space,
+                     const ColorSpace color_space,
                      const ChromaSubsampling chroma_subsampling,
                      const uint8_t alignment)
     : components_(components),
       num_components_(num_components),
       width_(width),
       height_(height),
-      bit_depth_(bit_depth),
       color_space_(color_space),
       chroma_subsampling_(chroma_subsampling) {
   if (!IsValid())
     throw std::invalid_argument(
         "Invalid parameters: buffers, dimensions, and bit depth must be "
         "non-null and non-zero");
-  uint8_t min_alignment = PixelAlign::GetBitAlignment(bit_depth) *
-                          PixelAlign::GetChromaAlignment(chroma_subsampling);
+  uint8_t min_alignment =
+      PixelTraits::GetBitAlignment(components[0]->GetBitDepth()) *
+      PixelTraits::GetChromaAlignment(chroma_subsampling);
   if (alignment < min_alignment) {
     alignment_ = min_alignment;
   } else {
@@ -64,8 +64,6 @@ uint32_t ImageCore::GetWidth() const { return width_; }
 
 uint32_t ImageCore::GetHeight() const { return height_; }
 
-uint8_t ImageCore::GetBitDepth() const { return bit_depth_; }
-
 const ColorSpace ImageCore::GetColorSpace() const { return color_space_; }
 
 const ChromaSubsampling ImageCore::GetChromaSubsampling() const {
@@ -84,7 +82,7 @@ bool ImageCore::HasAlpha() const {
 
 bool ImageCore::IsValid() const {
   bool result = !(components_ == nullptr || width_ == 0 || height_ == 0 ||
-                  bit_depth_ == 0 || color_space_ == ColorSpace::kUNSUPPORTED ||
+                  color_space_ == ColorSpace::kUNSUPPORTED ||
                   chroma_subsampling_ == ChromaSubsampling::kUNSUPPORTED);
   for (uint8_t c = 0; c < num_components_; ++c) {
     result = result && components_[c]->IsValid();
@@ -237,7 +235,6 @@ ImageCore* ImageCore::InnerLoadFromInterleavedBuffer(
     return nullptr;
 
   size_t total_size = 0;
-  size_t alpha_size = 0;
   int8_t alpha_index = pixel_format_details->alpha_index;
   T* comps_buffer[num_components] = {nullptr};
   size_t comp_size;
@@ -264,7 +261,6 @@ ImageCore* ImageCore::InnerLoadFromInterleavedBuffer(
   }
 
   IPixelComponent** components = new IPixelComponent*[num_components];
-  IPixelComponent* alpha = nullptr;
   size_t offset = 0;
   size_t comps_index[num_components];
   for (size_t i = 0; i < num_components; i++) {
@@ -281,18 +277,15 @@ ImageCore* ImageCore::InnerLoadFromInterleavedBuffer(
 
   for (size_t i = 0; i < num_components; i++) {
     uint8_t c = components_order_sequence[i];
-    if (c == alpha_index) {
-      alpha = new PixelComponent<T>(comps_buffer[c], width, height, bit_depth);
-    } else {
-      components[c] = new PixelComponent<T>(comps_buffer[c], comps_width[c],
-                                            comps_height[c], bit_depth);
-    }
+    components[c] =
+        new PixelComponent<T>(comps_buffer[c], comps_width[c], comps_height[c],
+                              bit_depth, c == alpha_index);
   }
 
   delete[] comps_width;
   delete[] comps_height;
-  return new ImageCore(components, num_components, width, height, bit_depth,
-                       color_space, chroma_subsampling);
+  return new ImageCore(components, num_components, width, height, color_space,
+                       chroma_subsampling);
 }
 
 template <typename T>
@@ -314,7 +307,6 @@ ImageCore* ImageCore::InnerLoadFromPlanarBuffer(
           pixel_format_details->HasAlpha(), comps_width, comps_height))
     return nullptr;
   size_t total_size = 0;
-  size_t alpha_size = 0;
   int8_t alpha_index = pixel_format_details->alpha_index;
   for (uint8_t c = 0; c < num_components; ++c) {
     total_size += comps_width[c] * comps_height[c];
@@ -337,21 +329,15 @@ ImageCore* ImageCore::InnerLoadFromPlanarBuffer(
     comp_size = comp_width * comp_height;
     T* comp_buffer = new T[comp_size];
     std::memcpy(comp_buffer, buffer + offset, comp_size * sizeof(T));
-    if (c == alpha_index) {
-      components[c] = new PixelComponent<T>(comp_buffer, comp_width,
-                                            comp_height, bit_depth, true);
-    } else {
-      components[c] = new PixelComponent<T>(comp_buffer, comp_width,
-                                            comp_height, bit_depth, false);
-    }
-
+    components[c] = new PixelComponent<T>(comp_buffer, comp_width, comp_height,
+                                          bit_depth, c == alpha_index);
     offset += comp_size;
   }
 
   delete[] comps_width;
   delete[] comps_height;
-  return new ImageCore(components, num_components, width, height, bit_depth,
-                       color_space, chroma_subsampling);
+  return new ImageCore(components, num_components, width, height, color_space,
+                       chroma_subsampling);
 }
 
 template ImageCore* ImageCore::LoadFromInterleavedBuffer<uint8_t>(

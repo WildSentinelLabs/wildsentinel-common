@@ -4,12 +4,14 @@ project("WildSentinel Common" VERSION 0.1.0 LANGUAGES C CXX)
 file(GLOB STREAM_FILES streams/*.cc)
 file(GLOB LOGGING_FILES logging/*.cc)
 file(GLOB IMAGING_FILES imaging/*.cc)
+file(GLOB PIXEL_FILES pixel/*.cc)
 
 # Add library
 add_library(wscommon SHARED
     ${STREAM_FILES}
     ${LOGGING_FILES}
     ${IMAGING_FILES}
+    ${PIXEL_FILES}
 )
 
 # Include directories for wscommon library

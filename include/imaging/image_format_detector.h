@@ -1,16 +1,8 @@
 #pragma once
-#include <cstdint>
 
-#include "imaging/image_format.h"
-#include "streams/stream.h"
+#include "file_handling/file_format_detector.h"
 
-class ImageFormatDetector {
+class ImageFormatDetector : public FileFormatDetector {
  public:
-  virtual ~ImageFormatDetector() = default;
-
-  virtual uint16_t HeaderSize() const = 0;
-
-  virtual bool Detect(Stream& stream) const = 0;
-
-  virtual bool Detect(const uint8_t* header, const size_t& length) const = 0;
+  ~ImageFormatDetector() override = default;
 };

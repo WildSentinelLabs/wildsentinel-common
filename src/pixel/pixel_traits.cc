@@ -1,4 +1,4 @@
-#include "imaging/pixel_traits.h"
+#include "pixel/pixel_traits.h"
 
 uint8_t PixelTraits::GetBitAlignment(const uint8_t& bit_depth) {
   if (bit_depth == 8) {

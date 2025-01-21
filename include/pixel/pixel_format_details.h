@@ -1,5 +1,6 @@
 #pragma once
-#include "imaging/image_defs.h"
+#include "pixel/chroma_subsampling.h"
+#include "pixel/color_space.h"
 #include "pixel_format.h"
 
 struct PixelFormatDetails {
