@@ -9,7 +9,7 @@ enum class PixelFormat {
   kBGRA,
   kABGR,
   kCMYK,
-  kCMYKAlpha,
+  kCMYKA,
   kYA,
   kUYVY,
   kYUY2,

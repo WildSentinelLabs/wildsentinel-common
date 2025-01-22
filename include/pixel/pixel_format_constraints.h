@@ -80,7 +80,7 @@ class PixelFormatConstraints {
                                                4,
                                                -1};
 
-  static constexpr PixelFormatDetails kCMYKA = {PixelFormat::kCMYKAlpha,
+  static constexpr PixelFormatDetails kCMYKA = {PixelFormat::kCMYKA,
                                                 ColorSpace::kCMYK,
                                                 ChromaSubsampling::kSAMP_444,
                                                 5,

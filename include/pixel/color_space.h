@@ -8,6 +8,7 @@ enum class ColorSpace {
   kRGB,
   kCMYK,
   kSYCC,
+  kSYCCK,
   kEYCC,
   kUNKNOW,
   kUNSUPPORTED = -1,

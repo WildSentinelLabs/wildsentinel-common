@@ -3,43 +3,43 @@
 const std::string PixelFormatToString(const PixelFormat& pixel_format) {
   switch (pixel_format) {
     case PixelFormat::kGRAY:
-      return "kGRAY";
+      return "GRAY";
     case PixelFormat::kRGB:
-      return "kRGB";
+      return "RGB";
     case PixelFormat::kRGBA:
-      return "kRGBA";
+      return "RGBA";
     case PixelFormat::kBGR:
-      return "kBGR";
+      return "BGR";
     case PixelFormat::kBGRA:
-      return "kBGRA";
+      return "BGRA";
     case PixelFormat::kABGR:
-      return "kABGR";
+      return "ABGR";
     case PixelFormat::kCMYK:
-      return "kCMYK";
-    case PixelFormat::kCMYKAlpha:
-      return "kCMYKAlpha";
+      return "CMYK";
+    case PixelFormat::kCMYKA:
+      return "CMYKA";
     case PixelFormat::kYA:
-      return "kYA";
+      return "YA";
     case PixelFormat::kUYVY:
-      return "kUYVY";
+      return "UYVY";
     case PixelFormat::kYUY2:
-      return "kYUY2";
+      return "YUY2";
     case PixelFormat::kNV12:
-      return "kNV12";
+      return "NV12";
     case PixelFormat::kNV21:
-      return "kNV21";
+      return "NV21";
     case PixelFormat::kI400:
-      return "kI400";
+      return "I400";
     case PixelFormat::kI411:
-      return "kI411";
+      return "I411";
     case PixelFormat::kI420:
-      return "kI420";
+      return "I420";
     case PixelFormat::kI422:
-      return "kI422";
+      return "I422";
     case PixelFormat::kI440:
-      return "kI440";
+      return "I440";
     case PixelFormat::kI444:
-      return "kI444";
+      return "I444";
     default:
       return "UNSUPPORTED";
   }

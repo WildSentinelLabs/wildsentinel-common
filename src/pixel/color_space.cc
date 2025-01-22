@@ -12,6 +12,8 @@ const std::string ColorSpaceToString(const ColorSpace& color_space) {
       return "SYCC";
     case ColorSpace::kEYCC:
       return "E-YCC";
+    case ColorSpace::kSYCCK:
+      return "SYCCK";
     case ColorSpace::kUNKNOW:
       return "UNKNOW";
     default:
