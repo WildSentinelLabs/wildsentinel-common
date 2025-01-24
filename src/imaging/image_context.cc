@@ -23,6 +23,22 @@ std::optional<int32_t> ImageContext::Get(const std::string& key) const {
   return std::nullopt;
 }
 
+std::map<std::string, int32_t>::iterator ImageContext::begin() {
+  return data.begin();
+}
+
+std::map<std::string, int32_t>::iterator ImageContext::end() {
+  return data.end();
+}
+
+std::map<std::string, int32_t>::const_iterator ImageContext::begin() const {
+  return data.begin();
+}
+
+std::map<std::string, int32_t>::const_iterator ImageContext::end() const {
+  return data.end();
+}
+
 std::string ImageContext::ToString() const {
   std::ostringstream ss;
   for (const auto& [tag, value] : data) {
@@ -32,9 +48,11 @@ std::string ImageContext::ToString() const {
   return ss.str();
 }
 
-void ImageContext::Dispose() {
+void ImageContext::Clean() {
   if (data.size() > 0) data.clear();
 }
+
+void ImageContext::Dispose() { Clean(); }
 
 std::ostream& operator<<(std::ostream& os, const ImageContext& context) {
   std::string str = context.ToString();
