@@ -4,9 +4,9 @@
 #include <cstdint>
 #include <sstream>
 
-class IPixelPlane {
+class IPixelComponent {
  public:
-  virtual ~IPixelPlane() = default;
+  virtual ~IPixelComponent() = default;
   virtual const void* GetBuffer() const = 0;
   virtual uint32_t GetWidth() const = 0;
   virtual uint32_t GetHeight() const = 0;
@@ -19,14 +19,14 @@ class IPixelPlane {
 };
 
 template <typename T>
-class PixelPlane : public IPixelPlane {
+class PixelComponent : public IPixelComponent {
  public:
-  PixelPlane();
+  PixelComponent();
 
-  PixelPlane(T* buffer, uint32_t width, uint32_t height, uint8_t bit_depth,
-             bool is_alpha = false);
+  PixelComponent(T* buffer, uint32_t width, uint32_t height, uint8_t bit_depth,
+                 bool is_alpha = false);
 
-  ~PixelPlane();
+  ~PixelComponent();
 
   const void* GetBuffer() const override;
 
@@ -56,10 +56,11 @@ class PixelPlane : public IPixelPlane {
   bool is_alpha_;
 };
 
-using PixelPlane8 = PixelPlane<uint8_t>;
-using PixelPlane12 = PixelPlane<int16_t>;
-using PixelPlane16 = PixelPlane<uint16_t>;
-using PixelPlane24 = PixelPlane<int32_t>;
-using PixelPlane32 = PixelPlane<uint32_t>;
+using PixelComponent8 = PixelComponent<uint8_t>;
+using PixelComponent12 = PixelComponent<int16_t>;
+using PixelComponent16 = PixelComponent<uint16_t>;
+using PixelComponent24 = PixelComponent<int32_t>;
+using PixelComponent32 = PixelComponent<uint32_t>;
 
-std::ostream& operator<<(std::ostream& os, const IPixelPlane& pixel_plane);
+std::ostream& operator<<(std::ostream& os,
+                         const IPixelComponent& pixel_component);
