@@ -3,14 +3,14 @@
 
 #include "pixel/chroma_subsampling.h"
 #include "pixel/color_space.h"
-#include "pixel/pixel_component.h"
 #include "pixel/pixel_format.h"
 #include "pixel/pixel_format_constraints.h"
+#include "pixel/pixel_plane.h"
 #include "pixel/pixel_traits.h"
 
 class ImageCore {
  public:
-  ImageCore(IPixelComponent** components, const uint8_t num_components,
+  ImageCore(IPixelPlane** components, const uint8_t num_components,
             const uint32_t width, const uint32_t height,
             const ColorSpace color_space,
             const ChromaSubsampling chroma_subsampling,
@@ -31,7 +31,7 @@ class ImageCore {
 
   uint8_t GetNumComponents() const;
 
-  const IPixelComponent* GetComponent(uint8_t comp_num) const;
+  const IPixelPlane* GetComponent(uint8_t comp_num) const;
 
   uint32_t GetWidth() const;
 
@@ -59,7 +59,7 @@ class ImageCore {
 
  private:
   uint8_t num_components_;
-  IPixelComponent** components_;
+  IPixelPlane** components_;
   uint32_t width_;
   uint32_t height_;
   ColorSpace color_space_;

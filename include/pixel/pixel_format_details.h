@@ -1,4 +1,5 @@
 #pragma once
+
 #include "pixel/chroma_subsampling.h"
 #include "pixel/color_space.h"
 #include "pixel_format.h"

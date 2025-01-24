@@ -1,6 +1,6 @@
 #include "imaging/image_core.h"
 
-ImageCore::ImageCore(IPixelComponent** components, const uint8_t num_components,
+ImageCore::ImageCore(IPixelPlane** components, const uint8_t num_components,
                      const uint32_t width, const uint32_t height,
                      const ColorSpace color_space,
                      const ChromaSubsampling chroma_subsampling,
@@ -55,7 +55,7 @@ ImageCore* ImageCore::LoadFromPlanarBuffer(T* buffer, size_t size,
 
 uint8_t ImageCore::GetNumComponents() const { return num_components_; }
 
-const IPixelComponent* ImageCore::GetComponent(uint8_t comp_num) const {
+const IPixelPlane* ImageCore::GetComponent(uint8_t comp_num) const {
   if (comp_num >= num_components_ || comp_num < 0) return nullptr;
   return components_[comp_num];
 }
@@ -108,7 +108,7 @@ T* ImageCore::AsInterleavedBuffer(const PixelFormat& pixel_format) const {
       pixel_format_details->components_order_size;
   const uint8_t* components_order_sequence =
       pixel_format_details->components_order_sequence;
-  IPixelComponent* comp = nullptr;
+  IPixelPlane* comp = nullptr;
   T* comps_buffer[num_components_] = {nullptr};
   size_t total_size = 0;
   for (uint8_t i = 0; i < components_order_size; ++i) {
@@ -158,7 +158,7 @@ T* ImageCore::AsPlanarBuffer(const PixelFormat& pixel_format) const {
       pixel_format_details->components_order_size;
   const uint8_t* components_order_sequence =
       pixel_format_details->components_order_sequence;
-  IPixelComponent* comp = nullptr;
+  IPixelPlane* comp = nullptr;
   size_t comps_size[num_components_];
   T* comps_buffer[num_components_] = {nullptr};
   size_t total_size = 0;
@@ -260,7 +260,7 @@ ImageCore* ImageCore::InnerLoadFromInterleavedBuffer(
     return nullptr;
   }
 
-  IPixelComponent** components = new IPixelComponent*[num_components];
+  IPixelPlane** components = new IPixelPlane*[num_components];
   size_t offset = 0;
   size_t comps_index[num_components];
   for (size_t i = 0; i < num_components; i++) {
@@ -278,8 +278,8 @@ ImageCore* ImageCore::InnerLoadFromInterleavedBuffer(
   for (size_t i = 0; i < num_components; i++) {
     uint8_t c = components_order_sequence[i];
     components[c] =
-        new PixelComponent<T>(comps_buffer[c], comps_width[c], comps_height[c],
-                              bit_depth, c == alpha_index);
+        new PixelPlane<T>(comps_buffer[c], comps_width[c], comps_height[c],
+                          bit_depth, c == alpha_index);
   }
 
   delete[] comps_width;
@@ -318,7 +318,7 @@ ImageCore* ImageCore::InnerLoadFromPlanarBuffer(
     return nullptr;
   }
 
-  IPixelComponent** components = new IPixelComponent*[num_components];
+  IPixelPlane** components = new IPixelPlane*[num_components];
   size_t offset = 0;
   uint32_t comp_width, comp_height;
   size_t comp_size;
@@ -329,8 +329,8 @@ ImageCore* ImageCore::InnerLoadFromPlanarBuffer(
     comp_size = comp_width * comp_height;
     T* comp_buffer = new T[comp_size];
     std::memcpy(comp_buffer, buffer + offset, comp_size * sizeof(T));
-    components[c] = new PixelComponent<T>(comp_buffer, comp_width, comp_height,
-                                          bit_depth, c == alpha_index);
+    components[c] = new PixelPlane<T>(comp_buffer, comp_width, comp_height,
+                                      bit_depth, c == alpha_index);
     offset += comp_size;
   }
 

@@ -1,7 +1,7 @@
 #pragma once
 
 template <typename T>
-struct YCCKPixel {
+struct YCCK {
   T y;
   T cb;
   T cr;
