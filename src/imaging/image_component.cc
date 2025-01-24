@@ -6,7 +6,8 @@ ImageComponent::ImageComponent(void* buffer, uint32_t width, uint32_t height,
       width_(width),
       height_(height),
       bit_depth_(bit_depth),
-      is_alpha_(is_alpha) {
+      is_alpha_(is_alpha),
+      buffer_type_(DetermineBufferType(bit_depth)) {
   if (!IsValid())
     throw std::invalid_argument("Invalid ImageComponent parameters");
 }

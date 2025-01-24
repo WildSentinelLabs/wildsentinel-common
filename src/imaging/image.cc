@@ -15,7 +15,7 @@ Image::Image(ImageComponent** components, const uint8_t num_components,
         "Invalid parameters: buffers, dimensions, and bit depth must be "
         "non-null and non-zero");
 
-  context_ == new ImageContext();
+  context_ = new ImageContext();
 }
 
 Image::~Image() { Dispose(); }
