@@ -5,7 +5,7 @@
 #include "pixel/pixel_converter.h"
 
 template <typename T>
-class RGBToSYCCConverter : public PixelConverter {
+class RGBToSYCCConverter : public PixelConverter<T> {
  public:
   explicit RGBToSYCCConverter(uint8_t bit_depth);
 

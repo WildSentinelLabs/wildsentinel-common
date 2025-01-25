@@ -20,3 +20,9 @@ void RGBToSYCCConverter<T>::Convert(const RGB<T>& rgb, YCC<T>& ycc) const {
   ycc.cb = max_value_ * cb;
   ycc.cr = max_value_ * cr;
 }
+
+template class RGBToSYCCConverter<uint8_t>;
+template class RGBToSYCCConverter<uint16_t>;
+template class RGBToSYCCConverter<int16_t>;
+template class RGBToSYCCConverter<uint32_t>;
+template class RGBToSYCCConverter<int32_t>;

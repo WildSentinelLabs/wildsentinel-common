@@ -12,3 +12,9 @@ void GrayToSYCCConverter<T>::Convert(const Gray<T>& gray, YCC<T>& ycc) const {
   ycc.cb = max_value_ / 2;
   ycc.cr = max_value_ / 2;
 }
+
+template class GrayToSYCCConverter<uint8_t>;
+template class GrayToSYCCConverter<uint16_t>;
+template class GrayToSYCCConverter<int16_t>;
+template class GrayToSYCCConverter<uint32_t>;
+template class GrayToSYCCConverter<int32_t>;

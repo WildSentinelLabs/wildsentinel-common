@@ -5,7 +5,7 @@
 #include "pixel/pixel_converter.h"
 
 template <typename T>
-class CMYKToRGBConverter : public PixelConverter {
+class CMYKToRGBConverter : public PixelConverter<T> {
  public:
   explicit CMYKToRGBConverter(uint8_t bit_depth);
 
@@ -13,7 +13,7 @@ class CMYKToRGBConverter : public PixelConverter {
 };
 
 template <typename T>
-class CMYKAToRGBAConverter : public PixelConverter {
+class CMYKAToRGBAConverter : public PixelConverter<T> {
  public:
   explicit CMYKAToRGBAConverter(uint8_t bit_depth);
 

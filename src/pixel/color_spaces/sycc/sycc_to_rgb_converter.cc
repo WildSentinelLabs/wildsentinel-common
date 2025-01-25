@@ -20,3 +20,9 @@ void SYCCToRGBConverter<T>::Convert(const YCC<T>& ycc, RGB<T>& rgb) const {
   rgb.g = static_cast<T>(g * max_value_);
   rgb.b = static_cast<T>(b * max_value_);
 }
+
+template class SYCCToRGBConverter<uint8_t>;
+template class SYCCToRGBConverter<uint16_t>;
+template class SYCCToRGBConverter<int16_t>;
+template class SYCCToRGBConverter<uint32_t>;
+template class SYCCToRGBConverter<int32_t>;

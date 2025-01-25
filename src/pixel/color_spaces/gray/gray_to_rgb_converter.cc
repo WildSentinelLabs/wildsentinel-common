@@ -13,6 +13,12 @@ void GrayToRGBConverter<T>::Convert(const Gray<T>& gray, RGB<T>& rgb) const {
   rgb.b = gray.gray;
 }
 
+template class GrayToRGBConverter<uint8_t>;
+template class GrayToRGBConverter<uint16_t>;
+template class GrayToRGBConverter<int16_t>;
+template class GrayToRGBConverter<uint32_t>;
+template class GrayToRGBConverter<int32_t>;
+
 template <typename T>
 YAToRGBAConverter<T>::YAToRGBAConverter(uint8_t bit_depth)
     : PixelConverter(bit_depth){};
@@ -24,3 +30,9 @@ void YAToRGBAConverter<T>::Convert(const YA<T>& ya, RGBA<T>& rgba) const {
   rgba.b = ya.gray;
   rgba.alpha = ya.alpha;
 }
+
+template class YAToRGBAConverter<uint8_t>;
+template class YAToRGBAConverter<uint16_t>;
+template class YAToRGBAConverter<int16_t>;
+template class YAToRGBAConverter<uint32_t>;
+template class YAToRGBAConverter<int32_t>;

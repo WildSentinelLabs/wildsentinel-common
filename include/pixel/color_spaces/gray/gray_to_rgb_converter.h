@@ -5,7 +5,7 @@
 #include "pixel/pixel_converter.h"
 
 template <typename T>
-class GrayToRGBConverter : public PixelConverter {
+class GrayToRGBConverter : public PixelConverter<T> {
  public:
   explicit GrayToRGBConverter(uint8_t bit_depth);
 
@@ -13,7 +13,7 @@ class GrayToRGBConverter : public PixelConverter {
 };
 
 template <typename T>
-class YAToRGBAConverter : public PixelConverter {
+class YAToRGBAConverter : public PixelConverter<T> {
  public:
   explicit YAToRGBAConverter(uint8_t bit_depth);
 

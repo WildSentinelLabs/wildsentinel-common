@@ -18,6 +18,12 @@ void CMYKToRGBConverter<T>::Convert(const CMYK<T>& cmyk, RGB<T>& rgb) const {
   rgb.b = max_value_ * (1.0 - y) * (1.0 - k);
 }
 
+template class CMYKToRGBConverter<uint8_t>;
+template class CMYKToRGBConverter<uint16_t>;
+template class CMYKToRGBConverter<int16_t>;
+template class CMYKToRGBConverter<uint32_t>;
+template class CMYKToRGBConverter<int32_t>;
+
 template <typename T>
 CMYKAToRGBAConverter<T>::CMYKAToRGBAConverter(uint8_t bit_depth)
     : PixelConverter(bit_depth) {}
@@ -35,3 +41,9 @@ void CMYKAToRGBAConverter<T>::Convert(const CMYKA<T>& cmyk,
   rgb.b = max_value_ * (1.0 - y) * (1.0 - k);
   rgb.alpha = cmyk.alpha;
 }
+
+template class CMYKAToRGBAConverter<uint8_t>;
+template class CMYKAToRGBAConverter<uint16_t>;
+template class CMYKAToRGBAConverter<int16_t>;
+template class CMYKAToRGBAConverter<uint32_t>;
+template class CMYKAToRGBAConverter<int32_t>;
