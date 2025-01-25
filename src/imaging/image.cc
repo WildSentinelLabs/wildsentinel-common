@@ -203,8 +203,10 @@ std::string Image::ToString() const {
 void Image::Dispose() {
   if (components_) {
     for (uint8_t c = 0; c < num_components_; ++c) {
+      if (!components_[c]) continue;
       components_[c]->Dispose();
       delete components_[c];
+      components_[c] = nullptr;
     }
 
     delete[] components_;

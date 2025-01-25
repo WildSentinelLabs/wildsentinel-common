@@ -16,9 +16,10 @@ uint8_t PixelTraits::GetChromaAlignment(const ChromaSubsampling& subsampling) {
   switch (subsampling) {
     case ChromaSubsampling::kSAMP_420:
     case ChromaSubsampling::kSAMP_422:
-      return 2;
+      return 4;
     case ChromaSubsampling::kSAMP_444:
     case ChromaSubsampling::kSAMP_400:
+      return 2;
     default:
       return 1;
   }
