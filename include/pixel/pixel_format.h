@@ -20,6 +20,7 @@ enum class PixelFormat {
   kI420,
   kI422,
   kI440,
+  kI441,
   kI444,
   kUNSUPPORTED = -1
 };

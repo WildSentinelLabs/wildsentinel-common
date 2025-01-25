@@ -145,13 +145,26 @@ bool PixelFormatConstraints::GetComponentDimensions(
       return true;
       break;
 
+    case ChromaSubsampling::kSAMP_441:
+      if (num_components != 3) break;
+      comps_width[0] = width;
+      comps_height[0] = height;
+      comps_width[1] = comps_width[2] = width;
+      comps_height[1] = comps_height[2] = height / 4;
+      return true;
+      break;
+
     default:
       delete[] comps_width;
       delete[] comps_height;
+      comps_width = nullptr;
+      comps_height = nullptr;
       throw std::invalid_argument("Unsupported chroma subsampling.");
   }
 
   delete[] comps_width;
   delete[] comps_height;
+  comps_width = nullptr;
+  comps_height = nullptr;
   return false;
 }

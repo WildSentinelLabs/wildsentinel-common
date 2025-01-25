@@ -11,6 +11,7 @@ enum class ChromaSubsampling {
                   // OTHERS
   kSAMP_440 = 4,
   kSAMP_411 = 5,
+  kSAMP_441 = 6,
   kUNSUPPORTED = -1,
 };
 

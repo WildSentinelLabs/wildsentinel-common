@@ -11,6 +11,12 @@ const std::string ChromaSubsamplingToString(
       return "SAMP_420";
     case ChromaSubsampling::kSAMP_400:
       return "SAMP_400";
+    case ChromaSubsampling::kSAMP_440:
+      return "SAMP_440";
+    case ChromaSubsampling::kSAMP_411:
+      return "SAMP_411";
+    case ChromaSubsampling::kSAMP_441:
+      return "SAMP_441";
     default:
       return "UNSUPPORTED";
   }

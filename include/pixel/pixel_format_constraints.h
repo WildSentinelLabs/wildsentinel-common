@@ -29,6 +29,7 @@ static constexpr uint8_t kI422Order[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
 static constexpr uint8_t kI444Order[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
 static constexpr uint8_t kI400Order[1] = {0};           // Y, Cb, Cr (planar)
 static constexpr uint8_t kI411Order[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
+static constexpr uint8_t kI441Order[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
 static constexpr uint8_t kI440Order[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
 
 class PixelFormatConstraints {
@@ -178,6 +179,14 @@ class PixelFormatConstraints {
                                                3,
                                                -1};
 
+  static constexpr PixelFormatDetails kI441 = {PixelFormat::kI441,
+                                               ColorSpace::kSYCC,
+                                               ChromaSubsampling::kSAMP_441,
+                                               3,
+                                               kI441Order,
+                                               3,
+                                               -1};
+
   static constexpr PixelFormatDetails kI444 = {PixelFormat::kI444,
                                                ColorSpace::kSYCC,
                                                ChromaSubsampling::kSAMP_444,
@@ -192,6 +201,7 @@ class PixelFormatConstraints {
       &kI420,  // YUV 4:2:0 (Planar)
       &kI422,  // YUV 4:2:2 (Planar)
       &kI440,  // YUV 4:4:0 (Planar)
+      &kI441,  // YUV 4:4:0 (Planar)
       &kI444,  // YUV 4:4:4 (Planar)
       &kI400,  // Grayscale (Planar)
       &kGRAY,  // Grayscale (just Y component)
