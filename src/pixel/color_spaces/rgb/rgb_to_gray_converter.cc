@@ -1,14 +1,14 @@
-#pragma once
-
 #include "pixel/color_spaces/rgb/rgb_to_gray_converter.h"
 
 template <typename T>
 RGBToGrayConverter<T>::RGBToGrayConverter(uint8_t bit_depth)
-    : PixelConverter(bit_depth), coeffs_(GetBT2020Coefficients()){};
+    : PixelConverter<T>(bit_depth) {
+  coeffs_ = this->GetBT2020Coefficients();
+}
 
 template <typename T>
 void RGBToGrayConverter<T>::Convert(const RGB<T>& rgb, Gray<T>& gray) const {
-  gray.gray = ConvertWithCoeffs(rgb, coefs_);
+  gray.gray = ConvertWithCoeffs(rgb, coeffs_);
 }
 
 template <typename T>
@@ -25,12 +25,12 @@ template class RGBToGrayConverter<int32_t>;
 
 template <typename T>
 RGBAToYAConverter<T>::RGBAToYAConverter(uint8_t bit_depth)
-    : RGBToGrayConverter(bit_depth){};
+    : RGBToGrayConverter<T>(bit_depth){};
 
 template <typename T>
 void RGBAToYAConverter<T>::Convert(const RGBA<T>& rgba, YA<T>& ya) const {
   Gray<T> gray;
-  gray.gray = ConvertWithCoeffs({rgba.r, rgba.g, rgba.b}, coeffs_);
+  gray.gray = this->ConvertWithCoeffs({rgba.r, rgba.g, rgba.b}, this->coeffs_);
   ya.gray = gray.gray;
   ya.alpha = rgba.alpha;
 }

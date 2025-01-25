@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #include "pixel/color_spaces/cmyk/cmyk.h"
 #include "pixel/color_spaces/rgb/rgb.h"
 #include "pixel/pixel_converter.h"

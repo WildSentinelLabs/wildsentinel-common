@@ -3,7 +3,7 @@ file(GLOB STREAM_FILES streams/*.cc)
 file(GLOB LOGGING_FILES logging/*.cc)
 file(GLOB IMAGING_FILES imaging/*.cc)
 file(GLOB PIXEL_FILES pixel/*.cc)
-file(GLOB COLOR_SPACES_FILES pixel/color_spaces/*.cc)
+file(GLOB COLOR_SPACES_FILES pixel/color_spaces/*/*.cc)
 
 # Add library
 add_library(wscommon SHARED

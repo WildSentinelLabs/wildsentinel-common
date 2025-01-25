@@ -9,8 +9,7 @@ class PixelConverter {
   virtual ~PixelConverter() = default;
 
  protected:
-  explicit PixelConverter(uint8_t bit_depth)
-      : min_value_(0), max_value_((1 << bit_depth) - 1) {};
+  explicit PixelConverter(uint8_t bit_depth);
 
   T min_value_;
   T max_value_;

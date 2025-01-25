@@ -1,10 +1,8 @@
-#pragma once
-
 #include "pixel/color_spaces/gray/gray_to_rgb_converter.h"
 
 template <typename T>
 GrayToRGBConverter<T>::GrayToRGBConverter(uint8_t bit_depth)
-    : PixelConverter(bit_depth){};
+    : PixelConverter<T>(bit_depth){};
 
 template <typename T>
 void GrayToRGBConverter<T>::Convert(const Gray<T>& gray, RGB<T>& rgb) const {
@@ -21,7 +19,7 @@ template class GrayToRGBConverter<int32_t>;
 
 template <typename T>
 YAToRGBAConverter<T>::YAToRGBAConverter(uint8_t bit_depth)
-    : PixelConverter(bit_depth){};
+    : PixelConverter<T>(bit_depth){};
 
 template <typename T>
 void YAToRGBAConverter<T>::Convert(const YA<T>& ya, RGBA<T>& rgba) const {
