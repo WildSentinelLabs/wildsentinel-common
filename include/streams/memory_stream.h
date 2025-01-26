@@ -3,13 +3,12 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <stdexcept>
 
 #include "streams/stream.h"
-
 class MemoryStream : public Stream {
  public:
-  MemoryStream(unsigned char* buffer, const size_t size,
-               const bool is_writable);
+  explicit MemoryStream(size_t chunk_size);
 
   ~MemoryStream() override;
 
@@ -25,21 +24,23 @@ class MemoryStream : public Stream {
 
   size_t Read(unsigned char buffer[], size_t offset, size_t count) override;
 
-  size_t Read(unsigned char buffer[], size_t count) override;
-
   bool Write(const unsigned char buffer[], size_t offset,
              size_t count) override;
-
-  bool WriteTo(Stream& stream) override;
-
-  unsigned char* ToArray() override;
 
   void Dispose() override;
 
  private:
   size_t position_;
-  unsigned char* buffer_;
-  size_t size_;
+  size_t chunk_index_;
+  size_t chunk_offset_;
+  unsigned char** memory_pool_;
+  size_t chunk_size_;
+  size_t total_chunks_;
+  size_t used_size_;
   bool is_open_;
   bool is_writable_;
+
+  void UpdateChunkPosition();
+
+  void AllocateChunk();
 };

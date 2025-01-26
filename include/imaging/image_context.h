@@ -5,8 +5,6 @@
 #include <sstream>
 #include <string>
 
-#include "imaging/image_defs.h"
-
 struct ImageContext {
  public:
   explicit ImageContext();
@@ -21,7 +19,17 @@ struct ImageContext {
 
   std::optional<int32_t> Get(const std::string& key) const;
 
+  std::map<std::string, int32_t>::iterator begin();
+
+  std::map<std::string, int32_t>::iterator end();
+
+  std::map<std::string, int32_t>::const_iterator begin() const;
+
+  std::map<std::string, int32_t>::const_iterator end() const;
+
   std::string ToString() const;
+
+  void Clean();
 
   void Dispose();
 
