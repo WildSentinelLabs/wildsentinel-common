@@ -20,6 +20,8 @@ if(POLICY CMP0179)
     cmake_policy(SET CMP0179 NEW)
 endif()
 
+option(WSCOMMON_BUILD_IMAGING "Build imaging and pixel modules" ON)
+
 # Set default build type if not specified
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type (Debug, Release)" FORCE)
