@@ -1,0 +1,25 @@
+#pragma once
+#include <memory>
+
+#include "threading/cancellation_state.h"
+#include "threading/cancellation_token_registration.h"
+
+struct CancellationToken {
+ public:
+  static CancellationToken None();
+
+  CancellationToken() = default;
+
+  explicit CancellationToken(std::shared_ptr<CancellationState> state);
+
+  bool IsCancellationRequested() const;
+
+  CancellationTokenRegistration RegisterCallback(
+      const std::function<void()>& callback);
+
+  void ThrowIfCancellationRequested() const;
+
+ private:
+  std::shared_ptr<CancellationState> state_;
+  friend class CancellationTokenSource;
+};
