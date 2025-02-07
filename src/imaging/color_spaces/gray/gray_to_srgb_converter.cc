@@ -1,4 +1,4 @@
-#include "imaging/color_spaces/gray/gray_to_rgb_converter.h"
+#include "imaging/color_spaces/gray/gray_to_srgb_converter.h"
 
 template <typename T>
 GrayToRGBConverter<T>::GrayToRGBConverter(uint8_t bit_depth)

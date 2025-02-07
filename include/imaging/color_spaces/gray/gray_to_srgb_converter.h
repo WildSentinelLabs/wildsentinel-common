@@ -2,7 +2,7 @@
 
 #include "imaging/color_spaces/color_space_converter.h"
 #include "imaging/color_spaces/gray/gray.h"
-#include "imaging/color_spaces/rgb/rgb.h"
+#include "imaging/color_spaces/srgb/rgb.h"
 
 template <typename T>
 class GrayToRGBConverter : public ColorSpaceConverter<T> {

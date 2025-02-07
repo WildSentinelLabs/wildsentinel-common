@@ -87,7 +87,7 @@ bool PixelFormatConstraints::GetComponentDimensions(
   comps_width = new uint32_t[num_components];
   comps_height = new uint32_t[num_components];
   switch (chroma_subsampling) {
-    case ChromaSubsampling::kSAMP_444:
+    case ChromaSubsampling::kSamp444:
       for (uint8_t c = 0; c < num_components; ++c) {
         comps_width[c] = width;
         comps_height[c] = height;
@@ -96,7 +96,7 @@ bool PixelFormatConstraints::GetComponentDimensions(
       return true;
       break;
 
-    case ChromaSubsampling::kSAMP_422:
+    case ChromaSubsampling::kSamp422:
       if (num_components != 3) break;
       comps_width[0] = width;
       comps_height[0] = height;
@@ -105,7 +105,7 @@ bool PixelFormatConstraints::GetComponentDimensions(
       return true;
       break;
 
-    case ChromaSubsampling::kSAMP_420:
+    case ChromaSubsampling::kSamp420:
       if (num_components != 3) break;
       comps_width[0] = width;
       comps_height[0] = height;
@@ -114,7 +114,7 @@ bool PixelFormatConstraints::GetComponentDimensions(
       return true;
       break;
 
-    case ChromaSubsampling::kSAMP_400:
+    case ChromaSubsampling::kSamp400:
       if (has_alpha && num_components != 2)
         break;
       else if (num_components != 1)
@@ -127,7 +127,7 @@ bool PixelFormatConstraints::GetComponentDimensions(
       return true;
       break;
 
-    case ChromaSubsampling::kSAMP_440:
+    case ChromaSubsampling::kSamp440:
       if (num_components != 3) break;
       comps_width[0] = width;
       comps_height[0] = height;
@@ -136,7 +136,7 @@ bool PixelFormatConstraints::GetComponentDimensions(
       return true;
       break;
 
-    case ChromaSubsampling::kSAMP_411:
+    case ChromaSubsampling::kSamp411:
       if (num_components != 3) break;
       comps_width[0] = width;
       comps_height[0] = height;
@@ -145,7 +145,7 @@ bool PixelFormatConstraints::GetComponentDimensions(
       return true;
       break;
 
-    case ChromaSubsampling::kSAMP_441:
+    case ChromaSubsampling::kSamp441:
       if (num_components != 3) break;
       comps_width[0] = width;
       comps_height[0] = height;

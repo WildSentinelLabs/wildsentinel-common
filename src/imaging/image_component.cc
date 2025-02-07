@@ -17,17 +17,17 @@ ImageComponent::~ImageComponent() { Dispose(); }
 ImageComponent::BufferType ImageComponent::DetermineBufferType(
     uint8_t bit_depth) {
   if (bit_depth >= 2 && bit_depth <= 8) {
-    return BufferType::kUINT8;
+    return BufferType::kUInt8;
   } else if (bit_depth >= 9 && bit_depth <= 12) {
-    return BufferType::kINT16;
+    return BufferType::kInt16;
   } else if (bit_depth >= 13 && bit_depth <= 16) {
-    return BufferType::kUINT16;
+    return BufferType::kUInt16;
   } else if (bit_depth >= 17 && bit_depth <= 24) {
-    return BufferType::kINT32;
+    return BufferType::kInt32;
   } else if (bit_depth >= 25 && bit_depth <= 32) {
-    return BufferType::kUINT32;
+    return BufferType::kUInt32;
   } else {
-    return BufferType::kUNKNOWN;
+    return BufferType::kUnknown;
   }
 }
 
@@ -64,19 +64,19 @@ std::string ImageComponent::ToString() const {
 void ImageComponent::Dispose() {
   if (buffer_) {
     switch (buffer_type_) {
-      case ImageComponent::BufferType::kUINT8:
+      case ImageComponent::BufferType::kUInt8:
         delete[] (uint8_t*)buffer_;
         break;
-      case ImageComponent::BufferType::kUINT16:
+      case ImageComponent::BufferType::kUInt16:
         delete[] (uint16_t*)buffer_;
         break;
-      case ImageComponent::BufferType::kINT16:
+      case ImageComponent::BufferType::kInt16:
         delete[] (int16_t*)buffer_;
         break;
-      case ImageComponent::BufferType::kUINT32:
+      case ImageComponent::BufferType::kUInt32:
         delete[] (uint32_t*)buffer_;
         break;
-      case ImageComponent::BufferType::kINT32:
+      case ImageComponent::BufferType::kInt32:
         delete[] (int32_t*)buffer_;
         break;
       default:
@@ -95,18 +95,18 @@ std::ostream& operator<<(std::ostream& os,
 
 std::string BufferTypeToString(ImageComponent::BufferType type) {
   switch (type) {
-    case ImageComponent::BufferType::kUINT8:
-      return "UINT8";
-    case ImageComponent::BufferType::kUINT16:
-      return "UINT16";
-    case ImageComponent::BufferType::kINT16:
-      return "INT16";
-    case ImageComponent::BufferType::kUINT32:
-      return "UINT32";
-    case ImageComponent::BufferType::kINT32:
-      return "INT32";
+    case ImageComponent::BufferType::kUInt8:
+      return "UInt8";
+    case ImageComponent::BufferType::kUInt16:
+      return "UInt16";
+    case ImageComponent::BufferType::kInt16:
+      return "Int16";
+    case ImageComponent::BufferType::kUInt32:
+      return "UInt32";
+    case ImageComponent::BufferType::kInt32:
+      return "Int32";
     default:
-      return "UNKNOWN";
+      return "Unknown ";
   }
 }
 

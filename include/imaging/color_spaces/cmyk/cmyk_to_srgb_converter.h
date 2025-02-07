@@ -2,7 +2,7 @@
 
 #include "imaging/color_spaces/cmyk/cmyk.h"
 #include "imaging/color_spaces/color_space_converter.h"
-#include "imaging/color_spaces/rgb/rgb.h"
+#include "imaging/color_spaces/srgb/rgb.h"
 
 template <typename T>
 class CMYKToRGBConverter : public ColorSpaceConverter<T> {

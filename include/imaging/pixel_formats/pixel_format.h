@@ -2,7 +2,7 @@
 #include <string>
 
 enum class PixelFormat {
-  kGRAY,
+  kGray,
   kRGB,
   kRGBA,
   kBGR,
@@ -22,7 +22,7 @@ enum class PixelFormat {
   kI440,
   kI441,
   kI444,
-  kUNSUPPORTED = -1
+  kUnsupported = -1
 };
 
 const std::string PixelFormatToString(const PixelFormat& pixel_format);

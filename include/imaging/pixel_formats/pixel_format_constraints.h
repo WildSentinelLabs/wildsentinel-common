@@ -36,40 +36,40 @@ class PixelFormatConstraints {
  public:
   // Pixel format details
   static constexpr PixelFormatDetails kRGB = {PixelFormat::kRGB,
-                                              ColorSpace::kRGB,
-                                              ChromaSubsampling::kSAMP_444,
+                                              ColorSpace::kSRGB,
+                                              ChromaSubsampling::kSamp444,
                                               3,
                                               kRGBOrder,
                                               3,
                                               -1};
 
   static constexpr PixelFormatDetails kRGBA = {PixelFormat::kRGBA,
-                                               ColorSpace::kRGB,
-                                               ChromaSubsampling::kSAMP_444,
+                                               ColorSpace::kSRGB,
+                                               ChromaSubsampling::kSamp444,
                                                4,
                                                kRGBAOrder,
                                                4,
                                                3};
 
   static constexpr PixelFormatDetails kBGR = {PixelFormat::kRGB,
-                                              ColorSpace::kRGB,
-                                              ChromaSubsampling::kSAMP_444,
+                                              ColorSpace::kSRGB,
+                                              ChromaSubsampling::kSamp444,
                                               3,
                                               kBGROrder,
                                               3,
                                               -1};
 
   static constexpr PixelFormatDetails kBGRA = {PixelFormat::kBGRA,
-                                               ColorSpace::kRGB,
-                                               ChromaSubsampling::kSAMP_444,
+                                               ColorSpace::kSRGB,
+                                               ChromaSubsampling::kSamp444,
                                                4,
                                                kBGRAOrder,
                                                4,
                                                3};
 
   static constexpr PixelFormatDetails kABGR = {PixelFormat::kABGR,
-                                               ColorSpace::kRGB,
-                                               ChromaSubsampling::kSAMP_444,
+                                               ColorSpace::kSRGB,
+                                               ChromaSubsampling::kSamp444,
                                                4,
                                                kABGROrder,
                                                4,
@@ -77,7 +77,7 @@ class PixelFormatConstraints {
 
   static constexpr PixelFormatDetails kCMYK = {PixelFormat::kCMYK,
                                                ColorSpace::kCMYK,
-                                               ChromaSubsampling::kSAMP_444,
+                                               ChromaSubsampling::kSamp444,
                                                4,
                                                kCMYKOrder,
                                                4,
@@ -85,15 +85,15 @@ class PixelFormatConstraints {
 
   static constexpr PixelFormatDetails kCMYKA = {PixelFormat::kCMYKA,
                                                 ColorSpace::kCMYK,
-                                                ChromaSubsampling::kSAMP_444,
+                                                ChromaSubsampling::kSamp444,
                                                 5,
                                                 kCMYKAOrder,
                                                 5,
                                                 4};
 
-  static constexpr PixelFormatDetails kGRAY = {PixelFormat::kGRAY,
-                                               ColorSpace::kGRAY,
-                                               ChromaSubsampling::kSAMP_400,
+  static constexpr PixelFormatDetails kGRAY = {PixelFormat::kGray,
+                                               ColorSpace::kGray,
+                                               ChromaSubsampling::kSamp400,
                                                1,
                                                kGRAYOrder,
                                                1,
@@ -101,7 +101,7 @@ class PixelFormatConstraints {
 
   static constexpr PixelFormatDetails kYA = {PixelFormat::kYA,
                                              ColorSpace::kSYCC,
-                                             ChromaSubsampling::kSAMP_400,
+                                             ChromaSubsampling::kSamp400,
                                              2,
                                              kYAOrder,
                                              2,
@@ -109,7 +109,7 @@ class PixelFormatConstraints {
 
   static constexpr PixelFormatDetails kUYVY = {PixelFormat::kUYVY,
                                                ColorSpace::kSYCC,
-                                               ChromaSubsampling::kSAMP_422,
+                                               ChromaSubsampling::kSamp422,
                                                3,
                                                kUYVYOrder,
                                                4,
@@ -117,7 +117,7 @@ class PixelFormatConstraints {
 
   static constexpr PixelFormatDetails kYUY2 = {PixelFormat::kYUY2,
                                                ColorSpace::kSYCC,
-                                               ChromaSubsampling::kSAMP_422,
+                                               ChromaSubsampling::kSamp422,
                                                3,
                                                kYUY2Order,
                                                4,
@@ -125,7 +125,7 @@ class PixelFormatConstraints {
 
   static constexpr PixelFormatDetails kNV12 = {PixelFormat::kNV12,
                                                ColorSpace::kSYCC,
-                                               ChromaSubsampling::kSAMP_420,
+                                               ChromaSubsampling::kSamp420,
                                                3,
                                                kNV12Order,
                                                4,
@@ -133,7 +133,7 @@ class PixelFormatConstraints {
 
   static constexpr PixelFormatDetails kNV21 = {PixelFormat::kNV21,
                                                ColorSpace::kSYCC,
-                                               ChromaSubsampling::kSAMP_420,
+                                               ChromaSubsampling::kSamp420,
                                                3,
                                                kNV21Order,
                                                4,
@@ -141,7 +141,7 @@ class PixelFormatConstraints {
 
   static constexpr PixelFormatDetails kI400 = {PixelFormat::kI400,
                                                ColorSpace::kSYCC,
-                                               ChromaSubsampling::kSAMP_400,
+                                               ChromaSubsampling::kSamp400,
                                                1,
                                                kI400Order,
                                                1,
@@ -149,7 +149,7 @@ class PixelFormatConstraints {
 
   static constexpr PixelFormatDetails kI411 = {PixelFormat::kI411,
                                                ColorSpace::kSYCC,
-                                               ChromaSubsampling::kSAMP_411,
+                                               ChromaSubsampling::kSamp411,
                                                3,
                                                kI411Order,
                                                3,
@@ -157,7 +157,7 @@ class PixelFormatConstraints {
 
   static constexpr PixelFormatDetails kI420 = {PixelFormat::kI420,
                                                ColorSpace::kSYCC,
-                                               ChromaSubsampling::kSAMP_420,
+                                               ChromaSubsampling::kSamp420,
                                                3,
                                                kI420Order,
                                                3,
@@ -165,7 +165,7 @@ class PixelFormatConstraints {
 
   static constexpr PixelFormatDetails kI422 = {PixelFormat::kI422,
                                                ColorSpace::kSYCC,
-                                               ChromaSubsampling::kSAMP_422,
+                                               ChromaSubsampling::kSamp422,
                                                3,
                                                kI422Order,
                                                3,
@@ -173,7 +173,7 @@ class PixelFormatConstraints {
 
   static constexpr PixelFormatDetails kI440 = {PixelFormat::kI440,
                                                ColorSpace::kSYCC,
-                                               ChromaSubsampling::kSAMP_440,
+                                               ChromaSubsampling::kSamp440,
                                                3,
                                                kI440Order,
                                                3,
@@ -181,7 +181,7 @@ class PixelFormatConstraints {
 
   static constexpr PixelFormatDetails kI441 = {PixelFormat::kI441,
                                                ColorSpace::kSYCC,
-                                               ChromaSubsampling::kSAMP_441,
+                                               ChromaSubsampling::kSamp441,
                                                3,
                                                kI441Order,
                                                3,
@@ -189,7 +189,7 @@ class PixelFormatConstraints {
 
   static constexpr PixelFormatDetails kI444 = {PixelFormat::kI444,
                                                ColorSpace::kSYCC,
-                                               ChromaSubsampling::kSAMP_444,
+                                               ChromaSubsampling::kSamp444,
                                                3,
                                                kI444Order,
                                                3,

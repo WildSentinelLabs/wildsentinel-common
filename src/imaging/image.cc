@@ -80,8 +80,8 @@ bool Image::HasAlpha() const {
 
 bool Image::IsValid() const {
   bool result = !(components_ == nullptr || width_ == 0 || height_ == 0 ||
-                  color_space_ == ColorSpace::kUNSUPPORTED ||
-                  chroma_subsampling_ == ChromaSubsampling::kUNSUPPORTED);
+                  color_space_ == ColorSpace::kUnsupported ||
+                  chroma_subsampling_ == ChromaSubsampling::kUnsupported);
   for (uint8_t c = 0; c < num_components_; ++c) {
     result = result && components_[c]->IsValid();
   }

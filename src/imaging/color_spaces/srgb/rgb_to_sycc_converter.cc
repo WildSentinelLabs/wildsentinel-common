@@ -1,4 +1,4 @@
-#include "imaging/color_spaces/rgb/rgb_to_sycc_converter.h"
+#include "imaging/color_spaces/srgb/srgb_to_sycc_converter.h"
 
 template <typename T>
 RGBToSYCCConverter<T>::RGBToSYCCConverter(uint8_t bit_depth)

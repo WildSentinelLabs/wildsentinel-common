@@ -62,7 +62,7 @@ std::string Logger::LogLevelToString(LogLevel level) const {
     case LogLevel::kError:
       return "ERROR";
     default:
-      return "UNKNOWN";
+      return "Unknown ";
   }
 }
 

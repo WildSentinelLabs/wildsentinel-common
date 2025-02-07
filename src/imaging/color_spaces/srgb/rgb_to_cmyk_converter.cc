@@ -1,4 +1,4 @@
-#include "imaging/color_spaces/rgb/rgb_to_cmyk_converter.h"
+#include "imaging/color_spaces/srgb/srgb_to_cmyk_converter.h"
 
 template <typename T>
 RGBToCMYKConverter<T>::RGBToCMYKConverter(uint8_t bit_depth)

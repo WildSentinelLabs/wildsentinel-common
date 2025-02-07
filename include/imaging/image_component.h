@@ -6,7 +6,7 @@
 
 class ImageComponent {
  public:
-  enum class BufferType { kUINT8, kUINT16, kINT16, kUINT32, kINT32, kUNKNOWN };
+  enum class BufferType { kUInt8, kUInt16, kInt16, kUInt32, kInt32, kUnknown };
 
   ImageComponent(void* buffer, uint32_t width, uint32_t height,
                  uint8_t bit_depth, bool is_alpha = false);

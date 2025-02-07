@@ -3,22 +3,22 @@
 const std::string ChromaSubsamplingToString(
     const ChromaSubsampling& subsampling) {
   switch (subsampling) {
-    case ChromaSubsampling::kSAMP_444:
-      return "SAMP_444";
-    case ChromaSubsampling::kSAMP_422:
-      return "SAMP_422";
-    case ChromaSubsampling::kSAMP_420:
-      return "SAMP_420";
-    case ChromaSubsampling::kSAMP_400:
-      return "SAMP_400";
-    case ChromaSubsampling::kSAMP_440:
-      return "SAMP_440";
-    case ChromaSubsampling::kSAMP_411:
-      return "SAMP_411";
-    case ChromaSubsampling::kSAMP_441:
-      return "SAMP_441";
+    case ChromaSubsampling::kSamp444:
+      return "Samp444";
+    case ChromaSubsampling::kSamp422:
+      return "Samp422";
+    case ChromaSubsampling::kSamp420:
+      return "Samp420";
+    case ChromaSubsampling::kSamp400:
+      return "Samp400";
+    case ChromaSubsampling::kSamp440:
+      return "Samp440";
+    case ChromaSubsampling::kSamp411:
+      return "Samp411";
+    case ChromaSubsampling::kSamp441:
+      return "Samp441";
     default:
-      return "UNSUPPORTED";
+      return "Unsupported";
   }
 }
 

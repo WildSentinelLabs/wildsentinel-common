@@ -2,8 +2,8 @@
 
 const std::string PixelFormatToString(const PixelFormat& pixel_format) {
   switch (pixel_format) {
-    case PixelFormat::kGRAY:
-      return "GRAY";
+    case PixelFormat::kGray:
+      return "Gray";
     case PixelFormat::kRGB:
       return "RGB";
     case PixelFormat::kRGBA:
@@ -41,7 +41,7 @@ const std::string PixelFormatToString(const PixelFormat& pixel_format) {
     case PixelFormat::kI444:
       return "I444";
     default:
-      return "UNSUPPORTED";
+      return "Unsupported";
   }
 }
 

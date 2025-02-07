@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-#include "imaging/color_spaces/rgb/rgb.h"
+#include "imaging/color_spaces/srgb/rgb.h"
 
 template <typename T>
 class ColorSpaceConverter {

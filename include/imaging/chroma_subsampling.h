@@ -4,15 +4,15 @@
 #include <string>
 
 enum class ChromaSubsampling {
-  kSAMP_444 = 0,  // None
-  kSAMP_422 = 1,  // Horizontal
-  kSAMP_420 = 2,  // Both
-  kSAMP_400 = 3,  // GRAYSCALE
-                  // OTHERS
-  kSAMP_440 = 4,
-  kSAMP_411 = 5,
-  kSAMP_441 = 6,
-  kUNSUPPORTED = -1,
+  kSamp444 = 0,  // None
+  kSamp422 = 1,  // Horizontal
+  kSamp420 = 2,  // Both
+  kSamp400 = 3,  // GRAYSCALE
+                 // OTHERS
+  kSamp440 = 4,
+  kSamp411 = 5,
+  kSamp441 = 6,
+  kUnsupported = -1,
 };
 
 const std::string ChromaSubsamplingToString(

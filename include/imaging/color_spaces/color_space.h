@@ -4,14 +4,14 @@
 #include <string>
 
 enum class ColorSpace {
-  kGRAY,
-  kRGB,
+  kGray,
+  kSRGB,
   kCMYK,
   kSYCC,
   kSYCCK,
   kEYCC,
-  kUNKNOW,
-  kUNSUPPORTED = -1,
+  kUnknow,
+  kUnsupported = -1,
 };
 
 const std::string ColorSpaceToString(const ColorSpace& color_space);

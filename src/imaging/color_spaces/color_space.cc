@@ -2,10 +2,10 @@
 
 const std::string ColorSpaceToString(const ColorSpace& color_space) {
   switch (color_space) {
-    case ColorSpace::kGRAY:
-      return "GRAY";
-    case ColorSpace::kRGB:
-      return "RGB";
+    case ColorSpace::kGray:
+      return "Gray";
+    case ColorSpace::kSRGB:
+      return "SRGB";
     case ColorSpace::kCMYK:
       return "CMYK";
     case ColorSpace::kSYCC:
@@ -14,10 +14,10 @@ const std::string ColorSpaceToString(const ColorSpace& color_space) {
       return "E-YCC";
     case ColorSpace::kSYCCK:
       return "SYCCK";
-    case ColorSpace::kUNKNOW:
-      return "UNKNOW";
+    case ColorSpace::kUnknow:
+      return "Unknow";
     default:
-      return "UNSUPPORTED";
+      return "Unsupported";
   }
 }
 

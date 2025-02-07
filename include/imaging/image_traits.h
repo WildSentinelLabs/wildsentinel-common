@@ -5,7 +5,7 @@
 #include "imaging/chroma_subsampling.h"
 #include "imaging/color_spaces/color_space.h"
 
-class ImagePixelTraits {
+class ImageTraits {
  public:
   static uint8_t GetBitAlignment(const uint8_t& bit_depth);
 

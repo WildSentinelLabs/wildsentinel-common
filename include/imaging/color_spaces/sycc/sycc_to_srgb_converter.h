@@ -1,7 +1,7 @@
 #pragma once
 
 #include "imaging/color_spaces/color_space_converter.h"
-#include "imaging/color_spaces/rgb/rgb.h"
+#include "imaging/color_spaces/srgb/rgb.h"
 #include "imaging/color_spaces/sycc/ycc.h"
 
 template <typename T>
