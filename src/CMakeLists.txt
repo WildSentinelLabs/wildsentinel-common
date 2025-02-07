@@ -1,26 +1,19 @@
 # Set necessary files
-file(GLOB WSCOMMON_STREAM_FILES streams/*.cc)
+file(GLOB WSCOMMON_IO_FILES io/*/*.cc)
 file(GLOB WSCOMMON_LOGGING_FILES logging/*.cc)
 file(GLOB WSCOMMON_THREADING_FILES threading/*.cc)
 file(GLOB WSCOMMON_IMAGING_FILES "")
-file(GLOB WSCOMMON_PIXEL_FILES "")
-file(GLOB WSCOMMON_COLOR_SPACES_FILES "")
-
 
 if (WSCOMMON_BUILD_IMAGING)
-    file(GLOB WSCOMMON_IMAGING_FILES imaging/*.cc)
-    file(GLOB WSCOMMON_PIXEL_FILES pixel/*.cc)
-    file(GLOB WSCOMMON_COLOR_SPACES_FILES pixel/color_spaces/*/*.cc)
+    file(GLOB WSCOMMON_IMAGING_FILES imaging/*.cc imaging/color_spaces/*.cc imaging/color_spaces/*/*.cc imaging/pixel_formats/*.cc)
 endif()
 
 # Add library
 add_library(wscommon SHARED
-    ${WSCOMMON_STREAM_FILES}
+    ${WSCOMMON_IO_FILES}
     ${WSCOMMON_LOGGING_FILES}
     ${WSCOMMON_THREADING_FILES}
     ${WSCOMMON_IMAGING_FILES}
-    ${WSCOMMON_PIXEL_FILES}
-    ${WSCOMMON_COLOR_SPACES_FILES}
 )
 
 # Include directories for wscommon library
@@ -49,9 +42,10 @@ install(TARGETS wscommon
 # Install public headers
 install(
     DIRECTORY
-        ${WSCOMMON_SOURCE_DIR}/include/file_handling
+        ${WSCOMMON_SOURCE_DIR}/include/collection
+        ${WSCOMMON_SOURCE_DIR}/include/io
         ${WSCOMMON_SOURCE_DIR}/include/logging
-        ${WSCOMMON_SOURCE_DIR}/include/streams
+        ${WSCOMMON_SOURCE_DIR}/include/threading
     DESTINATION include
 )
 
@@ -59,7 +53,6 @@ if (WSCOMMON_BUILD_IMAGING)
     install(
         DIRECTORY
             ${WSCOMMON_SOURCE_DIR}/include/imaging
-            ${WSCOMMON_SOURCE_DIR}/include/pixel
         DESTINATION include
     )
 endif()

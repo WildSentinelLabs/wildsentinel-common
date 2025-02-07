@@ -1,13 +1,13 @@
 #pragma once
 #include <cstring>
 
+#include "imaging/chroma_subsampling.h"
+#include "imaging/color_spaces/color_space.h"
 #include "imaging/image_component.h"
 #include "imaging/image_context.h"
-#include "pixel/chroma_subsampling.h"
-#include "pixel/color_space.h"
-#include "pixel/pixel_format.h"
-#include "pixel/pixel_format_constraints.h"
-#include "pixel/pixel_traits.h"
+#include "imaging/image_pixel_traits.h"
+#include "imaging/pixel_formats/pixel_format.h"
+#include "imaging/pixel_formats/pixel_format_constraints.h"
 
 class Image {
  public:
