@@ -2,15 +2,14 @@
 
 #include <atomic>
 #include <chrono>
-#include <condition_variable>
 #include <ctime>
 #include <iomanip>
 #include <iostream>
-#include <mutex>
-#include <queue>
 #include <sstream>
 #include <string>
 #include <thread>
+
+#include "collections/concurrent/concurrent_queue.h"
 
 enum class LogLevel {
   kVerbose,
@@ -32,12 +31,9 @@ class Logger {
  private:
   std::string context_;
 
-  static std::queue<std::string> log_queue_;
-  static std::mutex queue_mutex_;
-  static std::condition_variable cv_;
+  static ConcurrentQueue<std::string> log_queue_;
   static std::thread log_thread_;
   static std::atomic<bool> running_;
-  static std::atomic<bool> done_logging_;
 
   void Log(LogLevel level, const std::string& message);
   std::string CurrentDateTime() const;

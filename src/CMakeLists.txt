@@ -1,5 +1,4 @@
 # Set necessary files
-file(GLOB WSCOMMON_COLLECTIONS_FILES collections/*.cc)
 file(GLOB WSCOMMON_IO_FILES io/*/*.cc)
 file(GLOB WSCOMMON_LOGGING_FILES logging/*.cc)
 file(GLOB WSCOMMON_THREADING_FILES threading/*.cc)
@@ -11,7 +10,6 @@ endif()
 
 # Add library
 add_library(wscommon SHARED
-    ${WSCOMMON_COLLECTIONS_FILES}
     ${WSCOMMON_IO_FILES}
     ${WSCOMMON_IMAGING_FILES}
     ${WSCOMMON_LOGGING_FILES}

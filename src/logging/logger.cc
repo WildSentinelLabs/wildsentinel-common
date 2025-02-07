@@ -1,33 +1,19 @@
 #include "logging/logger.h"
 
-std::queue<std::string> Logger::log_queue_;
-std::mutex Logger::queue_mutex_;
-std::condition_variable Logger::cv_;
+ConcurrentQueue<std::string> Logger::log_queue_;
 std::thread Logger::log_thread_;
 std::atomic<bool> Logger::running_(false);
-std::atomic<bool> Logger::done_logging_(false);
 
 Logger::Logger(const std::string& context) : context_(context) {
   if (!running_) {
     running_ = true;
-    done_logging_ = false;
     log_thread_ = std::thread(&Logger::ProcessLogs);
   }
 }
 
 Logger::~Logger() {
   running_ = false;
-  cv_.notify_all();
-
-  {
-    std::unique_lock<std::mutex> lock(queue_mutex_);
-    cv_.wait(lock, [] { return log_queue_.empty(); });
-  }
-
-  done_logging_ = true;
-  if (log_thread_.joinable()) {
-    log_thread_.join();
-  }
+  log_thread_.join();
 }
 
 std::string Logger::CurrentDateTime() const {
@@ -62,19 +48,20 @@ std::string Logger::LogLevelToString(LogLevel level) const {
     case LogLevel::kError:
       return "ERROR";
     default:
-      return "Unknown ";
+      return "UNKNOWN";
   }
 }
 
 void Logger::Log(LogLevel level, const std::string& message) {
-  std::string formatted_message = FormatLogMessage(level, message);
+  log_queue_.Push(FormatLogMessage(level, message));
+}
 
-  {
-    std::lock_guard<std::mutex> lock(queue_mutex_);
-    log_queue_.push(formatted_message);
+void Logger::ProcessLogs() {
+  std::string log;
+  while (running_ || !log_queue_.Empty()) {
+    log_queue_.WaitAndPop(log);
+    std::cout << log << std::endl;
   }
-
-  cv_.notify_one();
 }
 
 void Logger::LogVerbose(const std::string& message) {
@@ -88,19 +75,4 @@ void Logger::LogWarning(const std::string& message) {
 }
 void Logger::LogError(const std::string& message) {
   Log(LogLevel::kError, message);
-}
-
-void Logger::ProcessLogs() {
-  while (running_ || !log_queue_.empty()) {
-    std::unique_lock<std::mutex> lock(queue_mutex_);
-    cv_.wait(lock, [] { return !log_queue_.empty() || !running_; });
-
-    while (!log_queue_.empty()) {
-      std::cout << log_queue_.front() << std::endl;
-      log_queue_.pop();
-    }
-  }
-
-  done_logging_ = true;
-  cv_.notify_all();
 }
