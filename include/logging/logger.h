@@ -1,45 +1,35 @@
 #pragma once
 
 #include <atomic>
-#include <chrono>
-#include <ctime>
-#include <iomanip>
-#include <iostream>
-#include <sstream>
-#include <string>
+#include <future>
+#include <memory>
 #include <thread>
+#include <unordered_map>
 
-#include "collections/concurrent/concurrent_queue.h"
+#include "logging/events/log_event.h"
+#include "logging/ilog_enricher.h"
+#include "logging/ilog_sink.h"
+#include "logging/ilogger.h"
+#include "logging/log_level.h"
 
-enum class LogLevel {
-  kVerbose,
-  kInfo,
-  kWarning,
-  kError,
-};
-
-class Logger {
+class Logger : public ILogger {
  public:
-  explicit Logger(const std::string& context);
-  ~Logger();
+  static void AddProperty(const std::string& key, const std::string& value);
 
-  void LogVerbose(const std::string& message);
-  void LogInformation(const std::string& message);
-  void LogWarning(const std::string& message);
-  void LogError(const std::string& message);
+  static void RemoveProperty(const std::string& key);
+
+  explicit Logger(std::string source_context,
+                  std::vector<std::shared_ptr<ILogSink>> sinks,
+                  LogLevel min_log_level = LogLevel::kInformation);
+
+  void Log(LogLevel level, const std::string& message) override;
+
+  void SetMinimumLogLevel(LogLevel level) override;
 
  private:
-  std::string context_;
-
-  static ConcurrentQueue<std::string> log_queue_;
-  static std::thread log_thread_;
-  static std::atomic<bool> running_;
-
-  void Log(LogLevel level, const std::string& message);
-  std::string CurrentDateTime() const;
-  std::string FormatLogMessage(LogLevel level,
-                               const std::string& message) const;
-  std::string LogLevelToString(LogLevel level) const;
-
-  static void ProcessLogs();
+  std::string source_context_;
+  std::vector<std::shared_ptr<ILogSink>> sinks_;
+  std::atomic<LogLevel> min_log_level_;
+  static std::unordered_map<std::string, std::string> properties_;
+  static std::mutex properties_mutex_;
 };

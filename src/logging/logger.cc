@@ -1,78 +1,39 @@
 #include "logging/logger.h"
 
-ConcurrentQueue<std::string> Logger::log_queue_;
-std::thread Logger::log_thread_;
-std::atomic<bool> Logger::running_(false);
+std::unordered_map<std::string, std::string> Logger::properties_;
+std::mutex Logger::properties_mutex_;
 
-Logger::Logger(const std::string& context) : context_(context) {
-  if (!running_) {
-    running_ = true;
-    log_thread_ = std::thread(&Logger::ProcessLogs);
-  }
+void Logger::AddProperty(const std::string& key, const std::string& value) {
+  std::lock_guard<std::mutex> lock(properties_mutex_);
+  properties_[key] = value;
 }
 
-Logger::~Logger() {
-  running_ = false;
-  log_thread_.join();
+void Logger::RemoveProperty(const std::string& key) {
+  std::lock_guard<std::mutex> lock(properties_mutex_);
+  properties_.erase(key);
 }
 
-std::string Logger::CurrentDateTime() const {
-  auto now = std::chrono::system_clock::now();
-  auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
-                now.time_since_epoch()) %
-            1000;
-  std::time_t now_time_t = std::chrono::system_clock::to_time_t(now);
-  std::tm tm = *std::localtime(&now_time_t);
-  std::ostringstream oss;
-  oss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S") << '.' << std::setw(3)
-      << std::setfill('0') << ms.count();
-  return oss.str();
-}
-
-std::string Logger::FormatLogMessage(LogLevel level,
-                                     const std::string& message) const {
-  std::ostringstream oss;
-  oss << "[" << CurrentDateTime() << "] [" << context_ << "] ["
-      << LogLevelToString(level) << "] " << message;
-  return oss.str();
-}
-
-std::string Logger::LogLevelToString(LogLevel level) const {
-  switch (level) {
-    case LogLevel::kVerbose:
-      return "VERBOSE";
-    case LogLevel::kInfo:
-      return "INFO";
-    case LogLevel::kWarning:
-      return "WARNING";
-    case LogLevel::kError:
-      return "ERROR";
-    default:
-      return "UNKNOWN";
-  }
-}
+Logger::Logger(std::string source_context,
+               std::vector<std::shared_ptr<ILogSink>> sinks,
+               LogLevel min_log_level)
+    : ILogger(),
+      source_context_(source_context),
+      sinks_(sinks),
+      min_log_level_(min_log_level) {}
 
 void Logger::Log(LogLevel level, const std::string& message) {
-  log_queue_.Push(FormatLogMessage(level, message));
-}
+  if (level < min_log_level_) return;
+  std::unordered_map<std::string, std::string> properties = properties_;
+  LogEvent event(source_context_, message, level, properties);
+  std::vector<std::future<void>> results;
+  for (auto& sink : sinks_) {
+    results.push_back(std::async(std::launch::async,
+                                 [sink, event]() { sink->Display(event); }));
+  }
 
-void Logger::ProcessLogs() {
-  std::string log;
-  while (running_ || !log_queue_.Empty()) {
-    log_queue_.WaitAndPop(log);
-    std::cout << log << std::endl;
+  for (auto& result : results) {
+    result.get();
   }
 }
 
-void Logger::LogVerbose(const std::string& message) {
-  Log(LogLevel::kVerbose, message);
-}
-void Logger::LogInformation(const std::string& message) {
-  Log(LogLevel::kInfo, message);
-}
-void Logger::LogWarning(const std::string& message) {
-  Log(LogLevel::kWarning, message);
-}
-void Logger::LogError(const std::string& message) {
-  Log(LogLevel::kError, message);
-}
+void Logger::SetMinimumLogLevel(LogLevel level) { min_log_level_ = level; }

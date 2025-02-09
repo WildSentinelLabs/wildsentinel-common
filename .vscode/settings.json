@@ -106,7 +106,8 @@
     "typeindex": "cpp",
     "unordered_set": "cpp",
     "cfenv": "cpp",
-    "stdfloat": "cpp"
+    "stdfloat": "cpp",
+    "xstring": "cpp"
   },
   "C_Cpp.errorSquiggles": "enabled",
   "C_Cpp.clang_format_style": "Google",
