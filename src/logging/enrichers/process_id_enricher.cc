@@ -3,5 +3,7 @@
 void ProcessIdEnricher::Enrich(LogEvent& event) const {
   std::ostringstream oss;
   oss << getpid();
-  event.AddProperty(key_, oss.str());
+  event.AddProperty(kKey, oss.str());
 }
+
+const std::string ProcessIdEnricher::kKey = "ProcessId";

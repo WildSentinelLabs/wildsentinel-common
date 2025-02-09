@@ -29,10 +29,10 @@ class MessageRenderer {
                  const std::string& format = "");
   };
 
-  static std::string source_context_key;
-  static std::string timestamp_key;
-  static std::string level_key;
-  static std::string message_key;
+  static const std::string kSourceContextKey;
+  static const std::string kTimeStampKey;
+  static const std::string kLevelKey;
+  static const std::string kMessageKey;
   std::vector<TemplatePart> template_parts_;
 
   static std::string RenderPlaceholder(const TemplatePart& part,

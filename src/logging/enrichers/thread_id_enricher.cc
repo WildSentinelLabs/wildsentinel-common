@@ -3,5 +3,7 @@
 void ThreadIdEnricher::Enrich(LogEvent& event) const {
   std::ostringstream oss;
   oss << std::this_thread::get_id();
-  event.AddProperty(key_, oss.str());
+  event.AddProperty(kKey, oss.str());
 }
+
+const std::string ThreadIdEnricher::kKey = "ThreadId";

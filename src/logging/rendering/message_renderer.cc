@@ -21,10 +21,10 @@ MessageRenderer::TemplatePart::TemplatePart(Type type, const std::string& key,
                                             const std::string& format)
     : type(type), key(key), format(format) {};
 
-std::string MessageRenderer::source_context_key = "SourceContext";
-std::string MessageRenderer::timestamp_key = "Timestamp";
-std::string MessageRenderer::level_key = "Level";
-std::string MessageRenderer::message_key = "Message";
+std::string MessageRenderer::kSourceContextKey = "SourceContext";
+std::string MessageRenderer::kTimeStampKey = "Timestamp";
+std::string MessageRenderer::kLevelKey = "Level";
+std::string MessageRenderer::kMessageKey = "Message";
 
 void MessageRenderer::ParseTemplate(const std::string& format) {
   size_t last_pos = 0, pos;
@@ -55,13 +55,13 @@ void MessageRenderer::ParseTemplate(const std::string& format) {
 
 std::string MessageRenderer::RenderPlaceholder(const TemplatePart& part,
                                                const LogEvent& event) {
-  if (part.key == source_context_key) {
+  if (part.key == kSourceContextKey) {
     return event.GetSourceContext();
-  } else if (part.key == message_key) {
+  } else if (part.key == kMessageKey) {
     return event.GetMessage();
-  } else if (part.key == level_key) {
+  } else if (part.key == kLevelKey) {
     return FormatLogLevel(event.GetLevel(), part.format);
-  } else if (part.key == timestamp_key) {
+  } else if (part.key == kTimeStampKey) {
     return FormatTimestamp(event.GetTimestamp(), part.format);
   } else {
     if (auto prop = event.GetProperty(part.key)) return *prop;

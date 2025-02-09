@@ -11,5 +11,5 @@ class ThreadIdEnricher : public ILogEnricher {
   void Enrich(LogEvent& event) const override;
 
  private:
-  std::string key_ = "ThreadId";
+  static const std::string kKey;
 };

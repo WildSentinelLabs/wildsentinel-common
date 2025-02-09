@@ -16,5 +16,5 @@ class ProcessIdEnricher : public ILogEnricher {
   void Enrich(LogEvent& event) const override;
 
  private:
-  std::string key_ = "ProcessId";
+  static const std::string kKey;
 };
