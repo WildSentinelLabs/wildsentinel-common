@@ -21,10 +21,10 @@ MessageRenderer::TemplatePart::TemplatePart(Type type, const std::string& key,
                                             const std::string& format)
     : type(type), key(key), format(format) {};
 
-std::string MessageRenderer::kSourceContextKey = "SourceContext";
-std::string MessageRenderer::kTimeStampKey = "Timestamp";
-std::string MessageRenderer::kLevelKey = "Level";
-std::string MessageRenderer::kMessageKey = "Message";
+const std::string MessageRenderer::kSourceContextKey = "SourceContext";
+const std::string MessageRenderer::kTimeStampKey = "Timestamp";
+const std::string MessageRenderer::kLevelKey = "Level";
+const std::string MessageRenderer::kMessageKey = "Message";
 
 void MessageRenderer::ParseTemplate(const std::string& format) {
   size_t last_pos = 0, pos;
