@@ -2,11 +2,11 @@
 #include <cstring>
 
 #include "imaging/chroma_subsampling.h"
-#include "imaging/color_spaces/color_space.h"
+#include "imaging/color_space.h"
 #include "imaging/image_component.h"
 #include "imaging/image_context.h"
 #include "imaging/image_traits.h"
-#include "imaging/pixel_formats/pixel_format.h"
+#include "imaging/pixel_format.h"
 #include "imaging/pixel_formats/pixel_format_constraints.h"
 
 class Image {
@@ -80,3 +80,6 @@ class Image {
 };
 
 std::ostream& operator<<(std::ostream& os, const Image& image);
+
+// TODO: Enhace image::Load and image::AsArray
+// TODO: Enable async operations

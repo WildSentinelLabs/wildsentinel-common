@@ -1,7 +1,8 @@
 #pragma once
 
+#include <string>
+
 #include "logging/log_level.h"
-#include "string"
 
 class ILogger {
  public:

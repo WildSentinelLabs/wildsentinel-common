@@ -1,8 +1,8 @@
 #pragma once
 
 #include "imaging/chroma_subsampling.h"
-#include "imaging/color_spaces/color_space.h"
-#include "imaging/pixel_formats/pixel_format.h"
+#include "imaging/color_space.h"
+#include "imaging/pixel_format.h"
 #include "imaging/pixel_formats/pixel_format_details.h"
 
 // Component orders for each PixelFormat
@@ -255,3 +255,5 @@ class PixelFormatConstraints {
                                      bool has_alpha, uint32_t*& comps_width,
                                      uint32_t*& comps_height);
 };
+
+// TODO: Enhace pixel_format management and structures if needed

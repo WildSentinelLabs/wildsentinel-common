@@ -21,6 +21,7 @@ if(POLICY CMP0179)
 endif()
 
 option(WSCOMMON_BUILD_IMAGING "Build imaging and pixel modules" ON)
+option(WSCOMMON_BUILD_LOGGING "Build logging module" ON)
 
 # Set default build type if not specified
 if(NOT CMAKE_BUILD_TYPE)

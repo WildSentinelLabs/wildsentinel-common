@@ -1,8 +1,9 @@
 #pragma once
 
+#include <string>
+
 #include "logging/events/log_event.h"
 #include "logging/log_level.h"
-#include "string"
 
 class ILogDispatcher {
  public:

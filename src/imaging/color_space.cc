@@ -1,4 +1,4 @@
-#include "imaging/color_spaces/color_space.h"
+#include "imaging/color_space.h"
 
 const std::string ColorSpaceToString(const ColorSpace& color_space) {
   switch (color_space) {

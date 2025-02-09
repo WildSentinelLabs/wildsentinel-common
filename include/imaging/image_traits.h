@@ -3,7 +3,7 @@
 #include <type_traits>
 
 #include "imaging/chroma_subsampling.h"
-#include "imaging/color_spaces/color_space.h"
+#include "imaging/color_space.h"
 
 class ImageTraits {
  public:

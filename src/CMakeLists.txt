@@ -1,11 +1,15 @@
 # Set necessary files
 file(GLOB WSCOMMON_IO_FILES io/*/*.cc)
-file(GLOB WSCOMMON_LOGGING_FILES logging/*.cc logging/*/*.cc)
-file(GLOB WSCOMMON_THREADING_FILES threading/*.cc)
 file(GLOB WSCOMMON_IMAGING_FILES "")
+file(GLOB WSCOMMON_LOGGING_FILES "")
+file(GLOB WSCOMMON_THREADING_FILES threading/*.cc)
 
 if (WSCOMMON_BUILD_IMAGING)
     file(GLOB WSCOMMON_IMAGING_FILES imaging/*.cc imaging/color_spaces/*.cc imaging/color_spaces/*/*.cc imaging/pixel_formats/*.cc)
+endif()
+
+if (WSCOMMON_BUILD_LOGGING)
+    file(GLOB WSCOMMON_LOGGING_FILES logging/*.cc logging/*/*.cc)
 endif()
 
 # Add library
@@ -44,7 +48,6 @@ install(
     DIRECTORY
         ${WSCOMMON_SOURCE_DIR}/include/collections
         ${WSCOMMON_SOURCE_DIR}/include/io
-        ${WSCOMMON_SOURCE_DIR}/include/logging
         ${WSCOMMON_SOURCE_DIR}/include/threading
     DESTINATION include
 )
@@ -53,6 +56,14 @@ if (WSCOMMON_BUILD_IMAGING)
     install(
         DIRECTORY
             ${WSCOMMON_SOURCE_DIR}/include/imaging
+        DESTINATION include
+    )
+endif()
+
+if (WSCOMMON_BUILD_LOGGING)
+    install(
+        DIRECTORY
+            ${WSCOMMON_SOURCE_DIR}/include/logging
         DESTINATION include
     )
 endif()

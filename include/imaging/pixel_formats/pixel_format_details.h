@@ -1,8 +1,8 @@
 #pragma once
 
 #include "imaging/chroma_subsampling.h"
-#include "imaging/color_spaces/color_space.h"
-#include "pixel_format.h"
+#include "imaging/color_space.h"
+#include "imaging/pixel_format.h"
 
 struct PixelFormatDetails {
   const PixelFormat pixel_format;

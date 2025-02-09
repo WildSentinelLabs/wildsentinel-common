@@ -46,3 +46,5 @@ class MessageRenderer {
 
   void ParseTemplate(const std::string& format);
 };
+
+// TODO: Enhance template rendering and formating
