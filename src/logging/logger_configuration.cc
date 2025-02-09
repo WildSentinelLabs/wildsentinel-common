@@ -6,8 +6,8 @@ LoggerConfiguration& LoggerConfiguration::SetMinimumLogLevel(LogLevel level) {
 }
 
 LoggerConfiguration& LoggerConfiguration::AddSink(
-    std::shared_ptr<ILogSink> sink, const bool async) {
-  if (async)
+    std::shared_ptr<ILogSink> sink, bool enable_async) {
+  if (enable_async)
     sink->EnableAsync();
   else
     sink->Enable();
@@ -16,10 +16,11 @@ LoggerConfiguration& LoggerConfiguration::AddSink(
 }
 
 LoggerConfiguration& LoggerConfiguration::AddConsoleSink(
-    LogLevel min_log_level, const std::string& template_format) {
+    LogLevel min_log_level, const std::string& template_format,
+    bool enable_async) {
   auto console_sink = std::make_shared<ConsoleLogSink>(
       min_log_level, enrichers_, template_format);
-  AddSink(console_sink);
+  AddSink(console_sink, enable_async);
   return *this;
 }
 
