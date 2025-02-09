@@ -23,7 +23,8 @@ class LoggerConfiguration {
 
   LoggerConfiguration& AddEnricher(std::shared_ptr<ILogEnricher> enricher);
 
-  std::shared_ptr<ILogger> CreateLogger(const std::string& source_context);
+  std::shared_ptr<ILogger> CreateLogger(
+      const std::string& source_context) const;
 
  private:
   LogLevel min_log_level_ = LogLevel::kInformation;
