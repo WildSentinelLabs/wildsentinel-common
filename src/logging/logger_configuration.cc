@@ -30,7 +30,7 @@ LoggerConfiguration& LoggerConfiguration::AddEnricher(
   return *this;
 }
 
-std::shared_ptr<ILogger> LoggerConfiguration::CreateLogger(
+std::shared_ptr<ILogger> LoggerConfiguration::CreateLogger const(
     const std::string& source_context) {
   return std::make_shared<Logger>(source_context, sinks_, min_log_level_);
 }
