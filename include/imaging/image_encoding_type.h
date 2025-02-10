@@ -8,7 +8,8 @@ enum class ImageEncodingType : int8_t {
   kUnsupported = -1,
 };
 
-const std::string EncodingTypeToString(const ImageEncodingType& encoding_type);
+const std::string ImageEncodingTypeToString(
+    const ImageEncodingType& encoding_type);
 
 std::ostream& operator<<(std::ostream& os,
                          const ImageEncodingType& encoding_type);
