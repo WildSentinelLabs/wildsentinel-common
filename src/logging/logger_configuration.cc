@@ -30,8 +30,8 @@ LoggerConfiguration& LoggerConfiguration::AddEnricher(
   return *this;
 }
 
-std::shared_ptr<ILogger> LoggerConfiguration::CreateLogger(
+std::unique_ptr<ILogger> LoggerConfiguration::CreateLogger(
     const std::string& source_context) const {
-  return std::make_shared<Logger>(source_context, sinks_, enrichers_,
+  return std::make_unique<Logger>(source_context, sinks_, enrichers_,
                                   min_log_level_);
 }

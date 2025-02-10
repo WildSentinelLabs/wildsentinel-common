@@ -3,7 +3,7 @@
 const std::string ColorSpaceToString(const ColorSpace& color_space) {
   switch (color_space) {
     case ColorSpace::kGray:
-      return "Gray";
+      return "GRAY";
     case ColorSpace::kSRGB:
       return "SRGB";
     case ColorSpace::kCMYK:

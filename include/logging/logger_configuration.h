@@ -23,7 +23,15 @@ class LoggerConfiguration {
 
   LoggerConfiguration& AddEnricher(std::shared_ptr<ILogEnricher> enricher);
 
-  std::shared_ptr<ILogger> CreateLogger(
+  template <typename T>
+  LoggerConfiguration& AddEnricher() {
+    static_assert(std::is_base_of<ILogEnricher, T>::value,
+                  "T must derive from ILogEnricher");
+    enrichers_.push_back(std::make_shared<T>());
+    return *this;
+  }
+
+  std::unique_ptr<ILogger> CreateLogger(
       const std::string& source_context) const;
 
  private:

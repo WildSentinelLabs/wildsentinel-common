@@ -3,7 +3,7 @@
 const std::string PixelFormatToString(const PixelFormat& pixel_format) {
   switch (pixel_format) {
     case PixelFormat::kGray:
-      return "Gray";
+      return "GRAY";
     case PixelFormat::kRGB:
       return "RGB";
     case PixelFormat::kRGBA:
