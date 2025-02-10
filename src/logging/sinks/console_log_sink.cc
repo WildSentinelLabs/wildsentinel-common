@@ -4,12 +4,9 @@
 #include <windows.h>
 #endif
 
-ConsoleLogSink::ConsoleLogSink(
-    LogLevel min_log_level,
-    std::vector<std::shared_ptr<ILogEnricher>> enrichers,
-    const std::string& template_format)
-    : enrichers_(enrichers),
-      min_log_level_(min_log_level),
+ConsoleLogSink::ConsoleLogSink(LogLevel min_log_level,
+                               const std::string& template_format)
+    : min_log_level_(min_log_level),
       renderer_(template_format),
       dispatcher_(nullptr) {
 #ifdef _WIN32
@@ -31,7 +28,6 @@ void ConsoleLogSink::EnableAsync() {
 
 void ConsoleLogSink::Display(LogEvent event) {
   if (event.GetLevel() < min_log_level_) return;
-  for (auto& enricher : enrichers_) enricher->Enrich(event);
   std::string formatted_message = renderer_.Render(event);
   if (dispatcher_) dispatcher_->Dispatch(formatted_message);
 }

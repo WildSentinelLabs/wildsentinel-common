@@ -20,6 +20,8 @@ class Logger : public ILogger {
 
   explicit Logger(std::string source_context,
                   std::vector<std::shared_ptr<ILogSink>> sinks,
+                  std::vector<std::shared_ptr<ILogEnricher>> enrichers =
+                      std::vector<std::shared_ptr<ILogEnricher>>(),
                   LogLevel min_log_level = LogLevel::kInformation);
 
   void Log(LogLevel level, const std::string& message) override;
@@ -29,6 +31,7 @@ class Logger : public ILogger {
  private:
   std::string source_context_;
   std::vector<std::shared_ptr<ILogSink>> sinks_;
+  std::vector<std::shared_ptr<ILogEnricher>> enrichers_;
   std::atomic<LogLevel> min_log_level_;
   static std::unordered_map<std::string, std::string> properties_;
   static std::mutex properties_mutex_;

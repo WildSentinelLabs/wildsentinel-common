@@ -16,8 +16,6 @@ class ConsoleLogSink : public ILogSink,
                        public std::enable_shared_from_this<ConsoleLogSink> {
  public:
   explicit ConsoleLogSink(LogLevel min_log_level = LogLevel::kInformation,
-                          std::vector<std::shared_ptr<ILogEnricher>> enrichers =
-                              std::vector<std::shared_ptr<ILogEnricher>>(),
                           const std::string& template_format =
                               "{Timestamp:%Y-%m-%d %X} [{Level:u3}] "
                               "{Message:lj}{NewLine}{Exception}");
@@ -36,6 +34,5 @@ class ConsoleLogSink : public ILogSink,
   static std::mutex console_mutex_;
   LogLevel min_log_level_;
   std::unique_ptr<ILogDispatcher> dispatcher_;
-  std::vector<std::shared_ptr<ILogEnricher>> enrichers_;
   MessageRenderer renderer_;
 };

@@ -18,8 +18,8 @@ LoggerConfiguration& LoggerConfiguration::AddSink(
 LoggerConfiguration& LoggerConfiguration::AddConsoleSink(
     LogLevel min_log_level, const std::string& template_format,
     bool enable_async) {
-  auto console_sink = std::make_shared<ConsoleLogSink>(
-      min_log_level, enrichers_, template_format);
+  auto console_sink =
+      std::make_shared<ConsoleLogSink>(min_log_level, template_format);
   AddSink(console_sink, enable_async);
   return *this;
 }
@@ -32,5 +32,6 @@ LoggerConfiguration& LoggerConfiguration::AddEnricher(
 
 std::shared_ptr<ILogger> LoggerConfiguration::CreateLogger(
     const std::string& source_context) const {
-  return std::make_shared<Logger>(source_context, sinks_, min_log_level_);
+  return std::make_shared<Logger>(source_context, sinks_, enrichers_,
+                                  min_log_level_);
 }

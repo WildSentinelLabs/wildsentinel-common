@@ -28,6 +28,7 @@ CancellationTokenRegistration CancellationToken::RegisterCallback(
       callback();
       return CancellationTokenRegistration();
     }
+
     long id = state_->next_id++;
     state_->callbacks[id] = callback;
     return CancellationTokenRegistration(state_, id);
@@ -35,7 +36,5 @@ CancellationTokenRegistration CancellationToken::RegisterCallback(
 }
 
 void CancellationToken::ThrowIfCancellationRequested() const {
-  if (IsCancellationRequested()) {
-    throw std::runtime_error("Operation canceled");
-  }
+  if (IsCancellationRequested()) throw std::runtime_error("Operation canceled");
 }
