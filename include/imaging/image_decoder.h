@@ -12,7 +12,7 @@ class ImageDecoder {
 
   virtual ~ImageDecoder() = default;
 
-  virtual const ImageFormat& TargetFormat() const = 0;
+  virtual const ImageFormat& Format() const = 0;
 
   virtual Image* Decode(Stream& stream, const size_t& length) const = 0;
 

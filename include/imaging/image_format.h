@@ -6,5 +6,5 @@
 
 class ImageFormat : public FileFormat {
  public:
-  virtual ~ImageFormat() = default;
+  virtual ~ImageFormat() override = default;
 };

@@ -1,11 +1,14 @@
 #pragma once
 #include <cstdint>
 
+#include "io/file_handling/file_format.h"
 #include "io/streams/stream.h"
 
 class FileFormatDetector {
  public:
   virtual ~FileFormatDetector() = default;
+
+  virtual const FileFormat& Format() const = 0;
 
   virtual uint16_t HeaderSize() const = 0;
 

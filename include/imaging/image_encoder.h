@@ -1,6 +1,7 @@
 #pragma once
 #include "imaging/image.h"
 #include "imaging/image_encoding_type.h"
+#include "imaging/image_format.h"
 #include "io/streams/stream.h"
 #include "logging/enrichers/thread_id_enricher.h"
 #include "logging/ilogger.h"
@@ -11,6 +12,8 @@ class ImageEncoder {
   static LoggerConfiguration logger_configuration_;
 
   virtual ~ImageEncoder() = default;
+
+  virtual const ImageFormat& Format() const = 0;
 
   virtual bool Encode(Stream& stream, const Image& image) const = 0;
 
