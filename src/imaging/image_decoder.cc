@@ -11,6 +11,6 @@ LoggerConfiguration ImageDecoder::logger_configuration_ =
         .AddEnricher(std::make_shared<ThreadIdEnricher>())
         .AddConsoleSink(
             LogLevel::kVerbose,
-            "{Timestamp:%Y-%m-%d %X} [{Level:u3}] - [ThreadId: {ThreadId}] "
+            "{Timestamp:%Y-%m-%d %X.%f} [{Level:u3}] - [ThreadId: {ThreadId}] "
             "[{SourceContext}] {Message:lj}{NewLine}",
             false);

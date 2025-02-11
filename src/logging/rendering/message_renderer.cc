@@ -83,8 +83,29 @@ std::string MessageRenderer::FormatTimestamp(
     std::chrono::system_clock::time_point timestamp,
     const std::string& format) {
   auto in_time_t = std::chrono::system_clock::to_time_t(timestamp);
+  auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                timestamp.time_since_epoch()) %
+            1000;
+
   std::ostringstream time_ss;
-  time_ss << std::put_time(std::localtime(&in_time_t),
-                           format.empty() ? "%Y-%m-%d %X" : format.c_str());
+  std::tm localTime;
+#ifdef _WIN32
+  localtime_s(&localTime, &in_time_t);
+#else
+  localtime_r(&in_time_t, &localTime);
+#endif
+
+  std::string adjusted_format = format;
+  bool include_ms = (format.find("%f") != std::string::npos);
+  if (include_ms) {
+    adjusted_format = format;
+    adjusted_format.erase(adjusted_format.find("%f"), 2);
+  }
+
+  time_ss << std::put_time(&localTime, adjusted_format.c_str());
+  if (include_ms) {
+    time_ss << std::setfill('0') << std::setw(3) << ms.count();
+  }
+
   return time_ss.str();
 }
