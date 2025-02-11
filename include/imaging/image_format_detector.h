@@ -7,5 +7,5 @@ class ImageFormatDetector : public FileFormatDetector {
  public:
   ~ImageFormatDetector() override = default;
 
-  const ImageFormat& Format() const override;
+  virtual const ImageFormat& Format() const override = 0;
 };
