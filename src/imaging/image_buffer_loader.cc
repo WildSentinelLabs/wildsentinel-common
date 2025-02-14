@@ -3,7 +3,7 @@
 namespace ws {
 namespace imaging {
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
-Image* LoadFromInterleavedBuffer(
+Image* ImageBufferLoader<T>::LoadFromInterleavedBuffer(
     T* buffer, size_t size, uint32_t width, uint32_t height, uint8_t bit_depth,
     const ws::imaging::pixel::PixelFormatDetails* pixel_format_details) {
   uint32_t* comps_width = nullptr;
@@ -76,7 +76,7 @@ Image* LoadFromInterleavedBuffer(
 }
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
-Image* LoadFromInterleavedBuffer(
+Image* ImageBufferLoader<T>::LoadFromInterleavedBuffer(
     T* buffer, size_t size, uint32_t width, uint32_t height, uint8_t bit_depth,
     const ws::imaging::pixel::PixelFormat pixel_format) {
   if (!buffer || size == 0 || width == 0 || height == 0) return nullptr;
@@ -84,12 +84,12 @@ Image* LoadFromInterleavedBuffer(
       ws::imaging::pixel::PixelFormatConstraints::GetInterleavedFormat(
           pixel_format);
   if (!pixel_format_details) return nullptr;
-  return LoadFromInterleavedBuffer(buffer, size, width, height, bit_depth,
-                                   pixel_format_details);
+  return ImageBufferLoader<T>::LoadFromInterleavedBuffer(
+      buffer, size, width, height, bit_depth, pixel_format_details);
 }
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
-Image* LoadFromPlanarBuffer(
+Image* ImageBufferLoader<T>::LoadFromPlanarBuffer(
     T* buffer, size_t size, uint32_t width, uint32_t height, uint8_t bit_depth,
     const ws::imaging::pixel::PixelFormatDetails* pixel_format_details) {
   uint32_t* comps_width = nullptr;
@@ -141,7 +141,7 @@ Image* LoadFromPlanarBuffer(
 }
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
-Image* LoadFromPlanarBuffer(
+Image* ImageBufferLoader<T>::LoadFromPlanarBuffer(
     T* buffer, size_t size, uint32_t width, uint32_t height, uint8_t bit_depth,
     const ws::imaging::pixel::PixelFormat pixel_format) {
   if (!buffer || size == 0 || width == 0 || height == 0) return nullptr;
@@ -152,93 +152,12 @@ Image* LoadFromPlanarBuffer(
                               pixel_format_details);
 }
 
-template Image* LoadFromInterleavedBuffer<uint8_t>(
-    uint8_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth,
-    const ws::imaging::pixel::PixelFormatDetails* pixel_format_details);
-template Image* LoadFromInterleavedBuffer<int8_t>(
-    int8_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth,
-    const ws::imaging::pixel::PixelFormatDetails* pixel_format_details);
-template Image* LoadFromInterleavedBuffer<uint16_t>(
-    uint16_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth,
-    const ws::imaging::pixel::PixelFormatDetails* pixel_format_details);
-template Image* LoadFromInterleavedBuffer<int16_t>(
-    int16_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth,
-    const ws::imaging::pixel::PixelFormatDetails* pixel_format_details);
-template Image* LoadFromInterleavedBuffer<uint32_t>(
-    uint32_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth,
-    const ws::imaging::pixel::PixelFormatDetails* pixel_format_details);
-template Image* LoadFromInterleavedBuffer<int32_t>(
-    int32_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth,
-    const ws::imaging::pixel::PixelFormatDetails* pixel_format_details);
-
-template Image* LoadFromInterleavedBuffer<uint8_t>(
-    uint8_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth, const ws::imaging::pixel::PixelFormat pixel_format);
-template Image* LoadFromInterleavedBuffer<int8_t>(
-    int8_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth, const ws::imaging::pixel::PixelFormat pixel_format);
-template Image* LoadFromInterleavedBuffer<uint16_t>(
-    uint16_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth, const ws::imaging::pixel::PixelFormat pixel_format);
-template Image* LoadFromInterleavedBuffer<int16_t>(
-    int16_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth, const ws::imaging::pixel::PixelFormat pixel_format);
-template Image* LoadFromInterleavedBuffer<uint32_t>(
-    uint32_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth, const ws::imaging::pixel::PixelFormat pixel_format);
-template Image* LoadFromInterleavedBuffer<int32_t>(
-    int32_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth, const ws::imaging::pixel::PixelFormat pixel_format);
-
-template Image* LoadFromPlanarBuffer<uint8_t>(
-    uint8_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth,
-    const ws::imaging::pixel::PixelFormatDetails* pixel_format_details);
-template Image* LoadFromPlanarBuffer<int8_t>(
-    int8_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth,
-    const ws::imaging::pixel::PixelFormatDetails* pixel_format_details);
-template Image* LoadFromPlanarBuffer<uint16_t>(
-    uint16_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth,
-    const ws::imaging::pixel::PixelFormatDetails* pixel_format_details);
-template Image* LoadFromPlanarBuffer<int16_t>(
-    int16_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth,
-    const ws::imaging::pixel::PixelFormatDetails* pixel_format_details);
-template Image* LoadFromPlanarBuffer<uint32_t>(
-    uint32_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth,
-    const ws::imaging::pixel::PixelFormatDetails* pixel_format_details);
-template Image* LoadFromPlanarBuffer<int32_t>(
-    int32_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth,
-    const ws::imaging::pixel::PixelFormatDetails* pixel_format_details);
-
-template Image* LoadFromPlanarBuffer<uint8_t>(
-    uint8_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth, const ws::imaging::pixel::PixelFormat pixel_format);
-template Image* LoadFromPlanarBuffer<int8_t>(
-    int8_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth, const ws::imaging::pixel::PixelFormat pixel_format);
-template Image* LoadFromPlanarBuffer<uint16_t>(
-    uint16_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth, const ws::imaging::pixel::PixelFormat pixel_format);
-template Image* LoadFromPlanarBuffer<int16_t>(
-    int16_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth, const ws::imaging::pixel::PixelFormat pixel_format);
-template Image* LoadFromPlanarBuffer<uint32_t>(
-    uint32_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth, const ws::imaging::pixel::PixelFormat pixel_format);
-template Image* LoadFromPlanarBuffer<int32_t>(
-    int32_t* buffer, size_t size, uint32_t width, uint32_t height,
-    uint8_t bit_depth, const ws::imaging::pixel::PixelFormat pixel_format);
+template class ImageBufferLoader<uint8_t>;
+template class ImageBufferLoader<int8_t>;
+template class ImageBufferLoader<uint16_t>;
+template class ImageBufferLoader<int16_t>;
+template class ImageBufferLoader<uint32_t>;
+template class ImageBufferLoader<int32_t>;
 
 }  // namespace imaging
 }  // namespace ws

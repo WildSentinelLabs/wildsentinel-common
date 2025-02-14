@@ -8,11 +8,13 @@ namespace ws {
 namespace imaging {
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
-inline T* ExportToInterleavedBuffer(
-    const Image& image, const ws::imaging::pixel::PixelFormat& pixel_format);
+class ImageBufferExporter {
+ public:
+  static T* ExportToInterleavedBuffer(
+      const Image& image, const ws::imaging::pixel::PixelFormat& pixel_format);
 
-template <ws::imaging::pixel::IsAllowedPixelNumericType T>
-inline T* ExportToPlanarBuffer(
-    const Image& image, const ws::imaging::pixel::PixelFormat& pixel_format);
+  static T* ExportToPlanarBuffer(
+      const Image& image, const ws::imaging::pixel::PixelFormat& pixel_format);
+};
 }  // namespace imaging
 }  // namespace ws

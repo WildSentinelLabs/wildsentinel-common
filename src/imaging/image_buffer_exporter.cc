@@ -3,7 +3,7 @@ namespace ws {
 namespace imaging {
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
-T* ExportToInterleavedBuffer(
+T* ImageBufferExporter<T>::ExportToInterleavedBuffer(
     const Image& image, const ws::imaging::pixel::PixelFormat& pixel_format) {
   if (!image.IsValid()) return nullptr;
   const ws::imaging::pixel::PixelFormatDetails* pixel_format_details =
@@ -56,8 +56,8 @@ T* ExportToInterleavedBuffer(
 }
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
-T* ExportToPlanarBuffer(const Image& image,
-                        const ws::imaging::pixel::PixelFormat& pixel_format) {
+T* ImageBufferExporter<T>::ExportToPlanarBuffer(
+    const Image& image, const ws::imaging::pixel::PixelFormat& pixel_format) {
   if (!image.IsValid()) return nullptr;
   const ws::imaging::pixel::PixelFormatDetails* pixel_format_details =
       ws::imaging::pixel::PixelFormatConstraints::GetPlanarFormat(pixel_format);
@@ -102,30 +102,11 @@ T* ExportToPlanarBuffer(const Image& image,
   return buffer;
 }
 
-template uint8_t* ExportToInterleavedBuffer<uint8_t>(
-    const Image& image, const ws::imaging::pixel::PixelFormat& pixel_format);
-template int8_t* ExportToInterleavedBuffer<int8_t>(
-    const Image& image, const ws::imaging::pixel::PixelFormat& pixel_format);
-template uint16_t* ExportToInterleavedBuffer<uint16_t>(
-    const Image& image, const ws::imaging::pixel::PixelFormat& pixel_format);
-template int16_t* ExportToInterleavedBuffer<int16_t>(
-    const Image& image, const ws::imaging::pixel::PixelFormat& pixel_format);
-template uint32_t* ExportToInterleavedBuffer<uint32_t>(
-    const Image& image, const ws::imaging::pixel::PixelFormat& pixel_format);
-template int32_t* ExportToInterleavedBuffer<int32_t>(
-    const Image& image, const ws::imaging::pixel::PixelFormat& pixel_format);
-
-template uint8_t* ExportToPlanarBuffer<uint8_t>(
-    const Image& image, const ws::imaging::pixel::PixelFormat& pixel_format);
-template int8_t* ExportToPlanarBuffer<int8_t>(
-    const Image& image, const ws::imaging::pixel::PixelFormat& pixel_format);
-template uint16_t* ExportToPlanarBuffer<uint16_t>(
-    const Image& image, const ws::imaging::pixel::PixelFormat& pixel_format);
-template int16_t* ExportToPlanarBuffer<int16_t>(
-    const Image& image, const ws::imaging::pixel::PixelFormat& pixel_format);
-template uint32_t* ExportToPlanarBuffer<uint32_t>(
-    const Image& image, const ws::imaging::pixel::PixelFormat& pixel_format);
-template int32_t* ExportToPlanarBuffer<int32_t>(
-    const Image& image, const ws::imaging::pixel::PixelFormat& pixel_format);
+template class ImageBufferExporter<uint8_t>;
+template class ImageBufferExporter<int8_t>;
+template class ImageBufferExporter<uint16_t>;
+template class ImageBufferExporter<int16_t>;
+template class ImageBufferExporter<uint32_t>;
+template class ImageBufferExporter<int32_t>;
 }  // namespace imaging
 }  // namespace ws
