@@ -1,8 +1,5 @@
 #include "logging/sinks/console_log_sink.h"
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
 namespace ws {
 namespace logging {
 namespace sinks {
@@ -12,9 +9,7 @@ ConsoleLogSink::ConsoleLogSink(LogLevel min_log_level,
     : min_log_level_(min_log_level),
       renderer_(template_format),
       dispatcher_(nullptr) {
-#ifdef _WIN32
-  SetConsoleOutputCP(CP_UTF8);
-#endif
+  ws::arch::FormatConsoleOutput();
 }
 
 ConsoleLogSink::~ConsoleLogSink() {

@@ -4,6 +4,7 @@
 #include <memory>
 #include <mutex>
 
+#include "arch/cpu_arch.h"
 #include "logging/dispatchers/async_log_dispatcher.h"
 #include "logging/dispatchers/sync_log_dispatcher.h"
 #include "logging/ilog_dispatcher.h"

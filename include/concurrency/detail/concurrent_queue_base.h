@@ -81,7 +81,7 @@ class MicroQueue {
                         page_allocator_type page_allocator, PaddedPage*& p) {
     assert(p == nullptr && "Invalid page argument for prepare_page");
     k &= -queue_rep_type::kNQueue;
-    size_type index = ws::concurrency::detail::ModulusPowerOfTwo(
+    size_type index = ws::arch::detail::ModulusPowerOfTwo(
         k / queue_rep_type::kNQueue, kItemsPerPage);
     if (!index) {
       ws::concurrency::detail::try_call([&] {
@@ -149,7 +149,7 @@ class MicroQueue {
     ws::concurrency::SpinWaitWhileEq(tail_counter_, k);
     PaddedPage* p = head_page_.load(std::memory_order_relaxed);
     assert(p);
-    size_type index = ws::concurrency::detail::ModulusPowerOfTwo(
+    size_type index = ws::arch::detail::ModulusPowerOfTwo(
         k / queue_rep_type::kNQueue, kItemsPerPage);
     bool success = false;
     {
@@ -181,7 +181,7 @@ class MicroQueue {
       size_type n_items = (tail_counter_.load(std::memory_order_relaxed) -
                            head_counter_.load(std::memory_order_relaxed)) /
                           queue_rep_type::kNQueue;
-      size_type index = ws::concurrency::detail::ModulusPowerOfTwo(
+      size_type index = ws::arch::detail::ModulusPowerOfTwo(
           head_counter_.load(std::memory_order_relaxed) /
               queue_rep_type::kNQueue,
           kItemsPerPage);
@@ -209,7 +209,7 @@ class MicroQueue {
           }
 
           assert(kSrcp == src.tail_page_.load(std::memory_order_relaxed));
-          size_type last_index = ws::concurrency::detail::ModulusPowerOfTwo(
+          size_type last_index = ws::arch::detail::ModulusPowerOfTwo(
               tail_counter_.load(std::memory_order_relaxed) /
                   queue_rep_type::kNQueue,
               kItemsPerPage);
@@ -491,14 +491,13 @@ struct ConcurrentQueueRep {
 
   MicroQueue_type& Choose(ticket_type k) { return array_[Index(k)]; }
 
-  alignas(ws::concurrency::detail::CacheLineSize())
-      MicroQueue_type array_[kNQueue];
+  alignas(ws::arch::detail::CacheLineSize()) MicroQueue_type array_[kNQueue];
 
-  alignas(ws::concurrency::detail::CacheLineSize())
+  alignas(ws::arch::detail::CacheLineSize())
       std::atomic<ticket_type> head_counter_{};
-  alignas(ws::concurrency::detail::CacheLineSize())
+  alignas(ws::arch::detail::CacheLineSize())
       std::atomic<ticket_type> tail_counter_{};
-  alignas(ws::concurrency::detail::CacheLineSize())
+  alignas(ws::arch::detail::CacheLineSize())
       std::atomic<size_type> n_invalid_entries_{};
 };
 

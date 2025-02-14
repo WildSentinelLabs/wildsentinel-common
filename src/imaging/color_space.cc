@@ -16,9 +16,9 @@ const std::string ColorSpaceToString(const ColorSpace& color_space) {
     case ColorSpace::kSYcck:
       return "SYCCK";
     case ColorSpace::kUnknow:
-      return "Unknow";
+      return "UNKNOW";
     default:
-      return "Unsupported";
+      return "UNSUPPORTED";
   }
 }
 

@@ -4,7 +4,7 @@ namespace logging {
 namespace enrichers {
 void ProcessIdEnricher::Enrich(ws::logging::events::LogEvent& event) const {
   std::ostringstream oss;
-  oss << getpid();
+  oss << ws::arch::GetPid();
   event.AddProperty(kKey, oss.str());
 }
 

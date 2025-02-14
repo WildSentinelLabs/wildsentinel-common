@@ -1,25 +1,25 @@
 #pragma once
 
-#include "concurrency/detail/cpu_arch.h"
+#include "arch/cpu_arch.h"
 
 namespace ws {
 namespace concurrency {
 
 inline void* CacheAlignedAllocate(std::size_t size) {
-  const std::size_t kCacheLineSize = ws::concurrency::detail::CacheLineSize();
-  assert(ws::concurrency::detail::IsPowerOfTwo(kCacheLineSize) &&
+  const std::size_t kCacheLineSize = ws::arch::detail::CacheLineSize();
+  assert(ws::arch::detail::IsPowerOfTwo(kCacheLineSize) &&
          "must be power of two");
   if (size + kCacheLineSize < size) throw std::bad_alloc();
   if (size == 0) size = 1;
-  void* result = ws::concurrency::detail::AlignedAllocate(size, kCacheLineSize);
+  void* result = ws::arch::detail::AlignedAllocate(size, kCacheLineSize);
   if (!result) throw std::bad_alloc();
-  assert(ws::concurrency::detail::IsAligned(result, kCacheLineSize) &&
+  assert(ws::arch::detail::IsAligned(result, kCacheLineSize) &&
          "The returned address isn't aligned");
   return result;
 }
 
 inline void CacheAlignedDeallocate(void* p) {
-  ws::concurrency::detail::AlignedDeallocate(p);
+  ws::arch::detail::AlignedDeallocate(p);
 }
 
 template <typename T>
@@ -41,7 +41,7 @@ class AlignedAllocator {
   void deallocate(T* p, std::size_t /*n*/) { CacheAlignedDeallocate(p); }
 
   std::size_t max_size() const noexcept {
-    return (~std::size_t(0) - ws::concurrency::detail::CacheLineSize()) /
+    return (~std::size_t(0) - ws::arch::detail::CacheLineSize()) /
            sizeof(value_type);
   }
 };

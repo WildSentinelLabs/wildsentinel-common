@@ -1,13 +1,8 @@
 #pragma once
 
 #include <sstream>
-#ifdef _WIN32
-#include <windows.h>
-#define getpid() GetCurrentProcessId()
-#else
-#include <unistd.h>
-#endif
 
+#include "arch/cpu_arch.h"
 #include "logging/events/log_event.h"
 #include "logging/ilog_enricher.h"
 namespace ws {

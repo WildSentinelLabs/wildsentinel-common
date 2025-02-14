@@ -1,6 +1,6 @@
 #pragma once
 
-#include "concurrency/detail/cpu_arch.h"
+#include "arch/cpu_arch.h"
 
 namespace ws {
 namespace concurrency {
@@ -18,7 +18,7 @@ class AtomicBackoff {
 
   void Wait() {
     if (count_ <= kLoopsBeforeYield) {
-      ws::concurrency::detail::CpuWait(count_);
+      ws::arch::detail::CpuWait(count_);
       count_ *= 2;
     } else {
       std::this_thread::yield();
@@ -26,7 +26,7 @@ class AtomicBackoff {
   }
 
   bool BoundedWait() {
-    ws::concurrency::detail::CpuWait(count_);
+    ws::arch::detail::CpuWait(count_);
     if (count_ < kLoopsBeforeYield) {
       count_ *= 2;
       return true;

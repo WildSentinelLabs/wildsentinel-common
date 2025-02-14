@@ -1,6 +1,9 @@
 #pragma once
 
 #if defined(_WIN32)
+#define KEEP_WIN_ORDER
+#include <winsock2.h>
+#undef KEEP_WIN_ORDER
 #include <windows.h>
 #else
 #include <unistd.h>
@@ -18,9 +21,8 @@
 #include <thread>
 
 namespace ws {
-namespace concurrency {
+namespace arch {
 namespace detail {
-
 inline constexpr size_t kMaxNfsSize = 128;
 
 inline constexpr std::size_t kMaxNfsSizeExp = 7;
@@ -99,6 +101,22 @@ inline void AlignedDeallocate(void* p) {
   free(p);
 #endif
 }
+
 }  // namespace detail
-}  // namespace concurrency
+
+inline void FormatConsoleOutput() {
+#ifdef _WIN32
+  SetConsoleOutputCP(CP_UTF8);
+#endif
+}
+
+inline int GetPid() {
+#ifdef _WIN32
+  return GetCurrentProcessId();
+#else
+  return getpid();
+#endif
+}
+
+}  // namespace arch
 }  // namespace ws

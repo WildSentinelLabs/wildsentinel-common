@@ -56,21 +56,18 @@ class ConcurrentQueue {
         ws::concurrency::CacheAlignedAllocate(
             sizeof(queue_representation_type)));
     queue_allocator_traits::construct(allocator_, queue_rep_ptr);
-    assert(ws::concurrency::detail::IsAligned(
-               queue_rep_ptr, ws::concurrency::detail::CacheLineSize()) &&
+    assert(ws::arch::detail::IsAligned(queue_rep_ptr,
+                                       ws::arch::detail::CacheLineSize()) &&
            "alignment error");
-    assert(ws::concurrency::detail::IsAligned(
-               &queue_rep_ptr->head_counter_,
-               ws::concurrency::detail::CacheLineSize()) &&
+    assert(ws::arch::detail::IsAligned(&queue_rep_ptr->head_counter_,
+                                       ws::arch::detail::CacheLineSize()) &&
            "alignment error");
-    assert(ws::concurrency::detail::IsAligned(
-               &queue_rep_ptr->tail_counter_,
-               ws::concurrency::detail::CacheLineSize()) &&
+    assert(ws::arch::detail::IsAligned(&queue_rep_ptr->tail_counter_,
+                                       ws::arch::detail::CacheLineSize()) &&
            "alignment error");
-    assert(
-        ws::concurrency::detail::IsAligned(
-            &queue_rep_ptr->array_, ws::concurrency::detail::CacheLineSize()) &&
-        "alignment error");
+    assert(ws::arch::detail::IsAligned(&queue_rep_ptr->array_,
+                                       ws::arch::detail::CacheLineSize()) &&
+           "alignment error");
   }
 
   template <typename InputIterator>
