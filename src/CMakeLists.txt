@@ -5,7 +5,7 @@ file(GLOB WSCOMMON_LOGGING_FILES "")
 file(GLOB WSCOMMON_THREADING_FILES threading/*.cc)
 
 if (WSCOMMON_BUILD_IMAGING)
-    file(GLOB WSCOMMON_IMAGING_FILES imaging/*.cc imaging/pixel/color_formats/*.cc imaging/pixel/color_formats/*/*.cc imaging/pixel/*.cc)
+    file(GLOB WSCOMMON_IMAGING_FILES imaging/*.cc imaging/pixel/*.cc imaging/pixel/color_formats/*.cc imaging/pixel/color_formats/*/*.cc )
 endif()
 
 if (WSCOMMON_BUILD_LOGGING)

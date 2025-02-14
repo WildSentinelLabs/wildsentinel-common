@@ -6,7 +6,7 @@
 namespace ws {
 namespace imaging {
 
-class ImageFormat : public io::FileFormat {
+class ImageFormat : public ws::io::FileFormat {
  public:
   virtual ~ImageFormat() override = default;
 };
