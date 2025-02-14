@@ -46,6 +46,7 @@ install(TARGETS wscommon
 # Install public headers
 install(
     DIRECTORY
+        ${WSCOMMON_SOURCE_DIR}/include/arch
         ${WSCOMMON_SOURCE_DIR}/include/concurrency
         ${WSCOMMON_SOURCE_DIR}/include/io
         ${WSCOMMON_SOURCE_DIR}/include/threading
