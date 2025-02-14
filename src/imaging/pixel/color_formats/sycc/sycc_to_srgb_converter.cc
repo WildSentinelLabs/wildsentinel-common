@@ -23,6 +23,13 @@ void SYccToRgbConverter<T>::Convert(const Ycc<T>& ycc, Rgb<T>& rgb) const {
   rgb.b = static_cast<T>(b * this->max_value_);
 }
 
+template class SYccToRgbConverter<uint8_t>;
+template class SYccToRgbConverter<int8_t>;
+template class SYccToRgbConverter<uint16_t>;
+template class SYccToRgbConverter<int16_t>;
+template class SYccToRgbConverter<uint32_t>;
+template class SYccToRgbConverter<int32_t>;
+
 }  // namespace pixel
 }  // namespace imaging
 }  // namespace ws

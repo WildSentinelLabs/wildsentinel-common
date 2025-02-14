@@ -21,6 +21,13 @@ void GrayToSRgbConverter<T>::ConvertWithAlpha(const Ya<T>& ya,
   rgba.b = ya.gray;
   rgba.alpha = ya.alpha;
 }
+
+template class GrayToSRgbConverter<uint8_t>;
+template class GrayToSRgbConverter<int8_t>;
+template class GrayToSRgbConverter<uint16_t>;
+template class GrayToSRgbConverter<int16_t>;
+template class GrayToSRgbConverter<uint32_t>;
+template class GrayToSRgbConverter<int32_t>;
 }  // namespace pixel
 }  // namespace imaging
 }  // namespace ws

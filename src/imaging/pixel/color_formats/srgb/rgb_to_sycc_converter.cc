@@ -23,6 +23,12 @@ void SRgbToSYccConverter<T>::Convert(const Rgb<T>& rgb, Ycc<T>& ycc) const {
   ycc.cr = this->max_value_ * cr;
 }
 
+template class SRgbToSYccConverter<uint8_t>;
+template class SRgbToSYccConverter<int8_t>;
+template class SRgbToSYccConverter<uint16_t>;
+template class SRgbToSYccConverter<int16_t>;
+template class SRgbToSYccConverter<uint32_t>;
+template class SRgbToSYccConverter<int32_t>;
 }  // namespace pixel
 }  // namespace imaging
 }  // namespace ws

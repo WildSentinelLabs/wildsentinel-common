@@ -15,7 +15,7 @@ namespace ws {
 namespace imaging {
 namespace pixel {
 
-template <IsAllowedPixelComponentType T>
+template <IsAllowedPixelNumericType T>
 class PixelColorConverter {
  public:
   virtual ~PixelColorConverter() = default;

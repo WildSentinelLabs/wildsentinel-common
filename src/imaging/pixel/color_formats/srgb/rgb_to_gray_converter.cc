@@ -21,8 +21,14 @@ void SRgbToGrayConverter<T>::ConvertWithAlpha(const Rgba<T>& rgba,
   ya.gray = gray.gray;
   ya.alpha = rgba.alpha;
 }
-
 // TODO: ADD ENUM FOR MethodSUPPORT
+
+template class SRgbToGrayConverter<uint8_t>;
+template class SRgbToGrayConverter<int8_t>;
+template class SRgbToGrayConverter<uint16_t>;
+template class SRgbToGrayConverter<int16_t>;
+template class SRgbToGrayConverter<uint32_t>;
+template class SRgbToGrayConverter<int32_t>;
 }  // namespace pixel
 }  // namespace imaging
 }  // namespace ws

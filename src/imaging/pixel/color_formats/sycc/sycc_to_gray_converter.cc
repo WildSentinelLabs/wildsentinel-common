@@ -12,6 +12,13 @@ void SYccToGrayConverter<T>::Convert(const Ycc<T>& ycc, Gray<T>& gray) const {
   gray.gray = ycc.y;
 }
 
+template class SYccToGrayConverter<uint8_t>;
+template class SYccToGrayConverter<int8_t>;
+template class SYccToGrayConverter<uint16_t>;
+template class SYccToGrayConverter<int16_t>;
+template class SYccToGrayConverter<uint32_t>;
+template class SYccToGrayConverter<int32_t>;
+
 }  // namespace pixel
 }  // namespace imaging
 }  // namespace ws

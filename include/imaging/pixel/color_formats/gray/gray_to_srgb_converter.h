@@ -13,7 +13,7 @@ class GrayToSRgbConverter : public PixelColorConverter<T> {
 
   void Convert(const Gray<T>& src, Rgb<T>& dst) const;
 
-  void ConvertWithAlpha(const Ya<T>& src, Rgba<T>& dst) const override;
+  void ConvertWithAlpha(const Ya<T>& src, Rgba<T>& dst) const;
 };
 }  // namespace pixel
 }  // namespace imaging

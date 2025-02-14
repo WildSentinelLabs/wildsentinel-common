@@ -37,6 +37,13 @@ void SRgbToCmykConverter<T>::ConvertWithAlpha(const Rgba<T>& rgba,
   cmyka.k = cmyk.k;
   cmyka.alpha = rgba.alpha;
 }
+
+template class SRgbToCmykConverter<uint8_t>;
+template class SRgbToCmykConverter<int8_t>;
+template class SRgbToCmykConverter<uint16_t>;
+template class SRgbToCmykConverter<int16_t>;
+template class SRgbToCmykConverter<uint32_t>;
+template class SRgbToCmykConverter<int32_t>;
 }  // namespace pixel
 }  // namespace imaging
 }  // namespace ws

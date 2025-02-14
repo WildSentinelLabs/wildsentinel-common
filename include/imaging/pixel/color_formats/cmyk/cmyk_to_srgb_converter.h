@@ -14,7 +14,7 @@ class CmykToSRgbConverter : public PixelColorConverter<T> {
 
   void Convert(const Cmyk<T>& cmyk, Rgb<T>& rgb) const;
 
-  void ConvertWithAlpha(const Cmyka<T>& cmyka, Rgba<T>& rgba) const override;
+  void ConvertWithAlpha(const Cmyka<T>& cmyka, Rgba<T>& rgba) const;
 };
 }  // namespace pixel
 }  // namespace imaging
