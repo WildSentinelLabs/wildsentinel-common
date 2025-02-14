@@ -1,42 +1,51 @@
 #include "logging/dispatchers/async_log_dispatcher.h"
-
+namespace ws {
+namespace logging {
+namespace dispatchers {
 AsyncLogDispatcher::AsyncLogDispatcher(std::weak_ptr<ILogSink> sink)
     : sink_(sink),
       running_(true),
       log_thread_(&AsyncLogDispatcher::ProcessQueue, this) {}
 
 AsyncLogDispatcher::~AsyncLogDispatcher() {
-  Await();
-  running_ = false;
-  cv_.notify_all();
-  log_thread_.join();
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+    running_ = false;
+  }
+  cv_.notify_one();
+  if (log_thread_.joinable()) {
+    log_thread_.join();
+  }
 }
 
 void AsyncLogDispatcher::Dispatch(const std::string& message) {
-  {
-    std::lock_guard<std::mutex> lock(mutex_);
-  }
-
   log_queue_.Push(message);
+  cv_.notify_one();
 }
 
 void AsyncLogDispatcher::ProcessQueue() {
-  while (running_ || !log_queue_.Empty()) {
-    std::string message;
-    log_queue_.WaitAndPop(message);
-    auto sink = sink_.lock();
-    if (sink) sink->Display(message);
-
+  while (true) {
     {
-      std::lock_guard<std::mutex> lock(mutex_);
-    }
-    cv_.notify_all();
-  }
+      std::unique_lock<std::mutex> lock(mutex_);
+      cv_.wait(lock, [this] { return !running_ || !log_queue_.Empty(); });
 
-  cv_.notify_all();
+      if (!running_ && log_queue_.Empty()) {
+        return;
+      }
+    }
+
+    std::string message;
+    while (log_queue_.TryPop(message)) {
+      auto sink = sink_.lock();
+      if (sink) sink->Display(message);
+    }
+  }
 }
 
 void AsyncLogDispatcher::Await() {
   std::unique_lock<std::mutex> lock(mutex_);
-  cv_.wait(lock, [this] { return !running_ && log_queue_.Empty(); });
+  cv_.wait(lock, [this] { return log_queue_.Empty(); });
 }
+}  // namespace dispatchers
+}  // namespace logging
+}  // namespace ws

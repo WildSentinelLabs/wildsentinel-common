@@ -8,6 +8,9 @@
 
 #include "logging/ilog_enricher.h"
 #include "logging/log_level.h"
+namespace ws {
+namespace logging {
+namespace rendering {
 
 class MessageRenderer {
  public:
@@ -15,11 +18,11 @@ class MessageRenderer {
                       "{Timestamp:%Y-%m-%d %X} [{Level:u3}] "
                       "{Message:lj}{NewLine}{Exception}");
 
-  std::string Render(const LogEvent& event) const;
+  std::string Render(const ws::logging::events::LogEvent& event) const;
 
  private:
   struct TemplatePart {
-    enum class Type { Text, Placeholder };
+    enum class Type : int8_t { Text, Placeholder };
 
     Type type;
     std::string key;
@@ -35,8 +38,8 @@ class MessageRenderer {
   static const std::string kMessageKey;
   std::vector<TemplatePart> template_parts_;
 
-  static std::string RenderPlaceholder(const TemplatePart& part,
-                                       const LogEvent& event);
+  static std::string RenderPlaceholder(
+      const TemplatePart& part, const ws::logging::events::LogEvent& event);
 
   static std::string FormatLogLevel(LogLevel level, const std::string& format);
 
@@ -48,3 +51,6 @@ class MessageRenderer {
 };
 
 // TODO: Enhance template rendering and formating
+}  // namespace rendering
+}  // namespace logging
+}  // namespace ws

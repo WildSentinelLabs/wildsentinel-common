@@ -1,5 +1,6 @@
 #include "imaging/image_component.h"
-
+namespace ws {
+namespace imaging {
 ImageComponent::ImageComponent(void* buffer, uint32_t width, uint32_t height,
                                uint8_t bit_depth, bool is_alpha)
     : buffer_(buffer),
@@ -110,25 +111,27 @@ std::string BufferTypeToString(ImageComponent::BufferType type) {
   }
 }
 
-template class TypedImageComponent<uint8_t>;
-template class TypedImageComponent<int16_t>;
-template class TypedImageComponent<uint16_t>;
-template class TypedImageComponent<int32_t>;
-template class TypedImageComponent<uint32_t>;
-
-template <typename T>
+template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 TypedImageComponent<T>::TypedImageComponent(T* buffer, uint32_t width,
                                             uint32_t height, uint8_t bit_depth,
                                             bool is_alpha)
     : ImageComponent(static_cast<void*>(buffer), width, height, bit_depth,
                      is_alpha) {}
 
-template <typename T>
+template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 TypedImageComponent<T>::~TypedImageComponent() {
   Dispose();
 }
 
-template <typename T>
+template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 const T* TypedImageComponent<T>::GetTypedBuffer() const {
   return static_cast<const T*>(buffer_);
 }
+
+template class TypedImageComponent<uint8_t>;
+template class TypedImageComponent<int16_t>;
+template class TypedImageComponent<uint16_t>;
+template class TypedImageComponent<int32_t>;
+template class TypedImageComponent<uint32_t>;
+}  // namespace imaging
+}  // namespace ws

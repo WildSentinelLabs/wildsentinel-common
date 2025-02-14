@@ -3,6 +3,8 @@
 #include <string>
 
 #include "logging/log_level.h"
+namespace ws {
+namespace logging {
 
 class ILogger {
  public:
@@ -28,3 +30,5 @@ class ILogger {
 
   virtual ~ILogger() = default;
 };
+}  // namespace logging
+}  // namespace ws

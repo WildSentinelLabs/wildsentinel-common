@@ -1,18 +1,19 @@
 #include "imaging/color_space.h"
-
+namespace ws {
+namespace imaging {
 const std::string ColorSpaceToString(const ColorSpace& color_space) {
   switch (color_space) {
     case ColorSpace::kGray:
       return "GRAY";
-    case ColorSpace::kSRGB:
+    case ColorSpace::kSRgb:
       return "SRGB";
-    case ColorSpace::kCMYK:
+    case ColorSpace::kCmyk:
       return "CMYK";
-    case ColorSpace::kSYCC:
+    case ColorSpace::kSYcc:
       return "SYCC";
-    case ColorSpace::kEYCC:
+    case ColorSpace::kEYcc:
       return "E-YCC";
-    case ColorSpace::kSYCCK:
+    case ColorSpace::kSYcck:
       return "SYCCK";
     case ColorSpace::kUnknow:
       return "Unknow";
@@ -25,3 +26,5 @@ std::ostream& operator<<(std::ostream& os, const ColorSpace& color_space) {
   os << ColorSpaceToString(color_space);
   return os;
 }
+}  // namespace imaging
+}  // namespace ws

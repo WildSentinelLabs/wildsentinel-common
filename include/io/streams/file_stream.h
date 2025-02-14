@@ -4,7 +4,10 @@
 #include <fstream>
 #include <iostream>
 
-#include "io/streams/stream.h"
+#include "io/stream.h"
+namespace ws {
+namespace io {
+namespace streams {
 
 class FileStream : public Stream {
  public:
@@ -46,3 +49,6 @@ class FileStream : public Stream {
 
   FileStream(const char* filename, bool is_writable, std::ios::openmode mode);
 };
+}  // namespace streams
+}  // namespace io
+}  // namespace ws

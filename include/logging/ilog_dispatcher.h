@@ -4,6 +4,8 @@
 
 #include "logging/events/log_event.h"
 #include "logging/log_level.h"
+namespace ws {
+namespace logging {
 
 class ILogDispatcher {
  public:
@@ -13,3 +15,5 @@ class ILogDispatcher {
 
   virtual ~ILogDispatcher() = default;
 };
+}  // namespace logging
+}  // namespace ws

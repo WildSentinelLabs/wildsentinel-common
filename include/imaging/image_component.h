@@ -4,9 +4,20 @@
 #include <cstdint>
 #include <sstream>
 
+#include "imaging/pixel/pixel_allowed_types.h"
+namespace ws {
+namespace imaging {
+
 class ImageComponent {
  public:
-  enum class BufferType { kUInt8, kUInt16, kInt16, kUInt32, kInt32, kUnknown };
+  enum class BufferType : int8_t {
+    kUInt8,
+    kUInt16,
+    kInt16,
+    kUInt32,
+    kInt32,
+    kUnknown
+  };
 
   ImageComponent(void* buffer, uint32_t width, uint32_t height,
                  uint8_t bit_depth, bool is_alpha = false);
@@ -51,7 +62,7 @@ std::ostream& operator<<(std::ostream& os,
 
 std::string BufferTypeToString(ImageComponent::BufferType type);
 
-template <typename T>
+template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 class TypedImageComponent : public ImageComponent {
  public:
   TypedImageComponent(T* buffer, uint32_t width, uint32_t height,
@@ -61,3 +72,5 @@ class TypedImageComponent : public ImageComponent {
 
   const T* GetTypedBuffer() const;
 };
+}  // namespace imaging
+}  // namespace ws

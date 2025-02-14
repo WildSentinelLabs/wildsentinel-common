@@ -4,6 +4,8 @@
 
 #include "threading/cancellation_state.h"
 #include "threading/cancellation_token.h"
+namespace ws {
+namespace threading {
 
 class CancellationTokenSource {
  public:
@@ -18,3 +20,5 @@ class CancellationTokenSource {
  private:
   std::shared_ptr<CancellationState> state_;
 };
+}  // namespace threading
+}  // namespace ws

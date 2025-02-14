@@ -1,4 +1,7 @@
 #include "io/streams/memory_stream.h"
+namespace ws {
+namespace io {
+namespace streams {
 
 void MemoryStream::UpdateChunkPosition() {
   chunk_index_ = position_ / chunk_size_;
@@ -127,3 +130,6 @@ void MemoryStream::Dispose() {
   is_open_ = false;
   is_writable_ = false;
 }
+}  // namespace streams
+}  // namespace io
+}  // namespace ws

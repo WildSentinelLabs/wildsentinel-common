@@ -5,6 +5,8 @@
 
 #include "logging/events/log_event.h"
 #include "logging/log_level.h"
+namespace ws {
+namespace logging {
 
 class ILogSink {
  public:
@@ -12,9 +14,11 @@ class ILogSink {
 
   virtual void EnableAsync() = 0;
 
-  virtual void Display(LogEvent event) = 0;
+  virtual void Display(ws::logging::events::LogEvent event) = 0;
 
   virtual void Display(const std::string& message) = 0;
 
   virtual ~ILogSink() = default;
 };
+}  // namespace logging
+}  // namespace ws

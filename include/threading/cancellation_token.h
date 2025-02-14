@@ -3,6 +3,8 @@
 
 #include "threading/cancellation_state.h"
 #include "threading/cancellation_token_registration.h"
+namespace ws {
+namespace threading {
 
 struct CancellationToken {
  public:
@@ -23,3 +25,5 @@ struct CancellationToken {
   std::shared_ptr<CancellationState> state_;
   friend class CancellationTokenSource;
 };
+}  // namespace threading
+}  // namespace ws

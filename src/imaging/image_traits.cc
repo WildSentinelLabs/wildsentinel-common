@@ -1,4 +1,6 @@
 #include "imaging/image_traits.h"
+namespace ws {
+namespace imaging {
 
 uint8_t ImageTraits::GetBitAlignment(const uint8_t& bit_depth) {
   if (bit_depth == 8) {
@@ -32,3 +34,5 @@ uint8_t ImageTraits::GetChromaAlignment(const ChromaSubsampling& subsampling) {
 bool ImageTraits::IsSigned(const uint8_t& bit_depth) {
   return bit_depth >= 9 && bit_depth <= 12;
 }
+}  // namespace imaging
+}  // namespace ws

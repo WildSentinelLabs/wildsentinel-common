@@ -1,4 +1,6 @@
 #include "logging/log_level.h"
+namespace ws {
+namespace logging {
 
 const std::string LogLevelToString(const LogLevel& log_level) {
   switch (log_level) {
@@ -19,3 +21,5 @@ std::ostream& operator<<(std::ostream& os, const LogLevel& log_level) {
   os << LogLevelToString(log_level);
   return os;
 }
+}  // namespace logging
+}  // namespace ws

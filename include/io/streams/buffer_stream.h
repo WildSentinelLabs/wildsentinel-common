@@ -4,7 +4,11 @@
 #include <cstdint>
 #include <cstring>
 
-#include "io/streams/stream.h"
+#include "io/stream.h"
+
+namespace ws {
+namespace io {
+namespace streams {
 
 class BufferStream : public Stream {
  public:
@@ -43,3 +47,6 @@ class BufferStream : public Stream {
   bool is_open_;
   bool is_writable_;
 };
+}  // namespace streams
+}  // namespace io
+}  // namespace ws

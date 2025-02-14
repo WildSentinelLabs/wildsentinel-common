@@ -5,7 +5,7 @@ file(GLOB WSCOMMON_LOGGING_FILES "")
 file(GLOB WSCOMMON_THREADING_FILES threading/*.cc)
 
 if (WSCOMMON_BUILD_IMAGING)
-    file(GLOB WSCOMMON_IMAGING_FILES imaging/*.cc imaging/color_spaces/*.cc imaging/color_spaces/*/*.cc imaging/pixel_formats/*.cc)
+    file(GLOB WSCOMMON_IMAGING_FILES imaging/*.cc imaging/pixel/color_formats/*.cc imaging/pixel/color_formats/*/*.cc imaging/pixel/*.cc)
 endif()
 
 if (WSCOMMON_BUILD_LOGGING)
@@ -46,7 +46,7 @@ install(TARGETS wscommon
 # Install public headers
 install(
     DIRECTORY
-        ${WSCOMMON_SOURCE_DIR}/include/collections
+        ${WSCOMMON_SOURCE_DIR}/include/concurrency
         ${WSCOMMON_SOURCE_DIR}/include/io
         ${WSCOMMON_SOURCE_DIR}/include/threading
     DESTINATION include

@@ -5,7 +5,10 @@
 #include <cstring>
 #include <stdexcept>
 
-#include "io/streams/stream.h"
+#include "io/stream.h"
+namespace ws {
+namespace io {
+namespace streams {
 class MemoryStream : public Stream {
  public:
   explicit MemoryStream(size_t chunk_size);
@@ -44,3 +47,6 @@ class MemoryStream : public Stream {
 
   void AllocateChunk();
 };
+}  // namespace streams
+}  // namespace io
+}  // namespace ws

@@ -1,5 +1,6 @@
 #include "imaging/chroma_subsampling.h"
-
+namespace ws {
+namespace imaging {
 const std::string ChromaSubsamplingToString(
     const ChromaSubsampling& subsampling) {
   switch (subsampling) {
@@ -27,3 +28,5 @@ std::ostream& operator<<(std::ostream& os,
   os << ChromaSubsamplingToString(subsampling);
   return os;
 }
+}  // namespace imaging
+}  // namespace ws

@@ -2,14 +2,16 @@
 
 #include <sstream>
 #include <string>
+namespace ws {
+namespace imaging {
 
 enum class ColorSpace {
   kGray,
-  kSRGB,
-  kCMYK,
-  kSYCC,
-  kSYCCK,
-  kEYCC,
+  kSRgb,
+  kCmyk,
+  kSYcc,
+  kSYcck,
+  kEYcc,
   kUnknow,
   kUnsupported = -1,
 };
@@ -17,3 +19,5 @@ enum class ColorSpace {
 const std::string ColorSpaceToString(const ColorSpace& color_space);
 
 std::ostream& operator<<(std::ostream& os, const ColorSpace& color_space);
+}  // namespace imaging
+}  // namespace ws

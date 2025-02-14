@@ -1,6 +1,8 @@
 #pragma once
 
 #include "threading/cancellation_state.h"
+namespace ws {
+namespace threading {
 
 struct CancellationTokenRegistration {
  public:
@@ -15,3 +17,5 @@ struct CancellationTokenRegistration {
   std::weak_ptr<CancellationState> state_;
   size_t id_;
 };
+}  // namespace threading
+}  // namespace ws

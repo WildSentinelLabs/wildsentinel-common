@@ -5,10 +5,12 @@
 #include "logging/enrichers/thread_id_enricher.h"
 #include "logging/ilogger.h"
 #include "logging/logger_configuration.h"
+namespace ws {
+namespace imaging {
 
 class ImageConverter {
  public:
-  static LoggerConfiguration logger_configuration_;
+  static ws::logging::LoggerConfiguration logger_configuration_;
 
   virtual ~ImageConverter() = default;
 
@@ -19,7 +21,7 @@ class ImageConverter {
   const ChromaSubsampling GetChromaSubsampling() const;
 
  protected:
-  std::unique_ptr<ILogger> logger_;
+  std::unique_ptr<ws::logging::ILogger> logger_;
   ColorSpace color_space_;
   ChromaSubsampling chroma_subsampling_;
   uint8_t num_components_;
@@ -29,3 +31,5 @@ class ImageConverter {
                  const ChromaSubsampling chroma_subsampling,
                  const uint8_t num_components);
 };
+}  // namespace imaging
+}  // namespace ws

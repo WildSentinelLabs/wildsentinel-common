@@ -1,4 +1,6 @@
 #include "imaging/image_encoder.h"
+namespace ws {
+namespace imaging {
 
 ImageEncoder::ImageEncoder(const ImageContext context, const int quality,
                            const std::string source_context)
@@ -18,12 +20,15 @@ ImageEncoder::ImageEncoder(const ImageContext context,
       quality_(0),
       logger_(logger_configuration_.CreateLogger(source_context)) {}
 
-LoggerConfiguration ImageEncoder::logger_configuration_ =
-    LoggerConfiguration()
-        .SetMinimumLogLevel(LogLevel::kInformation)
-        .AddEnricher(std::make_shared<ThreadIdEnricher>())
+ws::logging::LoggerConfiguration ImageEncoder::logger_configuration_ =
+    ws::logging::LoggerConfiguration()
+        .SetMinimumLogLevel(ws::logging::LogLevel::kInformation)
+        .AddEnricher(
+            std::make_shared<ws::logging::enrichers::ThreadIdEnricher>())
         .AddConsoleSink(
-            LogLevel::kVerbose,
+            ws::logging::LogLevel::kVerbose,
             "{Timestamp:%Y-%m-%d %X.%f} [{Level:u3}] - [ThreadId: {ThreadId}] "
             "[{SourceContext}] {Message:lj}{NewLine}",
             false);
+}  // namespace imaging
+}  // namespace ws

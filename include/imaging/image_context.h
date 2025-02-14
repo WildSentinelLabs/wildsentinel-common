@@ -1,15 +1,17 @@
 #pragma once
 #include <iostream>
-#include <map>
 #include <optional>
 #include <sstream>
 #include <string>
+#include <unordered_map>
+namespace ws {
+namespace imaging {
 
 struct ImageContext {
  public:
   explicit ImageContext();
 
-  explicit ImageContext(const std::map<std::string, int32_t> tags);
+  explicit ImageContext(const std::unordered_map<std::string, int32_t> tags);
 
   ~ImageContext();
 
@@ -19,13 +21,13 @@ struct ImageContext {
 
   std::optional<int32_t> Get(const std::string& key) const;
 
-  std::map<std::string, int32_t>::iterator begin();
+  std::unordered_map<std::string, int32_t>::iterator begin();
 
-  std::map<std::string, int32_t>::iterator end();
+  std::unordered_map<std::string, int32_t>::iterator end();
 
-  std::map<std::string, int32_t>::const_iterator begin() const;
+  std::unordered_map<std::string, int32_t>::const_iterator begin() const;
 
-  std::map<std::string, int32_t>::const_iterator end() const;
+  std::unordered_map<std::string, int32_t>::const_iterator end() const;
 
   std::string ToString() const;
 
@@ -34,7 +36,10 @@ struct ImageContext {
   void Dispose();
 
  private:
-  std::map<std::string, int32_t> data;
+  std::unordered_map<std::string, int32_t> data;
 };
 
 std::ostream& operator<<(std::ostream& os, const ImageContext& context);
+
+}  // namespace imaging
+}  // namespace ws

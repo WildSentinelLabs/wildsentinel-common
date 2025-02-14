@@ -11,6 +11,8 @@
 #include "logging/ilog_sink.h"
 #include "logging/ilogger.h"
 #include "logging/log_level.h"
+namespace ws {
+namespace logging {
 
 class Logger : public ILogger {
  public:
@@ -36,3 +38,5 @@ class Logger : public ILogger {
   static std::unordered_map<std::string, std::string> properties_;
   static std::mutex properties_mutex_;
 };
+}  // namespace logging
+}  // namespace ws

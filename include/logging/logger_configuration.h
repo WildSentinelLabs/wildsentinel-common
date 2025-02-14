@@ -6,6 +6,8 @@
 #include "logging/ilogger.h"
 #include "logging/logger.h"
 #include "logging/sinks/console_log_sink.h"
+namespace ws {
+namespace logging {
 
 class LoggerConfiguration {
  public:
@@ -23,10 +25,8 @@ class LoggerConfiguration {
 
   LoggerConfiguration& AddEnricher(std::shared_ptr<ILogEnricher> enricher);
 
-  template <typename T>
+  template <IsEnricher T>
   LoggerConfiguration& AddEnricher() {
-    static_assert(std::is_base_of<ILogEnricher, T>::value,
-                  "T must derive from ILogEnricher");
     enrichers_.push_back(std::make_shared<T>());
     return *this;
   }
@@ -39,3 +39,5 @@ class LoggerConfiguration {
   std::vector<std::shared_ptr<ILogSink>> sinks_;
   std::vector<std::shared_ptr<ILogEnricher>> enrichers_;
 };
+}  // namespace logging
+}  // namespace ws

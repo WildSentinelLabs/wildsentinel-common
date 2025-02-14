@@ -1,4 +1,6 @@
 #include "logging/logger_configuration.h"
+namespace ws {
+namespace logging {
 
 LoggerConfiguration& LoggerConfiguration::SetMinimumLogLevel(LogLevel level) {
   min_log_level_ = level;
@@ -18,8 +20,8 @@ LoggerConfiguration& LoggerConfiguration::AddSink(
 LoggerConfiguration& LoggerConfiguration::AddConsoleSink(
     LogLevel min_log_level, const std::string& template_format,
     bool enable_async) {
-  auto console_sink =
-      std::make_shared<ConsoleLogSink>(min_log_level, template_format);
+  auto console_sink = std::make_shared<ws::logging::sinks::ConsoleLogSink>(
+      min_log_level, template_format);
   AddSink(console_sink, enable_async);
   return *this;
 }
@@ -35,3 +37,5 @@ std::unique_ptr<ILogger> LoggerConfiguration::CreateLogger(
   return std::make_unique<Logger>(source_context, sinks_, enrichers_,
                                   min_log_level_);
 }
+}  // namespace logging
+}  // namespace ws

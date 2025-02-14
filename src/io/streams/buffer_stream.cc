@@ -1,5 +1,9 @@
 #include "io/streams/buffer_stream.h"
 
+namespace ws {
+namespace io {
+namespace streams {
+
 BufferStream::BufferStream(unsigned char* buffer, const size_t size,
                            const bool is_writable)
     : buffer_(buffer),
@@ -66,3 +70,6 @@ void BufferStream::Dispose() {
   is_writable_ = false;
   is_open_ = false;
 }
+}  // namespace streams
+}  // namespace io
+}  // namespace ws

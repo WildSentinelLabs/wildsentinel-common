@@ -3,6 +3,9 @@
 #include <unordered_map>
 
 #include "logging/log_level.h"
+namespace ws {
+namespace logging {
+namespace events {
 
 class LogEvent {
  public:
@@ -30,3 +33,6 @@ class LogEvent {
   std::chrono::system_clock::time_point timestamp_;
   std::unordered_map<std::string, std::string> properties_;
 };
+}  // namespace events
+}  // namespace logging
+}  // namespace ws

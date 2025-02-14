@@ -2,8 +2,10 @@
 
 #include <sstream>
 #include <string>
+namespace ws {
+namespace imaging {
 
-enum class ChromaSubsampling {
+enum class ChromaSubsampling : int8_t {
   kSamp444 = 0,  // None
   kSamp422 = 1,  // Horizontal
   kSamp420 = 2,  // Both
@@ -20,3 +22,5 @@ const std::string ChromaSubsamplingToString(
 
 std::ostream& operator<<(std::ostream& os,
                          const ChromaSubsampling& subsampling);
+}  // namespace imaging
+}  // namespace ws

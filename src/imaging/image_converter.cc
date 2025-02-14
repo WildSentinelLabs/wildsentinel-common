@@ -1,5 +1,9 @@
 #include "imaging/image_converter.h"
 
+#include "imaging/image_traits.h"
+namespace ws {
+namespace imaging {
+
 ImageConverter::ImageConverter(const std::string source_context,
                                const ColorSpace color_space,
                                const ChromaSubsampling chroma_subsampling,
@@ -16,12 +20,15 @@ const ChromaSubsampling ImageConverter::GetChromaSubsampling() const {
   return chroma_subsampling_;
 }
 
-LoggerConfiguration ImageConverter::logger_configuration_ =
-    LoggerConfiguration()
-        .SetMinimumLogLevel(LogLevel::kInformation)
-        .AddEnricher(std::make_shared<ThreadIdEnricher>())
-        .AddConsoleSink(
-            LogLevel::kVerbose,
-            "{Timestamp:%Y-%m-%d %X} [{Level:u3}] - [ThreadId: {ThreadId}] "
-            "[{SourceContext}] {Message:lj}{NewLine}",
-            false);
+ws::logging::LoggerConfiguration ImageConverter::logger_configuration_ =
+    ws::logging::LoggerConfiguration()
+        .SetMinimumLogLevel(ws::logging::LogLevel::kInformation)
+        .AddEnricher(
+            std::make_shared<ws::logging::enrichers::ThreadIdEnricher>())
+        .AddConsoleSink(ws::logging::LogLevel::kVerbose,
+                        "{Timestamp:%Y-%m-%d %X} [{Level:u3}] - "
+                        "[ThreadId: {ThreadId}] "
+                        "[{SourceContext}] {Message:lj}{NewLine}",
+                        false);
+}  // namespace imaging
+}  // namespace ws

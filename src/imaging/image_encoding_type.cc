@@ -1,4 +1,6 @@
 #include "imaging/image_encoding_type.h"
+namespace ws {
+namespace imaging {
 
 const std::string ImageEncodingTypeToString(
     const ImageEncodingType& encoding_type) {
@@ -19,3 +21,5 @@ std::ostream& operator<<(std::ostream& os,
   os << ImageEncodingTypeToString(encoding_type);
   return os;
 }
+}  // namespace imaging
+}  // namespace ws

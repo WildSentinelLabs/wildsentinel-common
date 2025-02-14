@@ -1,4 +1,7 @@
 #include "io/streams/file_stream.h"
+namespace ws {
+namespace io {
+namespace streams {
 
 FileStream::FileStream(const char* filename, bool is_writable,
                        std::ios::openmode mode)
@@ -112,3 +115,6 @@ void FileStream::Dispose() {
   is_writable_ = false;
   is_open_ = false;
 }
+}  // namespace streams
+}  // namespace io
+}  // namespace ws

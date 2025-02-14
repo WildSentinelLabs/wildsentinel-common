@@ -1,8 +1,11 @@
 #include "imaging/image_context.h"
+namespace ws {
+namespace imaging {
 
-ImageContext::ImageContext() : data(std::map<std::string, int32_t>()) {}
+ImageContext::ImageContext()
+    : data(std::unordered_map<std::string, int32_t>()) {}
 
-ImageContext::ImageContext(const std::map<std::string, int32_t> tags)
+ImageContext::ImageContext(const std::unordered_map<std::string, int32_t> tags)
     : data(tags) {}
 
 ImageContext::~ImageContext() { Dispose(); }
@@ -16,26 +19,28 @@ bool ImageContext::Contains(const std::string& key) const {
 }
 
 std::optional<int32_t> ImageContext::Get(const std::string& key) const {
-  std::map<std::string, int32_t>::const_iterator it = data.find(key);
+  std::unordered_map<std::string, int32_t>::const_iterator it = data.find(key);
   if (it != data.end()) {
     return it->second;
   }
   return std::nullopt;
 }
 
-std::map<std::string, int32_t>::iterator ImageContext::begin() {
+std::unordered_map<std::string, int32_t>::iterator ImageContext::begin() {
   return data.begin();
 }
 
-std::map<std::string, int32_t>::iterator ImageContext::end() {
+std::unordered_map<std::string, int32_t>::iterator ImageContext::end() {
   return data.end();
 }
 
-std::map<std::string, int32_t>::const_iterator ImageContext::begin() const {
+std::unordered_map<std::string, int32_t>::const_iterator ImageContext::begin()
+    const {
   return data.begin();
 }
 
-std::map<std::string, int32_t>::const_iterator ImageContext::end() const {
+std::unordered_map<std::string, int32_t>::const_iterator ImageContext::end()
+    const {
   return data.end();
 }
 
@@ -59,3 +64,5 @@ std::ostream& operator<<(std::ostream& os, const ImageContext& context) {
   os << str;
   return os;
 }
+}  // namespace imaging
+}  // namespace ws

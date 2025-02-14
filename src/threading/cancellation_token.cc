@@ -1,6 +1,8 @@
 #include "threading/cancellation_token.h"
 
 #include <memory>
+namespace ws {
+namespace threading {
 
 CancellationToken CancellationToken::None() { return CancellationToken(); }
 
@@ -38,3 +40,5 @@ CancellationTokenRegistration CancellationToken::RegisterCallback(
 void CancellationToken::ThrowIfCancellationRequested() const {
   if (IsCancellationRequested()) throw std::runtime_error("Operation canceled");
 }
+}  // namespace threading
+}  // namespace ws

@@ -1,4 +1,6 @@
 #include "logging/logger.h"
+namespace ws {
+namespace logging {
 
 std::unordered_map<std::string, std::string> Logger::properties_;
 std::mutex Logger::properties_mutex_;
@@ -26,7 +28,8 @@ Logger::Logger(std::string source_context,
 void Logger::Log(LogLevel level, const std::string& message) {
   if (level < min_log_level_) return;
   std::unordered_map<std::string, std::string> properties = properties_;
-  LogEvent event(source_context_, message, level, properties);
+  ws::logging::events::LogEvent event(source_context_, message, level,
+                                      properties);
   for (auto& enricher : enrichers_) enricher->Enrich(event);
   std::vector<std::future<void>> results;
   for (auto& sink : sinks_) {
@@ -40,3 +43,5 @@ void Logger::Log(LogLevel level, const std::string& message) {
 }
 
 void Logger::SetMinimumLogLevel(LogLevel level) { min_log_level_ = level; }
+}  // namespace logging
+}  // namespace ws

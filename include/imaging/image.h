@@ -1,13 +1,14 @@
 #pragma once
 #include <cstring>
+#include <vector>
 
 #include "imaging/chroma_subsampling.h"
 #include "imaging/color_space.h"
 #include "imaging/image_component.h"
 #include "imaging/image_context.h"
-#include "imaging/image_traits.h"
-#include "imaging/pixel_format.h"
-#include "imaging/pixel_formats/pixel_format_constraints.h"
+
+namespace ws {
+namespace imaging {
 
 class Image {
  public:
@@ -17,17 +18,6 @@ class Image {
         const ChromaSubsampling chroma_subsampling);
 
   ~Image();
-
-  template <typename T>
-  static Image* LoadFromInterleavedBuffer(T* buffer, size_t size,
-                                          uint32_t width, uint32_t height,
-                                          uint8_t bit_depth,
-                                          PixelFormat pixel_format);
-
-  template <typename T>
-  static Image* LoadFromPlanarBuffer(T* buffer, size_t size, uint32_t width,
-                                     uint32_t height, uint8_t bit_depth,
-                                     PixelFormat pixel_format);
 
   void LoadContext(ImageContext context) const;
 
@@ -49,12 +39,6 @@ class Image {
 
   bool IsValid() const;
 
-  template <typename T>
-  T* AsInterleavedBuffer(const PixelFormat& pixel_format) const;
-
-  template <typename T>
-  T* AsPlanarBuffer(const PixelFormat& pixel_format) const;
-
   std::string ToString() const;
 
   void Dispose();
@@ -62,24 +46,16 @@ class Image {
  private:
   ImageComponent** components_;
   ImageContext* context_;
-  uint8_t num_components_;
+  std::uint8_t num_components_;
   uint32_t width_;
   uint32_t height_;
   ColorSpace color_space_;
   ChromaSubsampling chroma_subsampling_;
-
-  template <typename T>
-  static Image* InnerLoadFromInterleavedBuffer(
-      T* buffer, size_t size, uint32_t width, uint32_t height,
-      uint8_t bit_depth, const PixelFormatDetails* pixel_format_details);
-
-  template <typename T>
-  static Image* InnerLoadFromPlanarBuffer(
-      T* buffer, size_t size, uint32_t width, uint32_t height,
-      uint8_t bit_depth, const PixelFormatDetails* pixel_format_details);
 };
 
 std::ostream& operator<<(std::ostream& os, const Image& image);
 
 // TODO: Enhace image::Load and image::AsArray
 // TODO: Enable async operations
+}  // namespace imaging
+}  // namespace ws

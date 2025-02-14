@@ -11,6 +11,9 @@
 #include "logging/ilog_sink.h"
 #include "logging/log_level.h"
 #include "logging/rendering/message_renderer.h"
+namespace ws {
+namespace logging {
+namespace sinks {
 
 class ConsoleLogSink : public ILogSink,
                        public std::enable_shared_from_this<ConsoleLogSink> {
@@ -26,7 +29,7 @@ class ConsoleLogSink : public ILogSink,
 
   void EnableAsync() override;
 
-  void Display(LogEvent event) override;
+  void Display(ws::logging::events::LogEvent event) override;
 
   void Display(const std::string& message) override;
 
@@ -34,5 +37,8 @@ class ConsoleLogSink : public ILogSink,
   static std::mutex console_mutex_;
   LogLevel min_log_level_;
   std::unique_ptr<ILogDispatcher> dispatcher_;
-  MessageRenderer renderer_;
+  ws::logging::rendering::MessageRenderer renderer_;
 };
+}  // namespace sinks
+}  // namespace logging
+}  // namespace ws
