@@ -41,12 +41,12 @@ class SpinMutex {
 
   void Unlock() { m_flag_.store(false, std::memory_order_release); }
 
- private:
+ protected:
   std::atomic<bool> m_flag_;
 };
 
-template <typename T, typename C>
-T SpinWaitWhile(const std::atomic<T>& location, C comp,
+template <typename T, typename TC>
+T SpinWaitWhile(const std::atomic<T>& location, TC comp,
                 std::memory_order order) {
   ws::concurrency::detail::AtomicBackoff backoff;
   T snapshot = location.load(order);
@@ -57,14 +57,14 @@ T SpinWaitWhile(const std::atomic<T>& location, C comp,
   return snapshot;
 }
 
-template <typename T, typename U>
-T SpinWaitWhileEq(const std::atomic<T>& location, const U value,
+template <typename T, typename TU>
+T SpinWaitWhileEq(const std::atomic<T>& location, const TU value,
                   std::memory_order order = std::memory_order_acquire) {
   return SpinWaitWhile(location, [&value](T t) { return t == value; }, order);
 }
 
-template <typename T, typename U>
-T SpinWaitUntilEq(const std::atomic<T>& location, const U value,
+template <typename T, typename TU>
+T SpinWaitUntilEq(const std::atomic<T>& location, const TU value,
                   std::memory_order order = std::memory_order_acquire) {
   return SpinWaitWhile(location, [&value](T t) { return t != value; }, order);
 }

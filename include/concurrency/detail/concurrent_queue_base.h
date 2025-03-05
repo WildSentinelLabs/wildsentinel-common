@@ -1,8 +1,9 @@
 #pragma once
 
-#include "concurrency/allocator_traits.h"
+#include "concurrency/detail/allocator_traits.h"
 #include "concurrency/detail/atomic_backoff.h"
-#include "concurrency/detail/scoped_guard.h"
+#include "concurrency/detail/config.h"
+#include "concurrency/detail/helpers.h"
 #include "concurrency/spin_mutex.h"
 
 namespace ws {
@@ -11,22 +12,28 @@ namespace detail {
 
 using ticket_type = std::size_t;
 
-template <typename Page>
-inline bool IsValidPage(const Page p) {
+template <typename TPage>
+inline bool IsValidPage(const TPage p) {
   return reinterpret_cast<std::uintptr_t>(p) > 1;
 }
 
-template <typename T, typename Allocator>
+template <typename T, typename TAllocator>
 struct ConcurrentQueueRep;
 
-template <typename Container, typename T, typename Allocator>
+template <typename TContainer, typename T, typename TAllocator>
 class MicroQueuePopFinalizer;
 
-template <typename T, typename Allocator>
+#if _MSC_VER && !defined(__INTEL_COMPILER)
+// unary minus operator applied to unsigned type, result still unsigned
+#pragma warning(push)
+#pragma warning(disable : 4146)
+#endif
+
+template <typename T, typename TAllocator>
 class MicroQueue {
  private:
-  using queue_rep_type = ConcurrentQueueRep<T, Allocator>;
-  using self_type = MicroQueue<T, Allocator>;
+  using queue_rep_type = ConcurrentQueueRep<T, TAllocator>;
+  using self_type = MicroQueue<T, TAllocator>;
 
  public:
   using size_type = std::size_t;
@@ -34,9 +41,9 @@ class MicroQueue {
   using reference = value_type&;
   using const_reference = const value_type&;
 
-  using allocator_type = Allocator;
+  using allocator_type = TAllocator;
   using allocator_traits_type =
-      ws::concurrency::AllocatorTraits<allocator_type>;
+      ws::concurrency::detail::AllocatorTraits<allocator_type>;
   using queue_allocator_type =
       typename allocator_traits_type::template rebind_alloc<queue_rep_type>;
 
@@ -84,16 +91,16 @@ class MicroQueue {
     size_type index = ws::arch::detail::ModulusPowerOfTwo(
         k / queue_rep_type::kNQueue, kItemsPerPage);
     if (!index) {
-      ws::concurrency::detail::try_call([&] {
+      ws::concurrency::detail::templates::TryCall([&] {
         p = page_allocator_traits::allocate(page_allocator, 1);
-      }).on_exception([&] {
+      }).OnException([&] {
         ++base.n_invalid_entries_;
         InvalidatePage(k);
       });
       page_allocator_traits::construct(page_allocator, p);
     }
 
-    SpinWaitUntilMyTurn(tail_counter_, k, base);
+    SpinWaitUntilTurn(tail_counter_, k, base);
 
     if (p) {
       ws::concurrency::SpinMutex::ScopedLock lock(page_mutex_);
@@ -110,34 +117,34 @@ class MicroQueue {
     return index;
   }
 
-  template <typename... Args>
+  template <typename... TArgs>
   void Push(ticket_type k, queue_rep_type& base,
-            queue_allocator_type& allocator, Args&&... args) {
+            queue_allocator_type& allocator, TArgs&&... args) {
     PaddedPage* p = nullptr;
     page_allocator_type page_allocator(allocator);
     size_type index = PreparePage(k, base, page_allocator, p);
     assert(p != nullptr && "Page was not prepared");
 
-    auto value_guard = make_raii_guard([&] {
+    auto value_guard = ws::concurrency::detail::templates::MakeRaiiGuard([&] {
       ++base.n_invalid_entries_;
       tail_counter_.fetch_add(queue_rep_type::kNQueue);
     });
 
     page_allocator_traits::construct(page_allocator, &(*p)[index],
-                                     std::forward<Args>(args)...);
+                                     std::forward<TArgs>(args)...);
 
     p->mask.store(p->mask.load(std::memory_order_relaxed) | uintptr_t(1)
                                                                 << index,
                   std::memory_order_relaxed);
 
-    value_guard.dismiss();
+    value_guard.Dismiss();
     tail_counter_.fetch_add(queue_rep_type::kNQueue);
   }
 
   void AbortPush(ticket_type k, queue_rep_type& base,
                  queue_allocator_type& allocator) {
     PaddedPage* p = nullptr;
-    prepare_page(k, base, allocator, p);
+    PreparePage(k, base, allocator, p);
     ++base.n_invalid_entries_;
     tail_counter_.fetch_add(queue_rep_type::kNQueue);
   }
@@ -188,23 +195,23 @@ class MicroQueue {
       size_type end_in_first_page =
           (index + n_items < kItemsPerPage) ? (index + n_items) : kItemsPerPage;
 
-      ws::concurrency::detail::try_call([&] {
-        head_page_.store(make_copy(allocator, kSrcp, index, end_in_first_page,
-                                   g_index, construct_item),
+      ws::concurrency::detail::templates::TryCall([&] {
+        head_page_.store(MakeCopy(allocator, kSrcp, index, end_in_first_page,
+                                  g_index, construct_item),
                          std::memory_order_relaxed);
-      }).on_exception([&] {
+      }).OnException([&] {
         head_counter_.store(0, std::memory_order_relaxed);
         tail_counter_.store(0, std::memory_order_relaxed);
       });
       PaddedPage* cur_page = head_page_.load(std::memory_order_relaxed);
 
-      ws::concurrency::detail::try_call([&] {
+      ws::concurrency::detail::templates::TryCall([&] {
         if (kSrcp != src.tail_page_.load(std::memory_order_relaxed)) {
           for (kSrcp = kSrcp->next;
                kSrcp != src.tail_page_.load(std::memory_order_relaxed);
                kSrcp = kSrcp->next) {
-            cur_page->next = make_copy(allocator, kSrcp, 0, kItemsPerPage,
-                                       g_index, construct_item);
+            cur_page->next = MakeCopy(allocator, kSrcp, 0, kItemsPerPage,
+                                      g_index, construct_item);
             cur_page = cur_page->next;
           }
 
@@ -215,12 +222,12 @@ class MicroQueue {
               kItemsPerPage);
           if (last_index == 0) last_index = kItemsPerPage;
 
-          cur_page->next = make_copy(allocator, kSrcp, 0, last_index, g_index,
-                                     construct_item);
+          cur_page->next = MakeCopy(allocator, kSrcp, 0, last_index, g_index,
+                                    construct_item);
           cur_page = cur_page->next;
         }
         tail_page_.store(cur_page, std::memory_order_relaxed);
-      }).on_exception([&] {
+      }).OnException([&] {
         PaddedPage* invalid_page =
             reinterpret_cast<PaddedPage*>(std::uintptr_t(1));
         tail_page_.store(invalid_page, std::memory_order_relaxed);
@@ -244,8 +251,8 @@ class MicroQueue {
     for (; begin_in_page != end_in_page; ++begin_in_page, ++g_index) {
       if (new_page->mask.load(std::memory_order_relaxed) &
           uintptr_t(1) << begin_in_page) {
-        copy_item(*new_page, begin_in_page, *src_page, begin_in_page,
-                  construct_item);
+        CopyItem(*new_page, begin_in_page, *src_page, begin_in_page,
+                 construct_item);
       }
     }
     return new_page;
@@ -304,22 +311,40 @@ class MicroQueue {
     clear(allocator, invalid_page, invalid_page);
   }
 
+  value_type* Front() {
+    PaddedPage* head_page = head_page_.load(std::memory_order_acquire);
+    if (!head_page) {
+      return nullptr;
+    }
+
+    size_type index = ws::arch::detail::ModulusPowerOfTwo(
+        head_counter_.load(std::memory_order_acquire) / queue_rep_type::kNQueue,
+        kItemsPerPage);
+
+    if (head_page->mask.load(std::memory_order_acquire) &
+        (std::uintptr_t(1) << index)) {
+      return &head_page->operator[](index);
+    }
+
+    return nullptr;
+  }
+
  protected:
   using page_allocator_traits =
-      ws::concurrency::AllocatorTraits<page_allocator_type>;
+      ws::concurrency::detail::AllocatorTraits<page_allocator_type>;
 
  private:
   friend class MicroQueuePopFinalizer<self_type, value_type,
                                       page_allocator_type>;
 
   class Destroyer {
-    value_type& my_value;
+    value_type& value_ref;
 
    public:
-    Destroyer(reference value) : my_value(value) {}
+    Destroyer(reference value) : value_ref(value) {}
     Destroyer(const Destroyer&) = delete;
     Destroyer& operator=(const Destroyer&) = delete;
-    ~Destroyer() { my_value.~T(); }
+    ~Destroyer() { value_ref.~T(); }
   };
 
   void CopyItem(PaddedPage& dst, size_type dindex, const PaddedPage& src,
@@ -334,8 +359,8 @@ class MicroQueue {
     *static_cast<T*>(dst) = std::move(from);
   }
 
-  void SpinWaitUntilMyTurn(std::atomic<ticket_type>& counter, ticket_type k,
-                           queue_rep_type& rb) const {
+  void SpinWaitUntilTurn(std::atomic<ticket_type>& counter, ticket_type k,
+                         queue_rep_type& rb) const {
     for (ws::concurrency::detail::AtomicBackoff b{};; b.Wait()) {
       ticket_type c = counter.load(std::memory_order_acquire);
       if (c == k)
@@ -356,15 +381,19 @@ class MicroQueue {
   ws::concurrency::SpinMutex page_mutex_{};
 };
 
-template <typename Container, typename T, typename Allocator>
+#if _MSC_VER && !defined(__INTEL_COMPILER)
+#pragma warning(pop)
+#endif  // warning 4146 is back
+
+template <typename TContainer, typename T, typename TAllocator>
 class MicroQueuePopFinalizer {
  public:
-  using PaddedPage = typename Container::PaddedPage;
-  using allocator_type = Allocator;
+  using PaddedPage = typename TContainer::PaddedPage;
+  using allocator_type = TAllocator;
   using allocator_traits_type =
-      ws::concurrency::AllocatorTraits<allocator_type>;
+      ws::concurrency::detail::AllocatorTraits<allocator_type>;
 
-  MicroQueuePopFinalizer(Container& queue, Allocator& alloc, ticket_type k,
+  MicroQueuePopFinalizer(TContainer& queue, TAllocator& alloc, ticket_type k,
                          PaddedPage* p)
       : ticket_(k), queue_ref_(queue), page_ref_(p), allocator_(alloc) {}
 
@@ -391,26 +420,32 @@ class MicroQueuePopFinalizer {
 
  private:
   ticket_type ticket_;
-  Container& queue_ref_;
+  TContainer& queue_ref_;
   PaddedPage* page_ref_;
-  Allocator& allocator_;
+  TAllocator& allocator_;
 };
 
-template <typename T, typename Allocator>
+#if _MSC_VER && !defined(__INTEL_COMPILER)
+// structure was padded due to alignment specifier
+#pragma warning(push)
+#pragma warning(disable : 4324)
+#endif
+
+template <typename T, typename TAllocator>
 struct ConcurrentQueueRep {
-  using self_type = ConcurrentQueueRep<T, Allocator>;
+  using self_type = ConcurrentQueueRep<T, TAllocator>;
   using size_type = std::size_t;
-  using MicroQueue_type = MicroQueue<T, Allocator>;
-  using allocator_type = Allocator;
+  using MicroQueue_type = MicroQueue<T, TAllocator>;
+  using allocator_type = TAllocator;
   using allocator_traits_type =
-      ws::concurrency::AllocatorTraits<allocator_type>;
+      ws::concurrency::detail::AllocatorTraits<allocator_type>;
   using PaddedPage = typename MicroQueue_type::PaddedPage;
   using page_allocator_type = typename MicroQueue_type::page_allocator_type;
   using item_constructor_type = typename MicroQueue_type::item_constructor_type;
 
  private:
   using page_allocator_traits =
-      ws::concurrency::AllocatorTraits<page_allocator_type>;
+      ws::concurrency::detail::AllocatorTraits<page_allocator_type>;
   using queue_allocator_type =
       typename allocator_traits_type::template rebind_alloc<self_type>;
 
@@ -446,13 +481,13 @@ struct ConcurrentQueueRep {
         std::memory_order_relaxed);
 
     size_type queue_idx = 0;
-    ws::concurrency::detail::try_call([&] {
+    ws::concurrency::detail::templates::TryCall([&] {
       for (; queue_idx < kNQueue; ++queue_idx) {
         array_[queue_idx].assign(src.array_[queue_idx], alloc, construct_item);
       }
-    }).on_exception([&] {
+    }).OnException([&] {
       for (size_type i = 0; i < queue_idx + 1; ++i) {
-        array_[i].clear_and_invalidate(alloc);
+        array_[i].ClearAndInvalidate(alloc);
       }
       head_counter_.store(0, std::memory_order_relaxed);
       tail_counter_.store(0, std::memory_order_relaxed);
@@ -485,7 +520,7 @@ struct ConcurrentQueueRep {
     return tc - hc - nie;
   }
 
-  friend class MicroQueue<T, Allocator>;
+  friend class MicroQueue<T, TAllocator>;
 
   static size_type Index(ticket_type k) { return k * kPhi % kNQueue; }
 
@@ -500,6 +535,10 @@ struct ConcurrentQueueRep {
   alignas(ws::arch::detail::CacheLineSize())
       std::atomic<size_type> n_invalid_entries_{};
 };
+
+#if _MSC_VER && !defined(__INTEL_COMPILER)
+#pragma warning(pop)
+#endif
 
 }  // namespace detail
 }  // namespace concurrency

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "arch/cpu_arch.h"
+#include "concurrency/detail/config.h"
 
 namespace ws {
 namespace concurrency {
@@ -30,10 +31,10 @@ class AlignedAllocator {
   using is_always_equal = std::true_type;
 
   AlignedAllocator() = default;
-  template <typename U>
-  AlignedAllocator(const AlignedAllocator<U>&) noexcept {}
+  template <typename TU>
+  AlignedAllocator(const AlignedAllocator<TU>&) noexcept {}
 
-  [[nodiscard]] T* allocate(std::size_t n) {
+  _GLIBCXX_NODISCARD T* allocate(std::size_t n) {
     return static_cast<T*>(
         ws::concurrency::CacheAlignedAllocate(n * sizeof(value_type)));
   }
@@ -46,15 +47,23 @@ class AlignedAllocator {
   }
 };
 
-template <typename T, typename U>
+template <typename T, typename TU>
 bool operator==(const AlignedAllocator<T>&,
-                const AlignedAllocator<U>&) noexcept {
+                const AlignedAllocator<TU>&) noexcept {
   return true;
 }
 
+#if !__CPP20_COMPARISONS_PRESENT
 template <typename T, typename U>
 bool operator!=(const AlignedAllocator<T>&,
                 const AlignedAllocator<U>&) noexcept {
+  return false;
+}
+#endif
+
+template <typename T, typename TU>
+bool operator!=(const AlignedAllocator<T>&,
+                const AlignedAllocator<TU>&) noexcept {
   return false;
 }
 }  // namespace concurrency
