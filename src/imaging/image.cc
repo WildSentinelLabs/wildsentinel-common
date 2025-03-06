@@ -23,7 +23,7 @@ Image::Image(ImageComponent** components, const uint8_t num_components,
 Image::~Image() { Dispose(); }
 
 void Image::LoadContext(ImageContext context) const {
-  context_->Clean();
+  context_->Clear();
   for (const auto& [key, value] : context) {
     context_->Add(key, value);
   }

@@ -265,6 +265,13 @@ class ConcurrentQueue {
 #endif
 };
 
+#if __CPP17_DEDUCTION_GUIDES_PRESENT >= 201606
+template <typename TContainer,
+          typename = ws::concurrency::AlignedAllocator<TContainer>>
+ConcurrentQueue(TContainer)
+    -> ConcurrentQueue<typename TContainer::value_type, TContainer>;
+#endif
+
 namespace stl {
 template <typename T,
           typename TAllocator = ws::concurrency::AlignedAllocator<T>>
@@ -360,6 +367,13 @@ void swap(concurrent_queue<T, TAllocator>& lhs,
           concurrent_queue<T, TAllocator>& rhs) noexcept {
   lhs.swap(rhs);
 }
+
+#if __CPP17_DEDUCTION_GUIDES_PRESENT >= 201606
+template <typename TContainer,
+          typename = ws::concurrency::AlignedAllocator<TContainer>>
+concurrent_queue(TContainer)
+    -> concurrent_queue<typename TContainer::value_type, TContainer>;
+#endif
 
 }  // namespace stl
 

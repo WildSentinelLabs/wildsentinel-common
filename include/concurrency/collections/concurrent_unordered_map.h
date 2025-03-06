@@ -134,6 +134,59 @@ class ConcurrentUnorderedMap
     return this->EmplaceHint(hint, std::forward<TP>(value));
   }
 
+  template <typename TP>
+  std::enable_if_t<std::is_constructible_v<value_type, TP&&>,
+                   std::pair<iterator, bool>>
+  InsertOrAssign(const key_type& key, TP&& value) {
+    auto result =
+        this->Emplace(std::piecewise_construct, std::forward_as_tuple(key),
+                      std::forward_as_tuple(std::forward<TP>(value)));
+    if (!result.second) {  // La clave ya existía, se actualiza el valor
+      result.first->second = std::forward<TP>(value);
+    }
+
+    return result;
+  }
+
+  template <typename TP>
+  std::enable_if_t<std::is_constructible_v<value_type, TP&&>,
+                   std::pair<iterator, bool>>
+  InsertOrAssign(key_type&& key, TP&& value) {
+    auto result = this->Emplace(std::piecewise_construct,
+                                std::forward_as_tuple(std::move(key)),
+                                std::forward_as_tuple(std::forward<TP>(value)));
+    if (!result.second) {
+      result.first->second = std::forward<TP>(value);
+    }
+
+    return result;
+  }
+
+  template <typename TP>
+  iterator InsertOrAssign(const_iterator hint, const key_type& key,
+                          TP&& value) {
+    auto result =
+        this->Emplace(std::piecewise_construct, std::forward_as_tuple(key),
+                      std::forward_as_tuple(std::forward<TP>(value)));
+    if (!result.second) {
+      result.first->second = std::forward<TP>(value);
+    }
+
+    return result.first;
+  }
+
+  template <typename TP>
+  iterator InsertOrAssign(const_iterator hint, key_type&& key, TP&& value) {
+    auto result = this->Emplace(std::piecewise_construct,
+                                std::forward_as_tuple(std::move(key)),
+                                std::forward_as_tuple(std::forward<TP>(value)));
+    if (!result.second) {
+      result.first->second = std::forward<TP>(value);
+    }
+
+    return result.first;
+  }
+
   template <typename TOtherHash, typename TOtherKeyEqual>
   void Merge(ConcurrentUnorderedMap<key_type, mapped_type, TOtherHash,
                                     TOtherKeyEqual, allocator_type>& source) {
@@ -411,6 +464,32 @@ class concurrent_unordered_map {
     internal_instance_.Insert(__l);
   }
 
+  template <typename _Obj>
+  std::pair<iterator, bool> insert_or_assign(const key_type& __k,
+                                             _Obj&& __obj) {
+    return internal_instance_.InsertOrAssign(__k, std::forward<_Obj>(__obj));
+  }
+
+  template <typename _Obj>
+  std::pair<iterator, bool> insert_or_assign(key_type&& __k, _Obj&& __obj) {
+    return internal_instance_.InsertOrAssign(std::move(__k),
+                                             std::forward<_Obj>(__obj));
+  }
+
+  template <typename _Obj>
+  iterator insert_or_assign(const_iterator __hint, const key_type& __k,
+                            _Obj&& __obj) {
+    return internal_instance_.InsertOrAssign(__hint, __k,
+                                             std::forward<_Obj>(__obj));
+  }
+
+  template <typename _Obj>
+  iterator insert_or_assign(const_iterator __hint, key_type&& __k,
+                            _Obj&& __obj) {
+    return internal_instance_.InsertOrAssign(__hint, std::move(__k),
+                                             std::forward<_Obj>(__obj));
+  }
+
   iterator erase(const_iterator __position) {
     return internal_instance_.UnsafeErase(__position);
   }
@@ -548,6 +627,115 @@ class concurrent_unordered_map {
     return lhs.internal_instance_ == rhs.internal_instance_;
   }
 };
+
+#if __CPP17_DEDUCTION_GUIDES_PRESENT
+template <typename It,
+          typename Hash =
+              std::hash<ws::concurrency::detail::templates::iterator_key_t<It>>,
+          typename KeyEq = std::equal_to<
+              ws::concurrency::detail::templates::iterator_key_t<It>>,
+          typename Alloc = ws::concurrency::WsAllocator<
+              ws::concurrency::detail::templates::iterator_alloc_pair_t<It>>,
+          typename = std::enable_if_t<
+              ws::concurrency::detail::containers::is_input_iterator_v<It>>,
+          typename = std::enable_if_t<
+              ws::concurrency::detail::templates::is_allocator_v<Alloc>>,
+          typename = std::enable_if_t<
+              !ws::concurrency::detail::templates::is_allocator_v<Hash>>,
+          typename = std::enable_if_t<
+              !ws::concurrency::detail::templates::is_allocator_v<KeyEq>>,
+          typename = std::enable_if_t<!std::is_integral_v<Hash>>>
+concurrent_unordered_map(It, It, std::size_t = {}, Hash = Hash(),
+                         KeyEq = KeyEq(), Alloc = Alloc())
+    -> concurrent_unordered_map<
+        ws::concurrency::detail::templates::iterator_key_t<It>,
+        ws::concurrency::detail::templates::iterator_mapped_t<It>, Hash, KeyEq,
+        Alloc>;
+
+template <
+    typename Key, typename T,
+    typename Hash = std::hash<std::remove_const_t<Key>>,
+    typename KeyEq = std::equal_to<std::remove_const_t<Key>>,
+    typename Alloc = ws::concurrency::WsAllocator<std::pair<const Key, T>>,
+    typename = std::enable_if_t<
+        ws::concurrency::detail::templates::is_allocator_v<Alloc>>,
+    typename = std::enable_if_t<
+        !ws::concurrency::detail::templates::is_allocator_v<Hash>>,
+    typename = std::enable_if_t<
+        !ws::concurrency::detail::templates::is_allocator_v<KeyEq>>,
+    typename = std::enable_if_t<!std::is_integral_v<Hash>>>
+concurrent_unordered_map(std::initializer_list<std::pair<Key, T>>,
+                         std::size_t = {}, Hash = Hash(), KeyEq = KeyEq(),
+                         Alloc = Alloc())
+    -> concurrent_unordered_map<std::remove_const_t<Key>, T, Hash, KeyEq,
+                                Alloc>;
+
+template <typename It, typename Alloc,
+          typename = std::enable_if_t<
+              ws::concurrency::detail::containers::is_input_iterator_v<It>>,
+          typename = std::enable_if_t<
+              ws::concurrency::detail::templates::is_allocator_v<Alloc>>>
+concurrent_unordered_map(It, It, std::size_t, Alloc)
+    -> concurrent_unordered_map<
+        ws::concurrency::detail::templates::iterator_key_t<It>,
+        ws::concurrency::detail::templates::iterator_mapped_t<It>,
+        std::hash<ws::concurrency::detail::templates::iterator_key_t<It>>,
+        std::equal_to<ws::concurrency::detail::templates::iterator_key_t<It>>,
+        Alloc>;
+
+template <typename It, typename Hash, typename Alloc,
+          typename = std::enable_if_t<
+              ws::concurrency::detail::containers::is_input_iterator_v<It>>,
+          typename = std::enable_if_t<
+              ws::concurrency::detail::templates::is_allocator_v<Alloc>>,
+          typename = std::enable_if_t<
+              !ws::concurrency::detail::templates::is_allocator_v<Hash>>,
+          typename = std::enable_if_t<!std::is_integral_v<Hash>>>
+concurrent_unordered_map(It, It, std::size_t, Hash, Alloc)
+    -> concurrent_unordered_map<
+        ws::concurrency::detail::templates::iterator_key_t<It>,
+        ws::concurrency::detail::templates::iterator_mapped_t<It>, Hash,
+        std::equal_to<ws::concurrency::detail::templates::iterator_key_t<It>>,
+        Alloc>;
+
+template <typename Key, typename T, typename Alloc,
+          typename = std::enable_if_t<
+              ws::concurrency::detail::templates::is_allocator_v<Alloc>>>
+concurrent_unordered_map(std::initializer_list<std::pair<Key, T>>, std::size_t,
+                         Alloc)
+    -> concurrent_unordered_map<std::remove_const_t<Key>, T,
+                                std::hash<std::remove_const_t<Key>>,
+                                std::equal_to<std::remove_const_t<Key>>, Alloc>;
+
+template <typename Key, typename T, typename Alloc,
+          typename = std::enable_if_t<
+              ws::concurrency::detail::templates::is_allocator_v<Alloc>>>
+concurrent_unordered_map(std::initializer_list<std::pair<Key, T>>, Alloc)
+    -> concurrent_unordered_map<std::remove_const_t<Key>, T,
+                                std::hash<std::remove_const_t<Key>>,
+                                std::equal_to<std::remove_const_t<Key>>, Alloc>;
+
+template <typename Key, typename T, typename Hash, typename Alloc,
+          typename = std::enable_if_t<
+              ws::concurrency::detail::templates::is_allocator_v<Alloc>>,
+          typename = std::enable_if_t<
+              !ws::concurrency::detail::templates::is_allocator_v<Hash>>,
+          typename = std::enable_if_t<!std::is_integral_v<Hash>>>
+concurrent_unordered_map(std::initializer_list<std::pair<Key, T>>, std::size_t,
+                         Hash, Alloc)
+    -> concurrent_unordered_map<std::remove_const_t<Key>, T, Hash,
+                                std::equal_to<std::remove_const_t<Key>>, Alloc>;
+
+#if __APPLE__ && __TBB_CLANG_VERSION == 100000
+
+template <typename TKey, typename T, typename THash, typename TKeyEq,
+          typename TAlloc>
+concurrent_unordered_map(
+    concurrent_unordered_map<TKey, T, THash, TKeyEq, TAlloc>, TAlloc)
+    -> concurrent_unordered_map<TKey, T, THash, TKeyEq, TAlloc>;
+#endif
+
+#endif
 
 }  // namespace stl
 

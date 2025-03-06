@@ -9,34 +9,47 @@ namespace imaging {
 
 struct ImageContext {
  public:
+  using key_type = std::string;
+  using mapped_type = std::int32_t;
+  using size_type = std::size_t;
+  using map_type = std::unordered_map<key_type, mapped_type>;
+
   explicit ImageContext();
 
-  explicit ImageContext(const std::unordered_map<std::string, int32_t> tags);
+  explicit ImageContext(const map_type& tags);
 
   ~ImageContext();
 
-  void Add(const std::string key, const int32_t value);
+  bool Empty() const;
 
-  bool Contains(const std::string& key) const;
+  size_type Size() const;
 
-  std::optional<int32_t> Get(const std::string& key) const;
+  bool Contains(const key_type& key) const;
 
-  std::unordered_map<std::string, int32_t>::iterator begin();
+  mapped_type& operator[](const key_type& key);
 
-  std::unordered_map<std::string, int32_t>::iterator end();
+  mapped_type& operator[](key_type&& key);
 
-  std::unordered_map<std::string, int32_t>::const_iterator begin() const;
+  std::optional<mapped_type> Get(const key_type& key) const;
 
-  std::unordered_map<std::string, int32_t>::const_iterator end() const;
+  void Add(const key_type key, const mapped_type value);
+
+  map_type::iterator begin();
+
+  map_type::iterator end();
+
+  map_type::const_iterator begin() const;
+
+  map_type::const_iterator end() const;
 
   std::string ToString() const;
 
-  void Clean();
+  void Clear();
 
   void Dispose();
 
  private:
-  std::unordered_map<std::string, int32_t> data;
+  map_type data;
 };
 
 std::ostream& operator<<(std::ostream& os, const ImageContext& context);
