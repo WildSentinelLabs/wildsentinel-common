@@ -2,60 +2,21 @@
 
 #include <utility>
 
-#include "concurrency/aligned_allocator.h"
 #include "concurrency/detail/concurrent_queue_base.h"
 
 namespace ws {
 namespace concurrency {
 namespace collections {
-template <typename TQueueRep, typename TAllocator>
-inline std::pair<bool, ws::concurrency::detail::ticket_type> InternalTryPopImpl(
-    void* dst, TQueueRep& queue, TAllocator& alloc) {
-  ws::concurrency::detail::ticket_type ticket{};
-  do {
-    ticket = queue.head_counter_.load(std::memory_order_acquire);
-    do {
-      if (static_cast<std::ptrdiff_t>(
-              queue.tail_counter_.load(std::memory_order_relaxed) - ticket) <=
-          0) {
-        return {false, ticket};
-      }
 
-    } while (!queue.head_counter_.compare_exchange_strong(ticket, ticket + 1));
-  } while (!queue.Choose(ticket).Pop(dst, ticket, queue, alloc));
-  return {true, ticket};
-}
-
-template <typename TQueueRep, typename TAllocator>
-inline std::pair<bool, typename TQueueRep::value_type*> InternalTryFrontImpl(
-    TQueueRep& queue) {
-  ws::concurrency::detail::ticket_type ticket{};
-  do {
-    ticket = queue.head_counter_.load(std::memory_order_acquire);
-    if (static_cast<std::ptrdiff_t>(
-            queue.tail_counter_.load(std::memory_order_relaxed) - ticket) <=
-        0) {
-      return {false, nullptr};
-    }
-  } while (!queue.head_counter_.compare_exchange_strong(ticket, ticket));
-
-  typename TQueueRep::value_type* front_element = queue.Choose(ticket).Front();
-
-  return {front_element != nullptr, front_element};
-}
-
-template <typename T,
-          typename TAllocator = ws::concurrency::AlignedAllocator<T>>
+template <typename T, typename TAllocator = std::allocator<T>>
 class ConcurrentQueue {
-  using allocator_traits_type =
-      ws::concurrency::detail::AllocatorTraits<TAllocator>;
+  using allocator_traits_type = std::allocator_traits<TAllocator>;
   using queue_representation_type =
       ws::concurrency::detail::ConcurrentQueueRep<T, TAllocator>;
   using queue_allocator_type =
       typename allocator_traits_type::template rebind_alloc<
           queue_representation_type>;
-  using queue_allocator_traits =
-      ws::concurrency::detail::AllocatorTraits<queue_allocator_type>;
+  using queue_allocator_traits = std::allocator_traits<queue_allocator_type>;
 
  public:
   using size_type = std::size_t;
@@ -73,7 +34,7 @@ class ConcurrentQueue {
   explicit ConcurrentQueue(const allocator_type& a)
       : allocator_(a), queue_rep_ptr(nullptr) {
     queue_rep_ptr = static_cast<queue_representation_type*>(
-        ws::concurrency::CacheAlignedAllocate(
+        ws::concurrency::detail::CacheAlignedAllocate(
             sizeof(queue_representation_type)));
     queue_allocator_traits::construct(allocator_, queue_rep_ptr);
     assert(ws::arch::detail::IsAligned(queue_rep_ptr,
@@ -89,17 +50,6 @@ class ConcurrentQueue {
                                        ws::arch::detail::CacheLineSize()) &&
            "alignment error");
   }
-
-  template <typename TInputIterator>
-  ConcurrentQueue(TInputIterator begin, TInputIterator end,
-                  const allocator_type& a = allocator_type())
-      : ConcurrentQueue(a) {
-    for (; begin != end; ++begin) Push(*begin);
-  }
-
-  ConcurrentQueue(std::initializer_list<value_type> init,
-                  const allocator_type& alloc = allocator_type())
-      : ConcurrentQueue(init.begin(), init.end(), alloc) {}
 
   ConcurrentQueue(const ConcurrentQueue& src, const allocator_type& a)
       : ConcurrentQueue(a) {
@@ -130,9 +80,8 @@ class ConcurrentQueue {
 
   ~ConcurrentQueue() {
     Clear();
-    queue_rep_ptr->Clear(allocator_);
     queue_allocator_traits::destroy(allocator_, queue_rep_ptr);
-    ws::concurrency::CacheAlignedDeallocate(queue_rep_ptr);
+    ws::concurrency::detail::CacheAlignedDeallocate(queue_rep_ptr);
   }
 
   ConcurrentQueue& operator=(const ConcurrentQueue& other) {
@@ -160,22 +109,6 @@ class ConcurrentQueue {
     return *this;
   }
 
-  ConcurrentQueue& operator=(std::initializer_list<value_type> init) {
-    Assign(init);
-    return *this;
-  }
-
-  template <typename TInputIterator>
-  void Assign(TInputIterator first, TInputIterator last) {
-    ConcurrentQueue src(first, last);
-    Clear();
-    queue_rep_ptr->Assign(*src.queue_rep_ptr, allocator_, MoveConstructItem);
-  }
-
-  void Assign(std::initializer_list<value_type> init) {
-    Assign(init.begin(), init.end());
-  }
-
   void Swap(ConcurrentQueue& other) {
     assert(allocator_ == other.allocator_ && "unequal allocators");
     InternalSwap(other);
@@ -201,22 +134,6 @@ class ConcurrentQueue {
 
   void Clear() { queue_rep_ptr->Clear(allocator_); }
 
-  reference Front() {
-    auto [found, value_ptr] = InternalTryFrontImpl(*queue_rep_ptr);
-    if (!found || !value_ptr) {
-      throw std::runtime_error("ConcurrentQueue::Front(): queue is empty");
-    }
-    return *value_ptr;
-  }
-
-  const_reference Front() const {
-    auto [found, value_ptr] = InternalTryFrontImpl(*queue_rep_ptr);
-    if (!found || !value_ptr) {
-      throw std::runtime_error("ConcurrentQueue::Front(): queue is empty");
-    }
-    return *value_ptr;
-  }
-
   allocator_type get_allocator() const { return allocator_; }
 
  private:
@@ -233,7 +150,9 @@ class ConcurrentQueue {
   }
 
   bool InternalTryPop(void* dst) {
-    return InternalTryPopImpl(dst, *queue_rep_ptr, allocator_).first;
+    return ws::concurrency::detail::InternalTryPopImpl(dst, *queue_rep_ptr,
+                                                       allocator_)
+        .first;
   }
 
   static void CopyConstructItem(T* location, const void* src) {
@@ -257,7 +176,7 @@ class ConcurrentQueue {
     return lhs.UnsafeSize() == rhs.UnsafeSize();
   }
 
-#if !__CPP20_COMPARISONS_PRESENT
+#if !_CPP20_COMPARISONS_PRESENT
   friend bool operator!=(const concurrent_queue& lhs,
                          const concurrent_queue& rhs) {
     return !(lhs == rhs);
@@ -265,16 +184,14 @@ class ConcurrentQueue {
 #endif
 };
 
-#if __CPP17_DEDUCTION_GUIDES_PRESENT >= 201606
-template <typename TContainer,
-          typename = ws::concurrency::AlignedAllocator<TContainer>>
+#if _CPP17_DEDUCTION_GUIDES_PRESENT >= 201606
+template <typename TContainer, typename = std::allocator<TContainer>>
 ConcurrentQueue(TContainer)
     -> ConcurrentQueue<typename TContainer::value_type, TContainer>;
 #endif
 
 namespace stl {
-template <typename T,
-          typename TAllocator = ws::concurrency::AlignedAllocator<T>>
+template <typename T, typename TAllocator = std::allocator<T>>
 class concurrent_queue {
  public:
   using queue_type = ConcurrentQueue<T, TAllocator>;
@@ -297,14 +214,10 @@ class concurrent_queue {
   explicit concurrent_queue(const allocator_type& alloc)
       : internal_instance_(alloc) {}
 
-  template <typename InputIt>
-  concurrent_queue(InputIt first, InputIt last,
+  template <typename TInputIt>
+  concurrent_queue(TInputIt first, TInputIt last,
                    const allocator_type& alloc = allocator_type())
       : internal_instance_(first, last, alloc) {}
-
-  concurrent_queue(std::initializer_list<value_type> init,
-                   const allocator_type& alloc = allocator_type())
-      : internal_instance_(init, alloc) {}
 
   concurrent_queue(const concurrent_queue& other)
       : internal_instance_(other.internal_instance_) {}
@@ -324,11 +237,6 @@ class concurrent_queue {
   _GLIBCXX_NODISCARD
   size_type size() const { return internal_instance_.UnsafeSize(); }
 
-  _GLIBCXX_NODISCARD
-  reference front() { return internal_instance_.Front(); }
-
-  const_reference front() const { return internal_instance_.Front(); }
-
   void push(const value_type& __x) { internal_instance_.Push(__x); }
 
   void push(value_type&& __x) { internal_instance_.Push(std::move(__x)); }
@@ -338,9 +246,14 @@ class concurrent_queue {
     internal_instance_.Emplace(std::forward<TArgs>(__args)...);
   }
 
-  bool try_pop() { return internal_instance_.TryPop(); }
+  bool try_pop(value_type& __x) { return internal_instance_.TryPop(__x); }
 
-  void pop() { internal_instance_.TryPop(); }
+  void pop(value_type& __x) { internal_instance_.TryPop(__x); }
+
+  void pop() {
+    value_type & __x;
+    internal_instance_.TryPop(__x);
+  }
 
   void swap(concurrent_queue& __q) {
     internal_instance_.Swap(__q.internal_instance_);
@@ -355,11 +268,6 @@ class concurrent_queue {
     internal_instance_ = std::move(other.internal_instance_);
     return *this;
   }
-
-  concurrent_queue& operator=(std::initializer_list<value_type> il) {
-    internal_instance_ = il;
-    return *this;
-  }
 };
 
 template <typename T, typename TAllocator>
@@ -368,9 +276,8 @@ void swap(concurrent_queue<T, TAllocator>& lhs,
   lhs.swap(rhs);
 }
 
-#if __CPP17_DEDUCTION_GUIDES_PRESENT >= 201606
-template <typename TContainer,
-          typename = ws::concurrency::AlignedAllocator<TContainer>>
+#if _CPP17_DEDUCTION_GUIDES_PRESENT >= 201606
+template <typename TContainer, typename = std::allocator<TContainer>>
 concurrent_queue(TContainer)
     -> concurrent_queue<typename TContainer::value_type, TContainer>;
 #endif

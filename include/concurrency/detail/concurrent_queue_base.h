@@ -1,10 +1,12 @@
 #pragma once
 
+#include "arch/config.h"
 #include "concurrency/detail/allocator_traits.h"
 #include "concurrency/detail/atomic_backoff.h"
-#include "concurrency/detail/config.h"
+#include "concurrency/detail/concurrent_monitor.h"
 #include "concurrency/detail/helpers.h"
 #include "concurrency/spin_mutex.h"
+#include "delegate.h"
 
 namespace ws {
 namespace concurrency {
@@ -24,7 +26,6 @@ template <typename TContainer, typename T, typename TAllocator>
 class MicroQueuePopFinalizer;
 
 #if _MSC_VER && !defined(__INTEL_COMPILER)
-// unary minus operator applied to unsigned type, result still unsigned
 #pragma warning(push)
 #pragma warning(disable : 4146)
 #endif
@@ -42,8 +43,7 @@ class MicroQueue {
   using const_reference = const value_type&;
 
   using allocator_type = TAllocator;
-  using allocator_traits_type =
-      ws::concurrency::detail::AllocatorTraits<allocator_type>;
+  using allocator_traits_type = std::allocator_traits<allocator_type>;
   using queue_allocator_type =
       typename allocator_traits_type::template rebind_alloc<queue_rep_type>;
 
@@ -311,40 +311,21 @@ class MicroQueue {
     clear(allocator, invalid_page, invalid_page);
   }
 
-  value_type* Front() {
-    PaddedPage* head_page = head_page_.load(std::memory_order_acquire);
-    if (!head_page) {
-      return nullptr;
-    }
-
-    size_type index = ws::arch::detail::ModulusPowerOfTwo(
-        head_counter_.load(std::memory_order_acquire) / queue_rep_type::kNQueue,
-        kItemsPerPage);
-
-    if (head_page->mask.load(std::memory_order_acquire) &
-        (std::uintptr_t(1) << index)) {
-      return &head_page->operator[](index);
-    }
-
-    return nullptr;
-  }
-
  protected:
-  using page_allocator_traits =
-      ws::concurrency::detail::AllocatorTraits<page_allocator_type>;
+  using page_allocator_traits = std::allocator_traits<page_allocator_type>;
 
  private:
   friend class MicroQueuePopFinalizer<self_type, value_type,
                                       page_allocator_type>;
 
   class Destroyer {
-    value_type& value_ref;
+    value_type& value_;
 
    public:
-    Destroyer(reference value) : value_ref(value) {}
+    Destroyer(reference value) : value_(value) {}
     Destroyer(const Destroyer&) = delete;
     Destroyer& operator=(const Destroyer&) = delete;
-    ~Destroyer() { value_ref.~T(); }
+    ~Destroyer() { value_.~T(); }
   };
 
   void CopyItem(PaddedPage& dst, size_type dindex, const PaddedPage& src,
@@ -383,34 +364,33 @@ class MicroQueue {
 
 #if _MSC_VER && !defined(__INTEL_COMPILER)
 #pragma warning(pop)
-#endif  // warning 4146 is back
+#endif
 
 template <typename TContainer, typename T, typename TAllocator>
 class MicroQueuePopFinalizer {
  public:
   using PaddedPage = typename TContainer::PaddedPage;
   using allocator_type = TAllocator;
-  using allocator_traits_type =
-      ws::concurrency::detail::AllocatorTraits<allocator_type>;
+  using allocator_traits_type = std::allocator_traits<allocator_type>;
 
   MicroQueuePopFinalizer(TContainer& queue, TAllocator& alloc, ticket_type k,
                          PaddedPage* p)
-      : ticket_(k), queue_ref_(queue), page_ref_(p), allocator_(alloc) {}
+      : ticket_(k), queue_(queue), page_(p), allocator_(alloc) {}
 
   MicroQueuePopFinalizer(const MicroQueuePopFinalizer&) = delete;
   MicroQueuePopFinalizer& operator=(const MicroQueuePopFinalizer&) = delete;
 
   ~MicroQueuePopFinalizer() {
-    PaddedPage* p = page_ref_;
+    PaddedPage* p = page_;
     if (IsValidPage(p)) {
-      ws::concurrency::SpinMutex::ScopedLock lock(queue_ref_.page_mutex_);
+      ws::concurrency::SpinMutex::ScopedLock lock(queue_.page_mutex_);
       PaddedPage* q = p->next;
-      queue_ref_.head_page_.store(q, std::memory_order_relaxed);
+      queue_.head_page_.store(q, std::memory_order_relaxed);
       if (!IsValidPage(q)) {
-        queue_ref_.tail_page_.store(nullptr, std::memory_order_relaxed);
+        queue_.tail_page_.store(nullptr, std::memory_order_relaxed);
       }
     }
-    queue_ref_.head_counter_.store(ticket_, std::memory_order_release);
+    queue_.head_counter_.store(ticket_, std::memory_order_release);
     if (IsValidPage(p)) {
       allocator_traits_type::destroy(allocator_, static_cast<PaddedPage*>(p));
       allocator_traits_type::deallocate(allocator_, static_cast<PaddedPage*>(p),
@@ -420,13 +400,12 @@ class MicroQueuePopFinalizer {
 
  private:
   ticket_type ticket_;
-  TContainer& queue_ref_;
-  PaddedPage* page_ref_;
+  TContainer& queue_;
+  PaddedPage* page_;
   TAllocator& allocator_;
 };
 
 #if _MSC_VER && !defined(__INTEL_COMPILER)
-// structure was padded due to alignment specifier
 #pragma warning(push)
 #pragma warning(disable : 4324)
 #endif
@@ -437,15 +416,13 @@ struct ConcurrentQueueRep {
   using size_type = std::size_t;
   using MicroQueue_type = MicroQueue<T, TAllocator>;
   using allocator_type = TAllocator;
-  using allocator_traits_type =
-      ws::concurrency::detail::AllocatorTraits<allocator_type>;
+  using allocator_traits_type = std::allocator_traits<allocator_type>;
   using PaddedPage = typename MicroQueue_type::PaddedPage;
   using page_allocator_type = typename MicroQueue_type::page_allocator_type;
   using item_constructor_type = typename MicroQueue_type::item_constructor_type;
 
  private:
-  using page_allocator_traits =
-      ws::concurrency::detail::AllocatorTraits<page_allocator_type>;
+  using page_allocator_traits = std::allocator_traits<page_allocator_type>;
   using queue_allocator_type =
       typename allocator_traits_type::template rebind_alloc<self_type>;
 
@@ -539,6 +516,96 @@ struct ConcurrentQueueRep {
 #if _MSC_VER && !defined(__INTEL_COMPILER)
 #pragma warning(pop)
 #endif
+
+template <typename TQueueRep, typename TAllocator>
+inline std::pair<bool, ticket_type> InternalTryPopImpl(void* dst,
+                                                       TQueueRep& queue,
+                                                       TAllocator& alloc) {
+  ticket_type ticket{};
+  do {
+    ticket = queue.head_counter_.load(std::memory_order_acquire);
+    do {
+      if (static_cast<std::ptrdiff_t>(
+              queue.tail_counter_.load(std::memory_order_relaxed) - ticket) <=
+          0) {
+        return {false, ticket};
+      }
+
+    } while (!queue.head_counter_.compare_exchange_strong(ticket, ticket + 1));
+  } while (!queue.Choose(ticket).Pop(dst, ticket, queue, alloc));
+  return {true, ticket};
+}
+
+static constexpr std::size_t kCbqSlotsAvailTag = 0;
+static constexpr std::size_t kCbqItemsAvailTag = 1;
+static constexpr std::size_t kMonitorsNumber = 2;
+
+inline std::uint8_t* AllocateBoundedQueueRep(std::size_t queue_rep_size) {
+  std::size_t monitors_mem_size =
+      sizeof(ws::concurrency::detail::ConcurrentMonitor) * kMonitorsNumber;
+  std::uint8_t* mem =
+      static_cast<std::uint8_t*>(ws::concurrency::detail::CacheAlignedAllocate(
+          queue_rep_size + monitors_mem_size));
+
+  ws::concurrency::detail::ConcurrentMonitor* monitors =
+      reinterpret_cast<ws::concurrency::detail::ConcurrentMonitor*>(
+          mem + queue_rep_size);
+  for (std::size_t i = 0; i < kMonitorsNumber; ++i) {
+    new (monitors + i) ws::concurrency::detail::ConcurrentMonitor();
+  }
+
+  return mem;
+}
+
+inline void DeallocateBoundedQueueRep(std::uint8_t* mem,
+                                      std::size_t queue_rep_size) {
+  ws::concurrency::detail::ConcurrentMonitor* monitors =
+      reinterpret_cast<ws::concurrency::detail::ConcurrentMonitor*>(
+          mem + queue_rep_size);
+  for (std::size_t i = 0; i < kMonitorsNumber; ++i) {
+    monitors[i].~ConcurrentMonitor();
+  }
+
+  ws::concurrency::detail::CacheAlignedDeallocate(mem);
+}
+
+inline void WaitBoundedQueueMonitor(
+    ws::concurrency::detail::ConcurrentMonitor* monitors,
+    std::size_t monitor_tag, std::ptrdiff_t target,
+    const ws::Delegate<bool()>& predicate) {
+  assert(monitor_tag < kMonitorsNumber);
+  ws::concurrency::detail::ConcurrentMonitor& monitor = monitors[monitor_tag];
+
+  monitor.Wait<ws::concurrency::detail::ConcurrentMonitor::thread_context>(
+      [&] { return !predicate(); }, std::uintptr_t(target));
+}
+
+inline void AbortBoundedQueueMonitors(
+    ws::concurrency::detail::ConcurrentMonitor* monitors) {
+  ws::concurrency::detail::ConcurrentMonitor& items_avail =
+      monitors[kCbqItemsAvailTag];
+  ws::concurrency::detail::ConcurrentMonitor& slots_avail =
+      monitors[kCbqSlotsAvailTag];
+
+  items_avail.AbortAll();
+  slots_avail.AbortAll();
+}
+
+struct predicate_leq {
+  std::size_t ticket_;
+  predicate_leq(std::size_t ticket) : ticket_(ticket) {}
+  bool operator()(std::uintptr_t ticket) const {
+    return static_cast<std::size_t>(ticket) <= ticket_;
+  }
+};
+
+void inline NotifyBoundedQueueMonitor(
+    ws::concurrency::detail::ConcurrentMonitor* monitors,
+    std::size_t monitor_tag, std::size_t ticket) {
+  assert(monitor_tag < kMonitorsNumber);
+  ws::concurrency::detail::ConcurrentMonitor& monitor = monitors[monitor_tag];
+  monitor.Notify(predicate_leq(ticket));
+}
 
 }  // namespace detail
 }  // namespace concurrency

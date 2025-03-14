@@ -1,21 +1,29 @@
 #pragma once
 #include <type_traits>
 
-#include "concurrency/detail/config.h"
+#include "arch/config.h"
+#include "arch/cpu_arch.h"
 
 namespace ws {
 namespace concurrency {
 namespace detail {
-template <typename TAllocator>
-class AllocatorTraits : public std::allocator_traits<TAllocator> {
-  using base_type = std::allocator_traits<TAllocator>;
 
- public:
-  template <typename T>
-  using rebind_traits = typename ws::concurrency::detail::AllocatorTraits<
-      typename base_type::template allocator_traits<TAllocator>::rebind_alloc<
-          T>>;
-};
+inline void* CacheAlignedAllocate(std::size_t size) {
+  const std::size_t kCacheLineSize = ws::arch::detail::CacheLineSize();
+  assert(ws::arch::detail::IsPowerOfTwo(kCacheLineSize) &&
+         "must be power of two");
+  if (size + kCacheLineSize < size) throw std::bad_alloc();
+  if (size == 0) size = 1;
+  void* result = ws::arch::detail::AlignedAllocate(size, kCacheLineSize);
+  if (!result) throw std::bad_alloc();
+  assert(ws::arch::detail::IsAligned(result, kCacheLineSize) &&
+         "The returned address isn't aligned");
+  return result;
+}
+
+inline void CacheAlignedDeallocate(void* p) {
+  ws::arch::detail::AlignedDeallocate(p);
+}
 
 template <typename TAllocator>
 void CopyAssignAllocatorsImpl(TAllocator& lhs, const TAllocator& rhs,
@@ -52,8 +60,7 @@ void MoveAssignAllocators(TAllocator& lhs, TAllocator& rhs) {
 
 template <typename TAllocator>
 void SwapAllocatorsImpl(TAllocator& lhs, TAllocator& rhs, std::true_type) {
-  using std::swap;
-  swap(lhs, rhs);
+  std::swap(lhs, rhs);
 }
 
 template <typename TAllocator>

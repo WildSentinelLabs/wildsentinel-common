@@ -6,14 +6,14 @@
 #include <memory>
 #include <type_traits>
 
+#include "arch/config.h"
 #include "concurrency/detail/allocator_traits.h"
-#include "concurrency/detail/config.h"
+#include "concurrency/detail/atomic_backoff.h"
 #include "concurrency/detail/helpers.h"
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 #pragma warning(push)
-#pragma warning( \
-    disable : 4127)  // warning C4127: conditional expression is constant
+#pragma warning(disable : 4127)
 #endif
 
 namespace ws {
@@ -34,14 +34,13 @@ class SegmentTable {
 
   using allocator_type = TAllocator;
 
-  using allocator_traits_type =
-      ws::concurrency::detail::AllocatorTraits<allocator_type>;
+  using allocator_traits_type = std::allocator_traits<allocator_type>;
   using segment_table_allocator_type =
       typename allocator_traits_type::template rebind_alloc<atomic_segment>;
 
  protected:
   using segment_table_allocator_traits =
-      ws::concurrency::detail::AllocatorTraits<segment_table_allocator_type>;
+      std::allocator_traits<segment_table_allocator_type>;
   using derived_type = TDerivedType;
 
   static constexpr size_type kPointersPerEmbeddedTable =
@@ -50,38 +49,37 @@ class SegmentTable {
 
  public:
   SegmentTable(const allocator_type& alloc = allocator_type())
-      : segment_table_allocator_ref_(alloc),
-        segment_table_ref_(nullptr),
-        first_block_ref_{},
-        size_ref_{},
-        segment_table_allocation_failed_ref_{} {
-    segment_table_ref_.store(my_embedded_table_, std::memory_order_relaxed);
+      : segment_table_allocator_(alloc),
+        segment_table_(nullptr),
+        first_block_{},
+        size_{},
+        segment_table_allocation_failed_{} {
+    segment_table_.store(my_embedded_table_, std::memory_order_relaxed);
     ZeroTable(my_embedded_table_, kPointersPerEmbeddedTable);
   }
 
   SegmentTable(const SegmentTable& other)
-      : segment_table_allocator_ref_(
-            segment_table_allocator_traits::
-                select_on_container_copy_construction(
-                    other.segment_table_allocator_ref_)),
-        segment_table_ref_(nullptr),
-        first_block_ref_{},
-        size_ref_{},
-        segment_table_allocation_failed_ref_{} {
-    segment_table_ref_.store(my_embedded_table_, std::memory_order_relaxed);
+      : segment_table_allocator_(segment_table_allocator_traits::
+                                     select_on_container_copy_construction(
+                                         other.segment_table_allocator_)),
+        segment_table_(nullptr),
+        first_block_{},
+        size_{},
+        segment_table_allocation_failed_{} {
+    segment_table_.store(my_embedded_table_, std::memory_order_relaxed);
     ZeroTable(my_embedded_table_, kPointersPerEmbeddedTable);
-    TryCall([&] {
+    ws::concurrency::detail::templates::TryCall([&] {
       InternalTransfer(other, CopySegmentBodyType{*this});
     }).OnException([&] { Clear(); });
   }
 
   SegmentTable(const SegmentTable& other, const allocator_type& alloc)
-      : segment_table_allocator_ref_(alloc),
-        segment_table_ref_(nullptr),
-        first_block_ref_{},
-        size_ref_{},
-        segment_table_allocation_failed_ref_{} {
-    segment_table_ref_.store(my_embedded_table_, std::memory_order_relaxed);
+      : segment_table_allocator_(alloc),
+        segment_table_(nullptr),
+        first_block_{},
+        size_{},
+        segment_table_allocation_failed_{} {
+    segment_table_.store(my_embedded_table_, std::memory_order_relaxed);
     ZeroTable(my_embedded_table_, kPointersPerEmbeddedTable);
     TryCall([&] {
       InternalTransfer(other, CopySegmentBodyType{*this});
@@ -89,24 +87,23 @@ class SegmentTable {
   }
 
   SegmentTable(SegmentTable&& other)
-      : segment_table_allocator_ref_(
-            std::move(other.segment_table_allocator_ref_)),
-        segment_table_ref_(nullptr),
-        first_block_ref_{},
-        size_ref_{},
-        segment_table_allocation_failed_ref_{} {
-    segment_table_ref_.store(my_embedded_table_, std::memory_order_relaxed);
+      : segment_table_allocator_(std::move(other.segment_table_allocator_)),
+        segment_table_(nullptr),
+        first_block_{},
+        size_{},
+        segment_table_allocation_failed_{} {
+    segment_table_.store(my_embedded_table_, std::memory_order_relaxed);
     ZeroTable(my_embedded_table_, kPointersPerEmbeddedTable);
     InternalMove(std::move(other));
   }
 
   SegmentTable(SegmentTable&& other, const allocator_type& alloc)
-      : segment_table_allocator_ref_(alloc),
-        segment_table_ref_(nullptr),
-        first_block_ref_{},
-        size_ref_{},
-        segment_table_allocation_failed_ref_{} {
-    segment_table_ref_.store(my_embedded_table_, std::memory_order_relaxed);
+      : segment_table_allocator_(alloc),
+        segment_table_(nullptr),
+        first_block_{},
+        size_{},
+        segment_table_allocation_failed_{} {
+    segment_table_.store(my_embedded_table_, std::memory_order_relaxed);
     ZeroTable(my_embedded_table_, kPointersPerEmbeddedTable);
     using is_equal_type =
         typename segment_table_allocator_traits::is_always_equal;
@@ -118,8 +115,8 @@ class SegmentTable {
 
   SegmentTable& operator=(const SegmentTable& other) {
     if (this != &other) {
-      CopyAssignAllocators(segment_table_allocator_ref_,
-                           other.segment_table_allocator_ref_);
+      CopyAssignAllocators(segment_table_allocator_,
+                           other.segment_table_allocator_);
       InternalTransfer(other, CopySegmentBodyType{*this});
     }
 
@@ -134,23 +131,22 @@ class SegmentTable {
         typename segment_table_allocator_traits::is_always_equal;
 
     if (this != &other) {
-      MoveAssignAllocators(segment_table_allocator_ref_,
-                           other.segment_table_allocator_ref_);
+      MoveAssignAllocators(segment_table_allocator_,
+                           other.segment_table_allocator_);
       InternalMoveAssign(std::move(other),
                          std::disjunction<is_equal_type, pocma_type>());
     }
     return *this;
   }
 
-  void Swap(SegmentTable& other) noexcept(derived_type::is_noexcept_swap) {
+  void Swap(SegmentTable& other) noexcept(derived_type::kIsNoExceptSwap) {
     using is_equal_type =
         typename segment_table_allocator_traits::is_always_equal;
     using pocs_type =
         typename segment_table_allocator_traits::propagate_on_container_swap;
 
     if (this != &other) {
-      SwapAllocators(segment_table_allocator_ref_,
-                     other.segment_table_allocator_ref_);
+      SwapAllocators(segment_table_allocator_, other.segment_table_allocator_);
       InternalSwap(other, std::disjunction<is_equal_type, pocs_type>());
     }
   }
@@ -168,11 +164,11 @@ class SegmentTable {
   }
 
   const segment_table_allocator_type& get_allocator() const {
-    return segment_table_allocator_ref_;
+    return segment_table_allocator_;
   }
 
   segment_table_allocator_type& get_allocator() {
-    return segment_table_allocator_ref_;
+    return segment_table_allocator_;
   }
 
   void EnableSegment(segment_type& segment, segment_table_type table,
@@ -233,10 +229,10 @@ class SegmentTable {
   }
 
   void Reserve(size_type n) {
-    if (n > allocator_traits_type::max_size(segment_table_allocator_ref_))
+    if (n > allocator_traits_type::max_size(segment_table_allocator_))
       throw std::bad_alloc();
 
-    size_type size = size_ref_.load(std::memory_order_relaxed);
+    size_type size = size_.load(std::memory_order_relaxed);
     segment_index_type start_seg_idx =
         size == 0 ? 0 : SegmentIndexOf(size - 1) + 1;
     for (segment_index_type seg_idx = start_seg_idx; SegmentBase(seg_idx) < n;
@@ -249,8 +245,8 @@ class SegmentTable {
   void Clear() {
     ClearSegments();
     ClearTable();
-    size_ref_.store(0, std::memory_order_relaxed);
-    first_block_ref_.store(0, std::memory_order_relaxed);
+    size_.store(0, std::memory_order_relaxed);
+    first_block_.store(0, std::memory_order_relaxed);
   }
 
   void ClearSegments() {
@@ -276,7 +272,7 @@ class SegmentTable {
     segment_table_type current_segment_table = Table();
     if (current_segment_table != my_embedded_table_) {
       DestroyAndDeallocateTable(current_segment_table, kPointersPerLongTable);
-      segment_table_ref_.store(my_embedded_table_, std::memory_order_relaxed);
+      segment_table_.store(my_embedded_table_, std::memory_order_relaxed);
       ZeroTable(my_embedded_table_, kPointersPerEmbeddedTable);
     }
   }
@@ -289,7 +285,7 @@ class SegmentTable {
           segment_table_type new_table =
               Self()->AllocateLongTable(my_embedded_table_, start_index);
 
-          if (segment_table_ref_.compare_exchange_strong(
+          if (segment_table_.compare_exchange_strong(
                   table, new_table,
                   /*memory order in case of a success*/
                   std::memory_order_release,
@@ -300,18 +296,17 @@ class SegmentTable {
             DestroyAndDeallocateTable(new_table, kPointersPerLongTable);
           }
         }).OnException([&] {
-          segment_table_allocation_failed_ref_.store(true,
-                                                     std::memory_order_relaxed);
+          segment_table_allocation_failed_.store(true,
+                                                 std::memory_order_relaxed);
         });
       } else {
         AtomicBackoff backoff;
         do {
-          if (segment_table_allocation_failed_ref_.load(
-                  std::memory_order_relaxed))
+          if (segment_table_allocation_failed_.load(std::memory_order_relaxed))
             throw std::bad_alloc();
 
           backoff.Wait();
-          table = segment_table_ref_.load(std::memory_order_acquire);
+          table = segment_table_.load(std::memory_order_acquire);
         } while (table == my_embedded_table_);
       }
     }
@@ -335,44 +330,44 @@ class SegmentTable {
   struct CopySegmentBodyType {
     void operator()(segment_index_type index, segment_type from,
                     segment_type to) const {
-      instance_ref.Self()->CopySegment(index, from, to);
+      instance_.Self()->CopySegment(index, from, to);
     }
-    SegmentTable& instance_ref;
+    SegmentTable& instance_;
   };
 
   struct MoveSegmentBodyType {
     void operator()(segment_index_type index, segment_type from,
                     segment_type to) const {
-      instance_ref.Self()->MoveSegment(index, from, to);
+      instance_.Self()->MoveSegment(index, from, to);
     }
-    SegmentTable& instance_ref;
+    SegmentTable& instance_;
   };
 
   template <typename TTransferBody>
   void InternalTransfer(const SegmentTable& other,
                         TTransferBody transfer_segment) {
-    static_cast<derived_type*>(this)->destroy_elements();
+    static_cast<derived_type*>(this)->DestroyElements();
 
     AssignFirstBlockIfNecessary(
-        other.first_block_ref_.load(std::memory_order_relaxed));
-    size_ref_.store(other.size_ref_.load(std::memory_order_relaxed),
-                    std::memory_order_relaxed);
+        other.first_block_.load(std::memory_order_relaxed));
+    size_.store(other.size_.load(std::memory_order_relaxed),
+                std::memory_order_relaxed);
 
     segment_table_type other_table = other.Table();
     size_type end_SegmentSize =
         SegmentSize(other.FindLastAllocatedSegment(other_table));
 
     size_type other_size =
-        end_SegmentSize < other.size_ref_.load(std::memory_order_relaxed)
-            ? other.size_ref_.load(std::memory_order_relaxed)
+        end_SegmentSize < other.size_.load(std::memory_order_relaxed)
+            ? other.size_.load(std::memory_order_relaxed)
             : end_SegmentSize;
     other_size =
-        segment_table_allocation_failed_ref_ ? kEmbeddedTableSize : other_size;
+        segment_table_allocation_failed_ ? kEmbeddedTableSize : other_size;
 
     for (segment_index_type i = 0; SegmentBase(i) < other_size; ++i) {
       if (other_table[i].load(std::memory_order_relaxed) ==
           kSegmentAllocationFailureTag) {
-        size_ref_ = SegmentBase(i);
+        size_ = SegmentBase(i);
         break;
       } else if (other_table[i].load(std::memory_order_relaxed) != nullptr) {
         InternalSubscript<true>(SegmentBase(i));
@@ -386,11 +381,10 @@ class SegmentTable {
 
   void InternalMove(SegmentTable&& other) {
     Clear();
-    first_block_ref_.store(
-        other.first_block_ref_.load(std::memory_order_relaxed),
-        std::memory_order_relaxed);
-    size_ref_.store(other.size_ref_.load(std::memory_order_relaxed),
-                    std::memory_order_relaxed);
+    first_block_.store(other.first_block_.load(std::memory_order_relaxed),
+                       std::memory_order_relaxed);
+    size_.store(other.size_.load(std::memory_order_relaxed),
+                std::memory_order_relaxed);
 
     if (other.Table() == other.my_embedded_table_) {
       for (size_type i = 0; i != kPointersPerEmbeddedTable; ++i) {
@@ -399,15 +393,14 @@ class SegmentTable {
         my_embedded_table_[i].store(other_segment, std::memory_order_relaxed);
         other.my_embedded_table_[i].store(nullptr, std::memory_order_relaxed);
       }
-      segment_table_ref_.store(my_embedded_table_, std::memory_order_relaxed);
+      segment_table_.store(my_embedded_table_, std::memory_order_relaxed);
     } else {
-      segment_table_ref_.store(other.segment_table_ref_,
-                               std::memory_order_relaxed);
-      other.segment_table_ref_.store(other.my_embedded_table_,
-                                     std::memory_order_relaxed);
+      segment_table_.store(other.segment_table_, std::memory_order_relaxed);
+      other.segment_table_.store(other.my_embedded_table_,
+                                 std::memory_order_relaxed);
       ZeroTable(other.my_embedded_table_, kPointersPerEmbeddedTable);
     }
-    other.size_ref_.store(0, std::memory_order_relaxed);
+    other.size_.store(0, std::memory_order_relaxed);
   }
 
   void InternalMoveConstructWithAllocator(
@@ -419,7 +412,7 @@ class SegmentTable {
   void InternalMoveConstructWithAllocator(
       SegmentTable&& other, const allocator_type& alloc,
       /*is_always_equal = */ std::false_type) {
-    if (other.segment_table_allocator_ref_ == alloc) {
+    if (other.segment_table_allocator_ == alloc) {
       InternalMove(std::move(other));
     } else {
       TryCall([&] {
@@ -435,7 +428,7 @@ class SegmentTable {
 
   void InternalMoveAssign(SegmentTable&& other,
                           /*is_always_equal || POCMA = */ std::false_type) {
-    if (segment_table_allocator_ref_ == other.segment_table_allocator_ref_) {
+    if (segment_table_allocator_ == other.segment_table_allocator_) {
       InternalMove(std::move(other));
     } else {
       InternalTransfer(other, MoveSegmentBodyType{*this});
@@ -449,7 +442,7 @@ class SegmentTable {
 
   void InternalSwap(SegmentTable& other,
                     /*is_always_equal || POCS = */ std::false_type) {
-    assert(segment_table_allocator_ref_ == other.segment_table_allocator_ref_ &&
+    assert(segment_table_allocator_ == other.segment_table_allocator_ &&
            "Swapping with unequal allocators is not allowed");
     InternalSwapFields(other);
   }
@@ -473,28 +466,27 @@ class SegmentTable {
     segment_table_type other_segment_table = other.Table();
 
     if (current_segment_table == my_embedded_table_) {
-      other.segment_table_ref_.store(other.my_embedded_table_,
-                                     std::memory_order_relaxed);
+      other.segment_table_.store(other.my_embedded_table_,
+                                 std::memory_order_relaxed);
     } else {
-      other.segment_table_ref_.store(current_segment_table,
-                                     std::memory_order_relaxed);
+      other.segment_table_.store(current_segment_table,
+                                 std::memory_order_relaxed);
     }
 
     if (other_segment_table == other.my_embedded_table_) {
-      segment_table_ref_.store(my_embedded_table_, std::memory_order_relaxed);
+      segment_table_.store(my_embedded_table_, std::memory_order_relaxed);
     } else {
-      segment_table_ref_.store(other_segment_table, std::memory_order_relaxed);
+      segment_table_.store(other_segment_table, std::memory_order_relaxed);
     }
-    auto first_block = other.first_block_ref_.load(std::memory_order_relaxed);
-    other.first_block_ref_.store(
-        first_block_ref_.load(std::memory_order_relaxed),
-        std::memory_order_relaxed);
-    first_block_ref_.store(first_block, std::memory_order_relaxed);
+    auto first_block = other.first_block_.load(std::memory_order_relaxed);
+    other.first_block_.store(first_block_.load(std::memory_order_relaxed),
+                             std::memory_order_relaxed);
+    first_block_.store(first_block, std::memory_order_relaxed);
 
-    auto size = other.size_ref_.load(std::memory_order_relaxed);
-    other.size_ref_.store(size_ref_.load(std::memory_order_relaxed),
-                          std::memory_order_relaxed);
-    size_ref_.store(size, std::memory_order_relaxed);
+    auto size = other.size_.load(std::memory_order_relaxed);
+    other.size_.store(size_.load(std::memory_order_relaxed),
+                      std::memory_order_relaxed);
+    size_.store(size, std::memory_order_relaxed);
   }
 
  protected:
@@ -506,8 +498,7 @@ class SegmentTable {
   template <bool allow_out_of_range_access>
   value_type& InternalSubscript(size_type index) {
     segment_index_type seg_index = SegmentIndexOf(index);
-    segment_table_type table =
-        segment_table_ref_.load(std::memory_order_acquire);
+    segment_table_type table = segment_table_.load(std::memory_order_acquire);
     segment_type segment = nullptr;
 
     if (allow_out_of_range_access) {
@@ -532,8 +523,8 @@ class SegmentTable {
 
   void AssignFirstBlockIfNecessary(segment_index_type index) {
     size_type zero = 0;
-    if (first_block_ref_.load(std::memory_order_relaxed) == zero) {
-      first_block_ref_.compare_exchange_strong(zero, index);
+    if (first_block_.load(std::memory_order_relaxed) == zero) {
+      first_block_.compare_exchange_strong(zero, index);
     }
   }
 
@@ -544,18 +535,18 @@ class SegmentTable {
   }
 
   segment_table_type Table() const {
-    return segment_table_ref_.load(std::memory_order_acquire);
+    return segment_table_.load(std::memory_order_acquire);
   }
 
-  segment_table_allocator_type segment_table_allocator_ref_;
-  std::atomic<segment_table_type> segment_table_ref_;
+  segment_table_allocator_type segment_table_allocator_;
+  std::atomic<segment_table_type> segment_table_;
   atomic_segment my_embedded_table_[kPointersPerEmbeddedTable];
 
-  std::atomic<size_type> first_block_ref_;
+  std::atomic<size_type> first_block_;
 
-  std::atomic<size_type> size_ref_;
+  std::atomic<size_type> size_;
 
-  std::atomic<bool> segment_table_allocation_failed_ref_;
+  std::atomic<bool> segment_table_allocation_failed_;
 };
 
 }  // namespace detail
@@ -563,5 +554,5 @@ class SegmentTable {
 }  // namespace ws
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
-#pragma warning(pop)  // warning 4127 is back
+#pragma warning(pop)
 #endif

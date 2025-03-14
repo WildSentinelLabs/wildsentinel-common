@@ -1,7 +1,7 @@
 #pragma once
 
+#include "arch/config.h"
 #include "concurrency/detail/allocator_traits.h"
-#include "concurrency/detail/config.h"
 
 namespace ws {
 namespace concurrency {
@@ -31,55 +31,54 @@ class NodeHandleBase {
 
  protected:
   using node = TNode;
-  using allocator_traits_type =
-      ws::concurrency::detail::AllocatorTraits<allocator_type>;
+  using allocator_traits_type = std::allocator_traits<allocator_type>;
 
  public:
-  NodeHandleBase() : node_ref_(nullptr), allocator_ref_() {}
+  NodeHandleBase() : node_(nullptr), allocator_() {}
   NodeHandleBase(NodeHandleBase&& nh)
-      : node_ref_(nh.node_ref_), allocator_ref_(std::move(nh.allocator_ref_)) {
-    nh.node_ref_ = nullptr;
+      : node_(nh.node_), allocator_(std::move(nh.allocator_)) {
+    nh.node_ = nullptr;
   }
 
-  _GLIBCXX_NODISCARD bool Empty() const { return node_ref_ == nullptr; }
-  explicit operator bool() const { return node_ref_ != nullptr; }
+  _GLIBCXX_NODISCARD bool Empty() const { return node_ == nullptr; }
+  explicit operator bool() const { return node_ != nullptr; }
 
   ~NodeHandleBase() { InternalDestroy(); }
 
   NodeHandleBase& operator=(NodeHandleBase&& nh) {
     InternalDestroy();
-    node_ref_ = nh.node_ref_;
-    MoveAssignAllocators(allocator_ref_, nh.allocator_ref_);
+    node_ = nh.node_;
+    MoveAssignAllocators(allocator_, nh.allocator_);
     nh.Deactivate();
     return *this;
   }
 
   void Swap(NodeHandleBase& nh) {
     using std::swap;
-    swap(node_ref_, nh.node_ref_);
-    SwapAllocators(allocator_ref_, nh.allocator_ref_);
+    swap(node_, nh.node_);
+    SwapAllocators(allocator_, nh.allocator_);
   }
 
-  allocator_type get_allocator() const { return allocator_ref_; }
+  allocator_type get_allocator() const { return allocator_; }
 
  protected:
-  NodeHandleBase(node* n) : node_ref_(n) {}
+  NodeHandleBase(node* n) : node_(n) {}
 
   void InternalDestroy() {
-    if (node_ref_ != nullptr) {
-      allocator_traits_type::destroy(allocator_ref_, node_ref_->storage());
+    if (node_ != nullptr) {
+      allocator_traits_type::destroy(allocator_, node_->Storage());
       typename allocator_traits_type::template rebind_alloc<node>
-          node_allocator(allocator_ref_);
-      node_allocator.deallocate(node_ref_, 1);
+          node_allocator(allocator_);
+      node_allocator.deallocate(node_, 1);
     }
   }
 
-  node* NodePtr() { return node_ref_; }
+  node* NodePtr() { return node_; }
 
-  void Deactivate() { node_ref_ = nullptr; }
+  void Deactivate() { node_ = nullptr; }
 
-  node* node_ref_;
-  allocator_type allocator_ref_;
+  node* node_;
+  allocator_type allocator_;
 };
 
 template <typename TKey, typename TValue, typename TNode, typename TAllocator>
@@ -95,13 +94,13 @@ class NodeHandle : public NodeHandleBase<TValue, TNode, TAllocator> {
 
   key_type& Key() const {
     assert(!this->Empty() && "Cannot get key from the empty node_type object");
-    return *const_cast<key_type*>(&(this->node_ref_->Value().first));
+    return *const_cast<key_type*>(&(this->node_->Value().first));
   }
 
   mapped_type& Mapped() const {
     assert(!this->Empty() &&
            "Cannot get mapped value from the empty node_type object");
-    return this->node_ref_->Value().second;
+    return this->node_->Value().second;
   }
 
  private:
@@ -124,7 +123,7 @@ class NodeHandle<TKey, TKey, TNode, TAllocator>
   value_type& Value() const {
     assert(!this->Empty() &&
            "Cannot get value from the empty node_type object");
-    return *const_cast<value_type*>(&(this->node_ref_->Value()));
+    return *const_cast<value_type*>(&(this->node_->Value()));
   }
 
  private:

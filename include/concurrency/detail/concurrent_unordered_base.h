@@ -9,8 +9,8 @@
 #include <type_traits>
 #include <utility>
 
+#include "arch/config.h"
 #include "concurrency/detail/allocator_traits.h"
-#include "concurrency/detail/config.h"
 #include "concurrency/detail/hash_compare.h"
 #include "concurrency/detail/helpers.h"
 #include "concurrency/detail/node_handle.h"
@@ -18,8 +18,7 @@
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 #pragma warning(push)
-#pragma warning( \
-    disable : 4127)  // warning C4127: conditional expression is constant
+#pragma warning(disable : 4127)
 #endif
 
 namespace ws {
@@ -53,28 +52,28 @@ class SolistIterator {
   using reference = value_type&;
   using iterator_category = std::forward_iterator_tag;
 
-  SolistIterator() : node_ptr_ref_(nullptr) {}
+  SolistIterator() : node_ptr_(nullptr) {}
   SolistIterator(
       const SolistIterator<TContainer, typename TContainer::value_type>& other)
-      : node_ptr_ref_(other.node_ptr_ref_) {}
+      : node_ptr_(other.node_ptr_) {}
 
   SolistIterator& operator=(
       const SolistIterator<TContainer, typename TContainer::value_type>&
           other) {
-    node_ptr_ref_ = other.node_ptr_ref_;
+    node_ptr_ = other.node_ptr_;
     return *this;
   }
 
-  reference operator*() const { return node_ptr_ref_->Value(); }
+  reference operator*() const { return node_ptr_->Value(); }
 
-  pointer operator->() const { return node_ptr_ref_->Storage(); }
+  pointer operator->() const { return node_ptr_->Storage(); }
 
   SolistIterator& operator++() {
-    auto next_node = node_ptr_ref_->Next();
+    auto next_node = node_ptr_->Next();
     while (next_node && next_node->IsDummy()) {
       next_node = next_node->Next();
     }
-    node_ptr_ref_ = static_cast<node_ptr>(next_node);
+    node_ptr_ = static_cast<node_ptr>(next_node);
     return *this;
   }
 
@@ -85,23 +84,23 @@ class SolistIterator {
   }
 
  private:
-  SolistIterator(node_ptr pnode) : node_ptr_ref_(pnode) {}
+  SolistIterator(node_ptr pnode) : node_ptr_(pnode) {}
 
-  node_ptr NodePtr() const { return node_ptr_ref_; }
+  node_ptr NodePtr() const { return node_ptr_; }
 
-  node_ptr node_ptr_ref_;
+  node_ptr node_ptr_;
 };
 
 template <typename TSolist, typename T, typename TU>
 bool operator==(const SolistIterator<TSolist, T>& i,
                 const SolistIterator<TSolist, TU>& j) {
-  return i.node_ptr_ref_ == j.node_ptr_ref_;
+  return i.node_ptr_ == j.node_ptr_;
 }
 
 template <typename TSolist, typename T, typename TU>
 bool operator!=(const SolistIterator<TSolist, T>& i,
                 const SolistIterator<TSolist, TU>& j) {
-  return i.node_ptr_ref_ != j.node_ptr_ref_;
+  return i.node_ptr_ != j.node_ptr_;
 }
 
 template <typename TSokeyType>
@@ -110,27 +109,27 @@ class ListNode {
   using node_ptr = ListNode*;
   using sokey_type = TSokeyType;
 
-  ListNode(sokey_type key) : next_ref_(nullptr), order_key_ref_(key) {}
+  ListNode(sokey_type key) : next_(nullptr), order_key_(key) {}
 
-  void Init(sokey_type key) { order_key_ref_ = key; }
+  void Init(sokey_type key) { order_key_ = key; }
 
-  sokey_type OrderKey() const { return order_key_ref_; }
+  sokey_type OrderKey() const { return order_key_; }
 
-  bool IsDummy() { return (order_key_ref_ & 0x1) == 0; }
+  bool IsDummy() { return (order_key_ & 0x1) == 0; }
 
-  node_ptr Next() const { return next_ref_.load(std::memory_order_acquire); }
+  node_ptr Next() const { return next_.load(std::memory_order_acquire); }
 
   void SetNext(node_ptr next_node) {
-    next_ref_.store(next_node, std::memory_order_release);
+    next_.store(next_node, std::memory_order_release);
   }
 
   bool TrySetNext(node_ptr expected_next, node_ptr new_next) {
-    return next_ref_.compare_exchange_strong(expected_next, new_next);
+    return next_.compare_exchange_strong(expected_next, new_next);
   }
 
  private:
-  std::atomic<node_ptr> next_ref_;
-  sokey_type order_key_ref_;
+  std::atomic<node_ptr> next_;
+  sokey_type order_key_;
 };
 
 template <typename TValueType, typename TSokeyType>
@@ -142,13 +141,13 @@ class ValueNode : public ListNode<TSokeyType> {
 
   ValueNode(sokey_type ord_key) : base_type(ord_key) {}
   ~ValueNode() {}
-  value_type* Storage() { return &value_ref_; }
+  value_type* Storage() { return &value_; }
 
   value_type& Value() { return *Storage(); }
 
  private:
   union {
-    value_type value_ref_;
+    value_type value_;
   };
 };
 
@@ -165,8 +164,7 @@ class ConcurrentUnorderedBase {
   using allocator_type = typename traits_type::allocator_type;
 
  private:
-  using allocator_traits_type =
-      ws::concurrency::detail::AllocatorTraits<allocator_type>;
+  using allocator_traits_type = std::allocator_traits<allocator_type>;
 
   static_assert(
       std::is_same<typename allocator_traits_type::value_type,
@@ -202,10 +200,9 @@ class ConcurrentUnorderedBase {
   using node_allocator_type =
       typename allocator_traits_type::template rebind_alloc<list_node_type>;
 
-  using node_allocator_traits =
-      ws::concurrency::detail::AllocatorTraits<node_allocator_type>;
+  using node_allocator_traits = std::allocator_traits<node_allocator_type>;
   using value_node_allocator_traits =
-      ws::concurrency::detail::AllocatorTraits<value_node_allocator_type>;
+      std::allocator_traits<value_node_allocator_type>;
 
   static constexpr size_type RoundUpToPowerOfTwo(size_type bucket_count) {
     return size_type(1) << size_type(ws::concurrency::detail::Log2(
@@ -227,12 +224,12 @@ class ConcurrentUnorderedBase {
       size_type bucket_count, const hasher& hash = hasher(),
       const key_equal& equal = key_equal(),
       const allocator_type& alloc = allocator_type())
-      : size_ref_(0),
-        bucket_count_ref_(RoundUpToPowerOfTwo(bucket_count)),
-        max_load_factor_ref_(float(kinitialMaxLoadFactor)),
-        hash_compare_ref_(hash, equal),
-        head_ref_(sokey_type(0)),
-        segments_ref_(alloc) {}
+      : size_(0),
+        bucket_count_(RoundUpToPowerOfTwo(bucket_count)),
+        max_load_factor_(float(kinitialMaxLoadFactor)),
+        hash_compare_(hash, equal),
+        head_(sokey_type(0)),
+        segments_(alloc) {}
 
   ConcurrentUnorderedBase() : ConcurrentUnorderedBase(kInitialBucketCount) {}
 
@@ -271,48 +268,48 @@ class ConcurrentUnorderedBase {
                                 alloc) {}
 
   ConcurrentUnorderedBase(const ConcurrentUnorderedBase& other)
-      : size_ref_(other.size_ref_.load(std::memory_order_relaxed)),
-        bucket_count_ref_(
-            other.bucket_count_ref_.load(std::memory_order_relaxed)),
-        max_load_factor_ref_(other.max_load_factor_ref_),
-        hash_compare_ref_(other.hash_compare_ref_),
-        head_ref_(other.head_ref_.OrderKey()),
-        segments_ref_(other.segments_ref_) {
-    TryCall([&] { InternalCopy(other); }).OnException([&] { Clear(); });
+      : size_(other.size_.load(std::memory_order_relaxed)),
+        bucket_count_(other.bucket_count_.load(std::memory_order_relaxed)),
+        max_load_factor_(other.max_load_factor_),
+        hash_compare_(other.hash_compare_),
+        head_(other.head_.OrderKey()),
+        segments_(other.segments_) {
+    ws::concurrency::detail::templates::TryCall([&] {
+      InternalCopy(other);
+    }).OnException([&] { Clear(); });
   }
 
   ConcurrentUnorderedBase(const ConcurrentUnorderedBase& other,
                           const allocator_type& alloc)
-      : size_ref_(other.size_ref_.load(std::memory_order_relaxed)),
-        bucket_count_ref_(
-            other.bucket_count_ref_.load(std::memory_order_relaxed)),
-        max_load_factor_ref_(other.max_load_factor_ref_),
-        hash_compare_ref_(other.hash_compare_ref_),
-        head_ref_(other.head_ref_.OrderKey()),
-        segments_ref_(other.segments_ref_, alloc) {
-    TryCall([&] { InternalCopy(other); }).OnException([&] { Clear(); });
+      : size_(other.size_.load(std::memory_order_relaxed)),
+        bucket_count_(other.bucket_count_.load(std::memory_order_relaxed)),
+        max_load_factor_(other.max_load_factor_),
+        hash_compare_(other.hash_compare_),
+        head_(other.head_.OrderKey()),
+        segments_(other.segments_, alloc) {
+    ws::concurrency::detail::templates::TryCall([&] {
+      InternalCopy(other);
+    }).OnException([&] { Clear(); });
   }
 
   ConcurrentUnorderedBase(ConcurrentUnorderedBase&& other)
-      : size_ref_(other.size_ref_.load(std::memory_order_relaxed)),
-        bucket_count_ref_(
-            other.bucket_count_ref_.load(std::memory_order_relaxed)),
-        max_load_factor_ref_(std::move(other.max_load_factor_ref_)),
-        hash_compare_ref_(std::move(other.hash_compare_ref_)),
-        head_ref_(other.head_ref_.OrderKey()),
-        segments_ref_(std::move(other.segments_ref_)) {
+      : size_(other.size_.load(std::memory_order_relaxed)),
+        bucket_count_(other.bucket_count_.load(std::memory_order_relaxed)),
+        max_load_factor_(std::move(other.max_load_factor_)),
+        hash_compare_(std::move(other.hash_compare_)),
+        head_(other.head_.OrderKey()),
+        segments_(std::move(other.segments_)) {
     MoveContent(std::move(other));
   }
 
   ConcurrentUnorderedBase(ConcurrentUnorderedBase&& other,
                           const allocator_type& alloc)
-      : size_ref_(other.size_ref_.load(std::memory_order_relaxed)),
-        bucket_count_ref_(
-            other.bucket_count_ref_.load(std::memory_order_relaxed)),
-        max_load_factor_ref_(std::move(other.max_load_factor_ref_)),
-        hash_compare_ref_(std::move(other.hash_compare_ref_)),
-        head_ref_(other.head_ref_.OrderKey()),
-        segments_ref_(std::move(other.segments_ref_), alloc) {
+      : size_(other.size_.load(std::memory_order_relaxed)),
+        bucket_count_(other.bucket_count_.load(std::memory_order_relaxed)),
+        max_load_factor_(std::move(other.max_load_factor_)),
+        hash_compare_(std::move(other.hash_compare_)),
+        head_(other.head_.OrderKey()),
+        segments_(std::move(other.segments_), alloc) {
     using is_always_equal = typename allocator_traits_type::is_always_equal;
     InternalMoveConstructWithAllocator(std::move(other), alloc,
                                        is_always_equal());
@@ -341,31 +338,29 @@ class ConcurrentUnorderedBase {
   ConcurrentUnorderedBase& operator=(const ConcurrentUnorderedBase& other) {
     if (this != &other) {
       Clear();
-      size_ref_.store(other.size_ref_.load(std::memory_order_relaxed),
-                      std::memory_order_relaxed);
-      bucket_count_ref_.store(
-          other.bucket_count_ref_.load(std::memory_order_relaxed),
-          std::memory_order_relaxed);
-      max_load_factor_ref_ = other.max_load_factor_ref_;
-      hash_compare_ref_ = other.hash_compare_ref_;
-      segments_ref_ = other.segments_ref_;
+      size_.store(other.size_.load(std::memory_order_relaxed),
+                  std::memory_order_relaxed);
+      bucket_count_.store(other.bucket_count_.load(std::memory_order_relaxed),
+                          std::memory_order_relaxed);
+      max_load_factor_ = other.max_load_factor_;
+      hash_compare_ = other.hash_compare_;
+      segments_ = other.segments_;
       InternalCopy(other);
     }
     return *this;
   }
 
   ConcurrentUnorderedBase& operator=(ConcurrentUnorderedBase&& other) noexcept(
-      UnorderedSegmentTable::kIsNoexceptAssignment) {
+      UnorderedSegmentTable::kIsNoExceptAssignment) {
     if (this != &other) {
       Clear();
-      size_ref_.store(other.size_ref_.load(std::memory_order_relaxed),
-                      std::memory_order_relaxed);
-      bucket_count_ref_.store(
-          other.bucket_count_ref_.load(std::memory_order_relaxed),
-          std::memory_order_relaxed);
-      max_load_factor_ref_ = std::move(other.max_load_factor_ref_);
-      hash_compare_ref_ = std::move(other.hash_compare_ref_);
-      segments_ref_ = std::move(other.segments_ref_);
+      size_.store(other.size_.load(std::memory_order_relaxed),
+                  std::memory_order_relaxed);
+      bucket_count_.store(other.bucket_count_.load(std::memory_order_relaxed),
+                          std::memory_order_relaxed);
+      max_load_factor_ = std::move(other.max_load_factor_);
+      hash_compare_ = std::move(other.hash_compare_);
+      segments_ = std::move(other.segments_);
 
       using pocma_type = typename allocator_traits_type::
           propagate_on_container_move_assignment;
@@ -383,7 +378,7 @@ class ConcurrentUnorderedBase {
   }
 
   void Swap(ConcurrentUnorderedBase& other) noexcept(
-      UnorderedSegmentTable::kIsNoexceptSwap) {
+      UnorderedSegmentTable::kIsNoExceptSwap) {
     if (this != &other) {
       using pocs_type =
           typename allocator_traits_type::propagate_on_container_swap;
@@ -395,15 +390,15 @@ class ConcurrentUnorderedBase {
   _GLIBCXX_NODISCARD bool Empty() const noexcept { return Size() == 0; }
 
   allocator_type get_allocator() const noexcept {
-    return segments_ref_.get_allocator();
+    return segments_.get_allocator();
   }
 
-  iterator begin() noexcept { return iterator(FirstValueNode(&head_ref_)); }
+  iterator begin() noexcept { return iterator(FirstValueNode(&head_)); }
   const_iterator begin() const noexcept {
-    return const_iterator(FirstValueNode(const_cast<node_ptr>(&head_ref_)));
+    return const_iterator(FirstValueNode(const_cast<node_ptr>(&head_)));
   }
   const_iterator cbegin() const noexcept {
-    return const_iterator(FirstValueNode(const_cast<node_ptr>(&head_ref_)));
+    return const_iterator(FirstValueNode(const_cast<node_ptr>(&head_)));
   }
 
   iterator end() noexcept { return iterator(nullptr); }
@@ -411,7 +406,7 @@ class ConcurrentUnorderedBase {
   const_iterator cend() const noexcept { return const_iterator(nullptr); }
 
   size_type Size() const noexcept {
-    return size_ref_.load(std::memory_order_relaxed);
+    return size_.load(std::memory_order_relaxed);
   }
   size_type MaxSize() const noexcept {
     return allocator_traits_type::max_size(get_allocator());
@@ -451,14 +446,14 @@ class ConcurrentUnorderedBase {
       value_node_ptr insert_node =
           ws::concurrency::detail::NodeHandleAccessor::GetNodePtr(nh);
       auto init_node = [&insert_node](sokey_type order_key) -> value_node_ptr {
-        insert_node->init(order_key);
+        insert_node->Init(order_key);
         return insert_node;
       };
-      auto insert_result = InternalInsert(insert_node->value(), init_node);
+      auto insert_result = InternalInsert(insert_node->Value(), init_node);
       if (insert_result.inserted) {
-        cassert(insert_result.remaining_node == nullptr,
-                "internal_insert_node should not return the remaining "
-                "node if the insertion succeeded");
+        assert(insert_result.remaining_node == nullptr &&
+               "internal_insert_node should not return the remaining "
+               "node if the insertion succeeded");
         ws::concurrency::detail::NodeHandleAccessor::Deactivate(nh);
       }
       return {iterator(insert_result.node_with_equal_key),
@@ -476,14 +471,14 @@ class ConcurrentUnorderedBase {
     value_node_ptr insert_node = CreateNode(0, std::forward<TArgs>(args)...);
 
     auto init_node = [&insert_node](sokey_type order_key) -> value_node_ptr {
-      insert_node->init(order_key);
+      insert_node->Init(order_key);
       return insert_node;
     };
 
-    auto insert_result = InternalInsert(insert_node->value(), init_node);
+    auto insert_result = InternalInsert(insert_node->Value(), init_node);
 
     if (!insert_result.inserted) {
-      insert_node->init(SplitOrderKeyRegular(1));
+      insert_node->Init(SplitOrderKeyRegular(1));
       DestroyNode(insert_node);
     }
 
@@ -634,25 +629,25 @@ class ConcurrentUnorderedBase {
   }
 
   local_iterator UnsafeEnd(size_type n) {
-    size_type bucket_count = bucket_count_ref_.load(std::memory_order_relaxed);
+    size_type bucket_count = bucket_count_.load(std::memory_order_relaxed);
     return n != bucket_count - 1 ? UnsafeBegin(GetNextBucketIndex(n))
                                  : local_iterator(nullptr);
   }
 
   const_local_iterator UnsafeEnd(size_type n) const {
-    size_type bucket_count = bucket_count_ref_.load(std::memory_order_relaxed);
+    size_type bucket_count = bucket_count_.load(std::memory_order_relaxed);
     return n != bucket_count - 1 ? UnsafeBegin(GetNextBucketIndex(n))
                                  : const_local_iterator(nullptr);
   }
 
   const_local_iterator UnsafeCEnd(size_type n) const {
-    size_type bucket_count = bucket_count_ref_.load(std::memory_order_relaxed);
+    size_type bucket_count = bucket_count_.load(std::memory_order_relaxed);
     return n != bucket_count - 1 ? UnsafeBegin(GetNextBucketIndex(n))
                                  : const_local_iterator(nullptr);
   }
 
   size_type UnsafeBucketCount() const {
-    return bucket_count_ref_.load(std::memory_order_relaxed);
+    return bucket_count_.load(std::memory_order_relaxed);
   }
 
   size_type UnsafeMaxBucketCount() const { return MaxSize(); }
@@ -662,56 +657,54 @@ class ConcurrentUnorderedBase {
   }
 
   size_type UnsafeBucket(const key_type& key) const {
-    return hash_compare_ref_(key) %
-           bucket_count_ref_.load(std::memory_order_relaxed);
+    return hash_compare_(key) % bucket_count_.load(std::memory_order_relaxed);
   }
 
   float LoadFactor() const {
-    return float(Size() /
-                 float(bucket_count_ref_.load(std::memory_order_acquire)));
+    return float(Size() / float(bucket_count_.load(std::memory_order_acquire)));
   }
 
-  float MaxLoadFactor() const { return max_load_factor_ref_; }
+  float MaxLoadFactor() const { return max_load_factor_; }
 
   void MaxLoadFactor(float mlf) {
     if (mlf != mlf || mlf < 0) throw std::invalid_argument();
-    max_load_factor_ref_ = mlf;
+    max_load_factor_ = mlf;
   }
 
   void ReHash(size_type bucket_count) {
     size_type current_bucket_count =
-        bucket_count_ref_.load(std::memory_order_acquire);
+        bucket_count_.load(std::memory_order_acquire);
     if (current_bucket_count < bucket_count) {
-      bucket_count_ref_.compare_exchange_strong(
-          current_bucket_count, RoundUpToPowerOfTwo(bucket_count));
+      bucket_count_.compare_exchange_strong(current_bucket_count,
+                                            RoundUpToPowerOfTwo(bucket_count));
     }
   }
 
   void Reserve(size_type elements_count) {
     size_type current_bucket_count =
-        bucket_count_ref_.load(std::memory_order_acquire);
+        bucket_count_.load(std::memory_order_acquire);
     size_type necessary_bucket_count = current_bucket_count;
 
     while (necessary_bucket_count * MaxLoadFactor() < elements_count) {
       necessary_bucket_count <<= 1;
     }
 
-    while (!bucket_count_ref_.compare_exchange_strong(current_bucket_count,
-                                                      necessary_bucket_count)) {
+    while (!bucket_count_.compare_exchange_strong(current_bucket_count,
+                                                  necessary_bucket_count)) {
       if (current_bucket_count >= necessary_bucket_count) break;
     }
   }
 
-  hasher HashFunction() const { return hash_compare_ref_.HashFunction(); }
+  hasher HashFunction() const { return hash_compare_.HashFunction(); }
 
-  key_equal KeyEq() const { return hash_compare_ref_.KeyEq(); }
+  key_equal KeyEq() const { return hash_compare_.KeyEq(); }
 
   class ConstRangeType {
    private:
-    const ConcurrentUnorderedBase& instance_ref_;
-    node_ptr begin_node_ref_;
-    node_ptr end_node_ref_;
-    mutable node_ptr midpoint_node_ref_;
+    const ConcurrentUnorderedBase& instance_;
+    node_ptr begin_node_;
+    node_ptr end_node_;
+    mutable node_ptr midpoint_node_;
 
    public:
     using size_type = typename ConcurrentUnorderedBase::size_type;
@@ -720,17 +713,17 @@ class ConcurrentUnorderedBase {
     using difference_type = typename ConcurrentUnorderedBase::difference_type;
     using iterator = typename ConcurrentUnorderedBase::const_iterator;
 
-    bool Empty() const { return begin_node_ref_ == end_node_ref_; }
+    bool Empty() const { return begin_node_ == end_node_; }
 
-    bool IsDivisible() const { return midpoint_node_ref_ != end_node_ref_; }
+    bool IsDivisible() const { return midpoint_node_ != end_node_; }
 
     size_type Grainsize() const { return 1; }
 
     ConstRangeType(ConstRangeType& range, ws::concurrency::detail::range::split)
-        : instance_ref_(range.instance_ref_),
-          begin_node_ref_(range.midpoint_node_ref_),
-          end_node_ref_(range.end_node_ref_) {
-      range.end_node_ref_ = begin_node_ref_;
+        : instance_(range.instance_),
+          begin_node_(range.midpoint_node_),
+          end_node_(range.end_node_) {
+      range.end_node_ = begin_node_;
       assert(!Empty() && "Splitting despite the range is not divisible");
       assert(!range.Empty() && "Splitting despite the range is not divisible");
       SetMidpoint();
@@ -738,46 +731,44 @@ class ConcurrentUnorderedBase {
     }
 
     iterator begin() const {
-      return iterator(instance_ref_.FirstValueNode(begin_node_ref_));
+      return iterator(instance_.FirstValueNode(begin_node_));
     }
     iterator end() const {
-      return iterator(instance_ref_.FirstValueNode(end_node_ref_));
+      return iterator(instance_.FirstValueNode(end_node_));
     }
 
     ConstRangeType(const ConcurrentUnorderedBase& table)
-        : instance_ref_(table),
-          begin_node_ref_(instance_ref_.FirstValueNode(
-              const_cast<node_ptr>(&table.head_ref_))),
-          end_node_ref_(nullptr) {
+        : instance_(table),
+          begin_node_(
+              instance_.FirstValueNode(const_cast<node_ptr>(&table.head_))),
+          end_node_(nullptr) {
       SetMidpoint();
     }
 
    private:
     void SetMidpoint() const {
       if (Empty()) {
-        midpoint_node_ref_ = end_node_ref_;
+        midpoint_node_ = end_node_;
       } else {
         sokey_type invalid_key = ~sokey_type(0);
-        sokey_type begin_key = begin_node_ref_ != nullptr
-                                   ? begin_node_ref_->OrderKey()
-                                   : invalid_key;
+        sokey_type begin_key =
+            begin_node_ != nullptr ? begin_node_->OrderKey() : invalid_key;
         sokey_type end_key =
-            end_node_ref_ != nullptr ? end_node_ref_->OrderKey() : invalid_key;
+            end_node_ != nullptr ? end_node_->OrderKey() : invalid_key;
 
         size_type mid_bucket =
             ws::concurrency::detail::ReverseBits(begin_key +
                                                  (end_key - begin_key) / 2) %
-            instance_ref_.bucket_count_ref_.load(std::memory_order_relaxed);
-        while (instance_ref_.segments_ref_[mid_bucket].load(
+            instance_.bucket_count_.load(std::memory_order_relaxed);
+        while (instance_.segments_[mid_bucket].load(
                    std::memory_order_relaxed) == nullptr) {
-          mid_bucket = instance_ref_.GetParent(mid_bucket);
+          mid_bucket = instance_.GetParent(mid_bucket);
         }
         if (ws::concurrency::detail::ReverseBits(mid_bucket) > begin_key) {
-          midpoint_node_ref_ = instance_ref_.FirstValueNode(
-              instance_ref_.segments_ref_[mid_bucket].load(
-                  std::memory_order_relaxed));
+          midpoint_node_ = instance_.FirstValueNode(
+              instance_.segments_[mid_bucket].load(std::memory_order_relaxed));
         } else {
-          midpoint_node_ref_ = end_node_ref_;
+          midpoint_node_ = end_node_;
         }
       }
     }
@@ -822,15 +813,15 @@ class ConcurrentUnorderedBase {
     using segment_allocator_type =
         typename allocator_traits_type::template rebind_alloc<atomic_node_ptr>;
     using segment_allocator_traits =
-        ws::concurrency::detail::AllocatorTraits<segment_allocator_type>;
+        std::allocator_traits<segment_allocator_type>;
 
    public:
     static constexpr bool kAllowTableExtending = false;
-    static constexpr bool kIsNoexceptAssignment =
+    static constexpr bool kIsNoExceptAssignment =
         std::is_nothrow_move_assignable<hasher>::value &&
         std::is_nothrow_move_assignable<key_equal>::value &&
         segment_allocator_traits::is_always_equal::value;
-    static constexpr bool kIsNoexceptSwap =
+    static constexpr bool kIsNoExceptSwap =
         std::is_nothrow_swappable<hasher>::value &&
         std::is_nothrow_swappable<key_equal>::value &&
         segment_allocator_traits::is_always_equal::value;
@@ -923,10 +914,10 @@ class ConcurrentUnorderedBase {
   };
 
   void InternalClear() {
-    node_ptr next = head_ref_.Next();
+    node_ptr next = head_.Next();
     node_ptr curr = next;
 
-    head_ref_.SetNext(nullptr);
+    head_.SetNext(nullptr);
 
     while (curr != nullptr) {
       next = curr->Next();
@@ -934,25 +925,20 @@ class ConcurrentUnorderedBase {
       curr = next;
     }
 
-    size_ref_.store(0, std::memory_order_relaxed);
-    segments_ref_.Clear();
+    size_.store(0, std::memory_order_relaxed);
+    segments_.Clear();
   }
 
   void DestroyNode(node_ptr node) {
     if (node->IsDummy()) {
-      node_allocator_type dummy_node_allocator(segments_ref_.get_allocator());
+      node_allocator_type dummy_node_allocator(segments_.get_allocator());
 
       node_allocator_traits::destroy(dummy_node_allocator, node);
 
       node_allocator_traits::deallocate(dummy_node_allocator, node, 1);
     } else {
-#if (__TBB_GCC_VERSION >= 110100 && __TBB_GCC_VERSION < 150000) && \
-    !__clang__ && !__INTEL_COMPILER
-      volatile
-#endif
-          value_node_ptr val_node = static_cast<value_node_ptr>(node);
-      value_node_allocator_type value_node_allocator(
-          segments_ref_.get_allocator());
+      value_node_ptr val_node = static_cast<value_node_ptr>(node);
+      value_node_allocator_type value_node_allocator(segments_.get_allocator());
 
       value_node_allocator_traits::destroy(value_node_allocator,
                                            val_node->Storage());
@@ -999,7 +985,7 @@ class ConcurrentUnorderedBase {
         std::is_same<typename std::decay<TValueType>::type, value_type>::value,
         "Incorrect type in internal_insert");
     const key_type& key = traits_type::GetKey(value);
-    sokey_type hash_key = sokey_type(hash_compare_ref_(key));
+    sokey_type hash_key = sokey_type(hash_compare_(key));
 
     sokey_type order_key = SplitOrderKeyRegular(hash_key);
     node_ptr prev = PrepareBucket(hash_key);
@@ -1022,8 +1008,8 @@ class ConcurrentUnorderedBase {
       curr = search_result.first;
     }
 
-    auto sz = size_ref_.fetch_add(1);
-    AdjustTableSize(sz + 1, bucket_count_ref_.load(std::memory_order_acquire));
+    auto sz = size_.fetch_add(1);
+    AdjustTableSize(sz + 1, bucket_count_.load(std::memory_order_acquire));
     return InternalInsertReturnType{
         nullptr, static_cast<value_node_ptr>(new_node), true};
   }
@@ -1036,9 +1022,9 @@ class ConcurrentUnorderedBase {
     while (curr != nullptr &&
            (curr->OrderKey() < order_key ||
             (curr->OrderKey() == order_key &&
-             !hash_compare_ref_(traits_type::GetKey(
-                                    static_cast<value_node_ptr>(curr)->Value()),
-                                key)))) {
+             !hash_compare_(traits_type::GetKey(
+                                static_cast<value_node_ptr>(curr)->Value()),
+                            key)))) {
       prev = curr;
       curr = curr->Next();
     }
@@ -1051,9 +1037,8 @@ class ConcurrentUnorderedBase {
   }
 
   void AdjustTableSize(size_type total_elements, size_type current_size) {
-    if ((float(total_elements) / float(current_size)) > max_load_factor_ref_) {
-      bucket_count_ref_.compare_exchange_strong(current_size,
-                                                2u * current_size);
+    if ((float(total_elements) / float(current_size)) > max_load_factor_) {
+      bucket_count_.compare_exchange_strong(current_size, 2u * current_size);
     }
   }
 
@@ -1087,46 +1072,43 @@ class ConcurrentUnorderedBase {
   }
 
   node_ptr PrepareBucket(sokey_type hash_key) {
-    size_type bucket =
-        hash_key % bucket_count_ref_.load(std::memory_order_acquire);
+    size_type bucket = hash_key % bucket_count_.load(std::memory_order_acquire);
     return GetBucket(bucket);
   }
 
   node_ptr GetBucket(size_type bucket_index) {
-    if (segments_ref_[bucket_index].load(std::memory_order_acquire) ==
-        nullptr) {
+    if (segments_[bucket_index].load(std::memory_order_acquire) == nullptr) {
       InitBucket(bucket_index);
     }
-    return segments_ref_[bucket_index].load(std::memory_order_acquire);
+    return segments_[bucket_index].load(std::memory_order_acquire);
   }
 
   void InitBucket(size_type bucket) {
     if (bucket == 0) {
       node_ptr disabled = nullptr;
-      segments_ref_[0].compare_exchange_strong(disabled, &head_ref_);
+      segments_[0].compare_exchange_strong(disabled, &head_);
       return;
     }
 
     size_type parent_bucket = GetParent(bucket);
 
-    while (segments_ref_[parent_bucket].load(std::memory_order_acquire) ==
+    while (segments_[parent_bucket].load(std::memory_order_acquire) ==
            nullptr) {
       InitBucket(parent_bucket);
     }
 
-    assert(segments_ref_[parent_bucket].load(std::memory_order_acquire) !=
+    assert(segments_[parent_bucket].load(std::memory_order_acquire) !=
                nullptr &&
            "Parent bucket should be initialized");
-    node_ptr parent =
-        segments_ref_[parent_bucket].load(std::memory_order_acquire);
+    node_ptr parent = segments_[parent_bucket].load(std::memory_order_acquire);
 
     node_ptr dummy_node = InsertDummyNode(parent, SplitOrderKeyDummy(bucket));
 
-    segments_ref_[bucket].store(dummy_node, std::memory_order_release);
+    segments_[bucket].store(dummy_node, std::memory_order_release);
   }
 
   node_ptr CreateDummyNode(sokey_type order_key) {
-    node_allocator_type dummy_node_allocator(segments_ref_.get_allocator());
+    node_allocator_type dummy_node_allocator(segments_.get_allocator());
     node_ptr dummy_node =
         node_allocator_traits::allocate(dummy_node_allocator, 1);
     node_allocator_traits::construct(dummy_node_allocator, dummy_node,
@@ -1136,8 +1118,7 @@ class ConcurrentUnorderedBase {
 
   template <typename... TArgs>
   value_node_ptr CreateNode(sokey_type order_key, TArgs&&... args) {
-    value_node_allocator_type value_node_allocator(
-        segments_ref_.get_allocator());
+    value_node_allocator_type value_node_allocator(segments_.get_allocator());
 
     value_node_ptr new_node =
         value_node_allocator_traits::allocate(value_node_allocator, 1);
@@ -1187,7 +1168,7 @@ class ConcurrentUnorderedBase {
 
   void InternalExtract(value_node_ptr node_to_extract) {
     const key_type& key = traits_type::GetKey(node_to_extract->Value());
-    sokey_type hash_key = sokey_type(hash_compare_ref_(key));
+    sokey_type hash_key = sokey_type(hash_compare_(key));
 
     node_ptr prev_node = PrepareBucket(hash_key);
 
@@ -1195,8 +1176,8 @@ class ConcurrentUnorderedBase {
          prev_node = node, node = node->Next()) {
       if (node == node_to_extract) {
         UnlinkNode(prev_node, node, node_to_extract->Next());
-        size_ref_.store(size_ref_.load(std::memory_order_relaxed) - 1,
-                        std::memory_order_relaxed);
+        size_.store(size_.load(std::memory_order_relaxed) - 1,
+                    std::memory_order_relaxed);
         return;
       }
       assert(node->OrderKey() <= node_to_extract->OrderKey() &&
@@ -1213,13 +1194,13 @@ class ConcurrentUnorderedBase {
                      typename std::decay<TSourceType>::type::node_type>::value,
         "Incompatible containers cannot be merged");
 
-    for (node_ptr source_prev = &source.head_ref;
+    for (node_ptr source_prev = &source.head_;
          source_prev->Next() != nullptr;) {
       if (!source_prev->Next()->IsDummy()) {
         value_node_ptr curr = static_cast<value_node_ptr>(source_prev->Next());
 
         if (kAllowMultimapping ||
-            !Contains(traits_type::GetKey(curr->value()))) {
+            !Contains(traits_type::GetKey(curr->Value()))) {
           node_ptr next_node = curr->Next();
           source.UnlinkNode(source_prev, curr, next_node);
 
@@ -1236,18 +1217,18 @@ class ConcurrentUnorderedBase {
                    "Concurrent operations with the source container in "
                    "merge are prohibited");
 
-            curr->init(old_order_key);
+            curr->Init(old_order_key);
             assert(old_order_key >= source_prev->OrderKey() &&
                    (next_node == nullptr ||
                     old_order_key <= next_node->OrderKey()) &&
                    "Wrong nodes order in the source container");
 
-            curr->set_next(next_node);
+            curr->SetNext(next_node);
             source_prev->SetNext(curr);
             source_prev = curr;
             ws::concurrency::detail::NodeHandleAccessor::Deactivate(curr_node);
           } else {
-            source.size_ref.fetch_sub(1, std::memory_order_relaxed);
+            source.size_.fetch_sub(1, std::memory_order_relaxed);
           }
         } else {
           source_prev = curr;
@@ -1271,7 +1252,7 @@ class ConcurrentUnorderedBase {
 
   template <typename TK>
   value_node_ptr InternalFind(const TK& key) {
-    sokey_type hash_key = sokey_type(hash_compare_ref_(key));
+    sokey_type hash_key = sokey_type(hash_compare_(key));
     sokey_type order_key = SplitOrderKeyRegular(hash_key);
 
     node_ptr curr = PrepareBucket(hash_key);
@@ -1280,10 +1261,9 @@ class ConcurrentUnorderedBase {
       if (curr->OrderKey() > order_key) {
         return nullptr;
       } else if (curr->OrderKey() == order_key &&
-                 hash_compare_ref_(
-                     traits_type::GetKey(
-                         static_cast<value_node_ptr>(curr)->Value()),
-                     key)) {
+                 hash_compare_(traits_type::GetKey(
+                                   static_cast<value_node_ptr>(curr)->Value()),
+                               key)) {
         return static_cast<value_node_ptr>(curr);
       }
       curr = curr->Next();
@@ -1294,7 +1274,7 @@ class ConcurrentUnorderedBase {
 
   template <typename TK>
   std::pair<value_node_ptr, value_node_ptr> InternalEqualRange(const TK& key) {
-    sokey_type hash_key = sokey_type(hash_compare_ref_(key));
+    sokey_type hash_key = sokey_type(hash_compare_(key));
     sokey_type order_key = SplitOrderKeyRegular(hash_key);
 
     node_ptr curr = PrepareBucket(hash_key);
@@ -1303,19 +1283,17 @@ class ConcurrentUnorderedBase {
       if (curr->OrderKey() > order_key) {
         return std::make_pair(nullptr, nullptr);
       } else if (curr->OrderKey() == order_key &&
-                 hash_compare_ref_(
-                     traits_type::GetKey(
-                         static_cast<value_node_ptr>(curr)->Value()),
-                     key)) {
+                 hash_compare_(traits_type::GetKey(
+                                   static_cast<value_node_ptr>(curr)->Value()),
+                               key)) {
         value_node_ptr first = static_cast<value_node_ptr>(curr);
         node_ptr last = first;
         do {
           last = last->Next();
-        } while (
-            kAllowMultimapping && last != nullptr && !last->IsDummy() &&
-            hash_compare_ref_(
-                traits_type::GetKey(static_cast<value_node_ptr>(last)->Value()),
-                key));
+        } while (kAllowMultimapping && last != nullptr && !last->IsDummy() &&
+                 hash_compare_(traits_type::GetKey(
+                                   static_cast<value_node_ptr>(last)->Value()),
+                               key));
         return std::make_pair(first, FirstValueNode(last));
       }
       curr = curr->Next();
@@ -1334,19 +1312,19 @@ class ConcurrentUnorderedBase {
   }
 
   void InternalCopy(const ConcurrentUnorderedBase& other) {
-    node_ptr last_node = &head_ref_;
-    segments_ref_[0].store(&head_ref_, std::memory_order_relaxed);
+    node_ptr last_node = &head_;
+    segments_[0].store(&head_, std::memory_order_relaxed);
 
-    for (node_ptr node = other.head_ref_.Next(); node != nullptr;
+    for (node_ptr node = other.head_.Next(); node != nullptr;
          node = node->Next()) {
       node_ptr new_node;
       if (!node->IsDummy()) {
         new_node = CreateNode(node->OrderKey(),
-                              static_cast<value_node_ptr>(node)->value());
+                              static_cast<value_node_ptr>(node)->Value());
       } else {
         new_node = CreateDummyNode(node->OrderKey());
-        segments_ref_[ws::concurrency::detail::ReverseBits(node->OrderKey())]
-            .store(new_node, std::memory_order_relaxed);
+        segments_[ws::concurrency::detail::ReverseBits(node->OrderKey())].store(
+            new_node, std::memory_order_relaxed);
       }
 
       last_node->SetNext(new_node);
@@ -1355,10 +1333,10 @@ class ConcurrentUnorderedBase {
   }
 
   void InternalMove(ConcurrentUnorderedBase&& other) {
-    node_ptr last_node = &head_ref_;
-    segments_ref_[0].store(&head_ref_, std::memory_order_relaxed);
+    node_ptr last_node = &head_;
+    segments_[0].store(&head_, std::memory_order_relaxed);
 
-    for (node_ptr node = other.head_ref_.Next(); node != nullptr;
+    for (node_ptr node = other.head_.Next(); node != nullptr;
          node = node->Next()) {
       node_ptr new_node;
       if (!node->IsDummy()) {
@@ -1367,8 +1345,8 @@ class ConcurrentUnorderedBase {
                        std::move(static_cast<value_node_ptr>(node)->value()));
       } else {
         new_node = CreateDummyNode(node->OrderKey());
-        segments_ref_[ws::concurrency::detail::ReverseBits(node->OrderKey())]
-            .store(new_node, std::memory_order_relaxed);
+        segments_[ws::concurrency::detail::ReverseBits(node->OrderKey())].store(
+            new_node, std::memory_order_relaxed);
       }
 
       last_node->SetNext(new_node);
@@ -1377,14 +1355,13 @@ class ConcurrentUnorderedBase {
   }
 
   void MoveContent(ConcurrentUnorderedBase&& other) {
-    head_ref_.SetNext(other.head_ref_.Next());
-    other.head_ref_.SetNext(nullptr);
-    segments_ref_[0].store(&head_ref_, std::memory_order_relaxed);
+    head_.SetNext(other.head_.Next());
+    other.head_.SetNext(nullptr);
+    segments_[0].store(&head_, std::memory_order_relaxed);
 
-    other.bucket_count_ref_.store(kInitialBucketCount,
-                                  std::memory_order_relaxed);
-    other.max_load_factor_ref_ = kinitialMaxLoadFactor;
-    other.size_ref_.store(0, std::memory_order_relaxed);
+    other.bucket_count_.store(kInitialBucketCount, std::memory_order_relaxed);
+    other.max_load_factor_ = kinitialMaxLoadFactor;
+    other.size_.store(0, std::memory_order_relaxed);
   }
 
   void InternalMoveConstructWithAllocator(
@@ -1396,7 +1373,7 @@ class ConcurrentUnorderedBase {
   void InternalMoveConstructWithAllocator(
       ConcurrentUnorderedBase&& other, const allocator_type& alloc,
       /*is_always_equal = */ std::false_type) {
-    if (alloc == other.segments_ref_.get_allocator()) {
+    if (alloc == other.segments_.get_allocator()) {
       MoveContent(std::move(other));
     } else {
       TryCall([&] { InternalMove(std::move(other)); }).OnException([&] {
@@ -1412,7 +1389,7 @@ class ConcurrentUnorderedBase {
 
   void InternalMoveAssign(ConcurrentUnorderedBase&& other,
                           /*is_always_equal || POCMA = */ std::false_type) {
-    if (segments_ref_.get_allocator() == other.segments_ref_.get_allocator()) {
+    if (segments_.get_allocator() == other.segments_.get_allocator()) {
       MoveContent(std::move(other));
     } else {
       InternalMove(std::move(other));
@@ -1426,35 +1403,33 @@ class ConcurrentUnorderedBase {
 
   void InternalSwap(ConcurrentUnorderedBase& other,
                     /*is_always_equal || POCS = */ std::false_type) {
-    assert(segments_ref_.get_allocator() ==
-               other.segments_ref_.get_allocator() &&
+    assert(segments_.get_allocator() == other.segments_.get_allocator() &&
            "Swapping with unequal allocators is not allowed");
     InternalSwapFields(other);
   }
 
   void InternalSwapFields(ConcurrentUnorderedBase& other) {
-    node_ptr first_node = head_ref_.Next();
-    head_ref_.SetNext(other.head_ref_.Next());
-    other.head_ref_.SetNext(first_node);
+    node_ptr first_node = head_.Next();
+    head_.SetNext(other.head_.Next());
+    other.head_.SetNext(first_node);
 
-    size_type current_size = size_ref_.load(std::memory_order_relaxed);
-    size_ref_.store(other.size_ref_.load(std::memory_order_relaxed),
-                    std::memory_order_relaxed);
-    other.size_ref_.store(current_size, std::memory_order_relaxed);
+    size_type current_size = size_.load(std::memory_order_relaxed);
+    size_.store(other.size_.load(std::memory_order_relaxed),
+                std::memory_order_relaxed);
+    other.size_.store(current_size, std::memory_order_relaxed);
 
-    size_type bucket_count = bucket_count_ref_.load(std::memory_order_relaxed);
-    bucket_count_ref_.store(
-        other.bucket_count_ref_.load(std::memory_order_relaxed),
-        std::memory_order_relaxed);
-    other.bucket_count_ref_.store(bucket_count, std::memory_order_relaxed);
+    size_type bucket_count = bucket_count_.load(std::memory_order_relaxed);
+    bucket_count_.store(other.bucket_count_.load(std::memory_order_relaxed),
+                        std::memory_order_relaxed);
+    other.bucket_count_.store(bucket_count, std::memory_order_relaxed);
 
     using std::swap;
-    swap(max_load_factor_ref_, other.max_load_factor_ref_);
-    swap(hash_compare_ref_, other.hash_compare_ref_);
-    segments_ref_.swap(other.segments_ref_);
+    swap(max_load_factor_, other.max_load_factor_);
+    swap(hash_compare_, other.hash_compare_);
+    segments_.Swap(other.segments_);
 
-    segments_ref_[0].store(&head_ref_, std::memory_order_relaxed);
-    other.segments_ref_[0].store(&other.head_ref_, std::memory_order_relaxed);
+    segments_[0].store(&head_, std::memory_order_relaxed);
+    other.segments_[0].store(&other.head_, std::memory_order_relaxed);
   }
 
   static constexpr sokey_type SplitOrderKeyRegular(sokey_type hash) {
@@ -1473,19 +1448,19 @@ class ConcurrentUnorderedBase {
 
   size_type GetNextBucketIndex(size_type bucket) const {
     size_type bits = ws::concurrency::detail::Log2(
-        bucket_count_ref_.load(std::memory_order_relaxed));
+        bucket_count_.load(std::memory_order_relaxed));
     size_type reversed_next =
         ws::concurrency::detail::ReverseNBits(bucket, bits) + 1;
     return ws::concurrency::detail::ReverseNBits(reversed_next, bits);
   }
 
-  std::atomic<size_type> size_ref_;
-  std::atomic<size_type> bucket_count_ref_;
-  float max_load_factor_ref_;
-  hash_compare_type hash_compare_ref_;
+  std::atomic<size_type> size_;
+  std::atomic<size_type> bucket_count_;
+  float max_load_factor_;
+  hash_compare_type hash_compare_;
 
-  list_node_type head_ref_;
-  UnorderedSegmentTable segments_ref_;
+  list_node_type head_;
+  UnorderedSegmentTable segments_;
 
   template <typename TContainer, typename Value>
   friend class SolistIterator;
@@ -1512,7 +1487,7 @@ bool operator==(const ConcurrentUnorderedBase<TTraits>& lhs,
 #endif
 }
 
-#if !__CPP20_COMPARISONS_PRESENT
+#if !_CPP20_COMPARISONS_PRESENT
 template <typename Traits>
 bool operator!=(const concurrent_unordered_base<Traits>& lhs,
                 const concurrent_unordered_base<Traits>& rhs) {
@@ -1521,7 +1496,7 @@ bool operator!=(const concurrent_unordered_base<Traits>& lhs,
 #endif
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
-#pragma warning(pop)  // warning 4127 is back
+#pragma warning(pop)
 #endif
 
 }  // namespace detail

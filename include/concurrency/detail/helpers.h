@@ -1,7 +1,7 @@
 #pragma once
 
+#include "arch/config.h"
 #include "arch/cpu_arch.h"
-#include "concurrency/detail/config.h"
 
 namespace ws {
 namespace concurrency {
@@ -16,23 +16,23 @@ class RaiiGuard {
                 "Throwing an exception during the Func copy or move "
                 "construction cause an unexpected behavior.");
 
-  RaiiGuard(TFunc f) noexcept : func_ref_(f), is_active_(true) {}
+  RaiiGuard(TFunc f) noexcept : func_(f), is_active_(true) {}
 
   RaiiGuard(RaiiGuard&& g) noexcept
-      : func_ref_(std::move(g.func_ref_)), is_active_(g.is_active_) {
+      : func_(std::move(g.func_)), is_active_(g.is_active_) {
     g.is_active_ = false;
   }
 
   ~RaiiGuard() {
     if (is_active_) {
-      func_ref_();
+      func_();
     }
   }
 
   void Dismiss() { is_active_ = false; }
 
  private:
-  TFunc func_ref_;
+  TFunc func_;
   bool is_active_;
 };
 
@@ -89,45 +89,51 @@ struct SupportsImpl<T, void_t<Checks<T>...>, Checks...> {
 template <typename T, template <typename> class... Checks>
 using supports = typename SupportsImpl<T, void, Checks...>::type;
 
-template <typename Iterator>
-using iterator_value_t = typename std::iterator_traits<Iterator>::value_type;
+template <typename TIterator>
+using iterator_value_t = typename std::iterator_traits<TIterator>::value_type;
 
-template <typename Iterator>
+template <typename TIterator>
 using iterator_key_t = typename std::remove_const<
-    typename iterator_value_t<Iterator>::first_type>::type;
+    typename iterator_value_t<TIterator>::first_type>::type;
 
-template <typename Iterator>
-using iterator_mapped_t = typename iterator_value_t<Iterator>::second_type;
+template <typename TIterator>
+using iterator_mapped_t = typename iterator_value_t<TIterator>::second_type;
 
-template <typename Iterator>
+template <typename TIterator>
 using iterator_alloc_pair_t =
-    std::pair<typename std::add_const<iterator_key_t<Iterator>>::type,
-              iterator_mapped_t<Iterator>>;
+    std::pair<typename std::add_const<iterator_key_t<TIterator>>::type,
+              iterator_mapped_t<TIterator>>;
 
-template <typename Iterator>
+template <typename TIterator>
 using iterator_alloc_pair_t =
-    std::pair<typename std::add_const<iterator_key_t<Iterator>>::type,
-              iterator_mapped_t<Iterator>>;
+    std::pair<typename std::add_const<iterator_key_t<TIterator>>::type,
+              iterator_mapped_t<TIterator>>;
 
-template <typename A>
-using alloc_value_type = typename A::value_type;
-template <typename A>
-using alloc_ptr_t = typename std::allocator_traits<A>::pointer;
-template <typename A>
+template <typename TA>
+using alloc_value_type = typename TA::value_type;
+template <typename TA>
+using alloc_ptr_t = typename std::allocator_traits<TA>::pointer;
+template <typename TA>
 using has_allocate =
-    decltype(std::declval<alloc_ptr_t<A>&>() = std::declval<A>().allocate(0));
-template <typename A>
+    decltype(std::declval<alloc_ptr_t<TA>&>() = std::declval<TA>().allocate(0));
+template <typename TA>
 using has_deallocate =
-    decltype(std::declval<A>().deallocate(std::declval<alloc_ptr_t<A>>(), 0));
+    decltype(std::declval<TA>().deallocate(std::declval<alloc_ptr_t<TA>>(), 0));
 
 template <typename T>
 using is_allocator =
     supports<T, alloc_value_type, has_allocate, has_deallocate>;
 
-#if __CPP17_DEDUCTION_GUIDES_PRESENT
+#if _CPP17_DEDUCTION_GUIDES_PRESENT
 template <typename T>
 inline constexpr bool is_allocator_v = is_allocator<T>::value;
 #endif
+
+template <typename T, typename TU>
+inline T punned_cast(TU* ptr) {
+  std::uintptr_t x = reinterpret_cast<std::uintptr_t>(ptr);
+  return reinterpret_cast<T>(x);
+}
 
 }  // namespace templates
 
@@ -180,7 +186,7 @@ using is_input_iterator = ws::concurrency::detail::templates::supports<
     T, IsIteratorImpl::iter_traits_category,
     IsIteratorImpl::input_iter_category>;
 
-#if __CPP17_DEDUCTION_GUIDES_PRESENT
+#if _CPP17_DEDUCTION_GUIDES_PRESENT
 template <typename T>
 inline constexpr bool is_input_iterator_v = is_input_iterator<T>::value;
 #endif

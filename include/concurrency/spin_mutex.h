@@ -15,8 +15,8 @@ class SpinMutex {
 
   class ScopedLock {
    public:
-    explicit ScopedLock(SpinMutex& mutex) : m_mutex(mutex) { m_mutex.Lock(); }
-    ~ScopedLock() { m_mutex.Unlock(); }
+    explicit ScopedLock(SpinMutex& mutex) : m_mutex(mutex) { m_mutex.lock(); }
+    ~ScopedLock() { m_mutex.unlock(); }
 
     ScopedLock(const ScopedLock&) = delete;
     ScopedLock& operator=(const ScopedLock&) = delete;
@@ -29,7 +29,7 @@ class SpinMutex {
   static constexpr bool kIsRecursiveMutex = false;
   static constexpr bool IsFairMutex = false;
 
-  void Lock() {
+  void lock() {
     while (m_flag_.exchange(true, std::memory_order_acquire)) {
       while (m_flag_.load(std::memory_order_relaxed)) {
         std::this_thread::yield();
@@ -37,9 +37,9 @@ class SpinMutex {
     }
   }
 
-  bool TryLock() { return !m_flag_.exchange(true, std::memory_order_acquire); }
+  bool try_lock() { return !m_flag_.exchange(true, std::memory_order_acquire); }
 
-  void Unlock() { m_flag_.store(false, std::memory_order_release); }
+  void unlock() { m_flag_.store(false, std::memory_order_release); }
 
  protected:
   std::atomic<bool> m_flag_;
