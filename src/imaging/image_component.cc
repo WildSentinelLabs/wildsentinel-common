@@ -32,7 +32,10 @@ ImageComponent::BufferType ImageComponent::DetermineBufferType(
   }
 }
 
-const void* ImageComponent::GetBuffer() const { return buffer_; }
+const void* ImageComponent::GetBuffer() const {
+  if (disposed_.load()) throw disposed_object_exception();
+  return buffer_;
+}
 
 uint32_t ImageComponent::GetWidth() const { return width_; }
 
@@ -45,8 +48,8 @@ uint8_t ImageComponent::GetBitDepth() const { return bit_depth_; }
 bool ImageComponent::IsAlpha() const { return is_alpha_; }
 
 bool ImageComponent::IsValid() const {
-  return !(buffer_ == nullptr || width_ == 0 || height_ == 0 ||
-           bit_depth_ == 0);
+  return !disposed_.load() && !(buffer_ == nullptr || width_ == 0 ||
+                                height_ == 0 || bit_depth_ == 0);
 }
 
 ImageComponent::BufferType ImageComponent::GetBufferType() const {
@@ -63,6 +66,7 @@ std::string ImageComponent::ToString() const {
 }
 
 void ImageComponent::Dispose() {
+  if (disposed_.exchange(true)) return;
   if (buffer_) {
     switch (buffer_type_) {
       case ImageComponent::BufferType::kUInt8:
@@ -125,7 +129,7 @@ TypedImageComponent<T>::~TypedImageComponent() {
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 const T* TypedImageComponent<T>::GetTypedBuffer() const {
-  return static_cast<const T*>(buffer_);
+  return static_cast<const T*>(GetBuffer());
 }
 
 template class TypedImageComponent<uint8_t>;

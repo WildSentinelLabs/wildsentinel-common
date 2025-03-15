@@ -23,17 +23,25 @@ Image::Image(ImageComponent** components, const uint8_t num_components,
 Image::~Image() { Dispose(); }
 
 void Image::LoadContext(ImageContext context) const {
+  if (disposed_.load()) throw disposed_object_exception();
   context_->Clear();
   for (const auto& [key, value] : context) {
     context_->Add(key, value);
   }
 }
 
-const ImageContext* Image::GetContext() const { return context_; }
+const ImageContext* Image::GetContext() const {
+  if (disposed_.load()) throw disposed_object_exception();
+  return context_;
+}
 
-uint8_t Image::GetNumComponents() const { return num_components_; }
+uint8_t Image::GetNumComponents() const {
+  if (disposed_.load()) throw disposed_object_exception();
+  return num_components_;
+}
 
 const ImageComponent* Image::GetComponent(uint8_t comp_num) const {
+  if (disposed_.load()) throw disposed_object_exception();
   if (comp_num >= num_components_ || comp_num < 0) return nullptr;
   return components_[comp_num];
 }
@@ -49,6 +57,7 @@ const ChromaSubsampling Image::GetChromaSubsampling() const {
 }
 
 bool Image::HasAlpha() const {
+  if (disposed_.load()) throw disposed_object_exception();
   for (uint8_t c = 0; c < num_components_; c++) {
     if (components_[c]->IsAlpha()) return true;
   }
@@ -57,6 +66,7 @@ bool Image::HasAlpha() const {
 }
 
 bool Image::IsValid() const {
+  if (disposed_.load()) return false;
   bool result = !(components_ == nullptr || width_ == 0 || height_ == 0 ||
                   color_space_ == ColorSpace::kUnsupported ||
                   chroma_subsampling_ == ChromaSubsampling::kUnsupported);
@@ -84,6 +94,7 @@ std::string Image::ToString() const {
 }
 
 void Image::Dispose() {
+  if (disposed_.exchange(true)) return;
   if (components_) {
     for (uint8_t c = 0; c < num_components_; ++c) {
       if (!components_[c]) continue;
@@ -94,6 +105,7 @@ void Image::Dispose() {
 
     delete[] components_;
     components_ = nullptr;
+    num_components_ = 0;
   }
 
   if (context_) {

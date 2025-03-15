@@ -1,4 +1,5 @@
 #pragma once
+#include <atomic>
 #include <cstring>
 #include <vector>
 
@@ -52,6 +53,7 @@ class Image : public IDisposable {
   uint32_t height_;
   ColorSpace color_space_;
   ChromaSubsampling chroma_subsampling_;
+  std::atomic<bool> disposed_;
 };
 
 std::ostream& operator<<(std::ostream& os, const Image& image);

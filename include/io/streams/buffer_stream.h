@@ -1,5 +1,6 @@
 #pragma once
 #include <algorithm>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -46,6 +47,7 @@ class BufferStream : public Stream {
   size_t size_;
   bool is_open_;
   bool is_writable_;
+  std::atomic<bool> disposed_;
 };
 }  // namespace streams
 }  // namespace io

@@ -27,9 +27,8 @@ class BlockingObjectPool : public IObjectPool<T> {
   }
 
   T Get() override {
-    if (disposed_.load(std::memory_order_acquire)) {
+    if (disposed_.load(std::memory_order_acquire))
       throw disposed_object_exception();
-    }
 
     T item;
     if (queue_.TryPop(item)) {
@@ -46,25 +45,21 @@ class BlockingObjectPool : public IObjectPool<T> {
   }
 
   void Return(const T& item) override {
-    if (disposed_.load(std::memory_order_acquire)) {
+    if (disposed_.load(std::memory_order_acquire))
       throw disposed_object_exception();
-    }
 
     queue_.Push(item);
   }
 
   void Return(T&& item) override {
-    if (disposed_.load(std::memory_order_acquire)) {
+    if (disposed_.load(std::memory_order_acquire))
       throw disposed_object_exception();
-    }
 
     queue_.Push(std::move(item));
   }
 
   void Dispose() override {
-    if (disposed_.exchange(true, std::memory_order_acq_rel)) {
-      throw disposed_object_exception();
-    }
+    if (disposed_.exchange(true, std::memory_order_acq_rel)) return;
 
     T item;
     while (queue_.TryPop(item)) {

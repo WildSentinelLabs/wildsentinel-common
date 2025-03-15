@@ -1,5 +1,6 @@
 #pragma once
 #include <algorithm>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -42,6 +43,7 @@ class MemoryStream : public Stream {
   size_t used_size_;
   bool is_open_;
   bool is_writable_;
+  std::atomic<bool> disposed_;
 
   void UpdateChunkPosition();
 

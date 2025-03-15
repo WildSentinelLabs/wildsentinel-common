@@ -46,6 +46,7 @@ class ObjectPool : public IObjectPool<T> {
     while (objects_.TryPop(item)) {
       item.Dispose();
     }
+
     disposed_.store(true);
   }
 

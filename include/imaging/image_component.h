@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <sstream>
@@ -56,6 +57,7 @@ class ImageComponent : public IDisposable {
   uint32_t height_;
   uint8_t bit_depth_;
   bool is_alpha_;
+  std::atomic<bool> disposed_;
 };
 
 std::ostream& operator<<(std::ostream& os,
