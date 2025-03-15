@@ -6,7 +6,7 @@ ImageContext::ImageContext() : data(ImageContext::map_type()) {}
 
 ImageContext::ImageContext(const ImageContext::map_type& tags) : data(tags) {}
 
-ImageContext::~ImageContext() { Dispose(); }
+ImageContext::~ImageContext() { Clear(); }
 
 bool ImageContext::Empty() const { return data.empty(); }
 
@@ -62,8 +62,6 @@ std::string ImageContext::ToString() const {
 }
 
 void ImageContext::Clear() { data.clear(); }
-
-void ImageContext::Dispose() { Clear(); }
 
 std::ostream& operator<<(std::ostream& os, const ImageContext& context) {
   std::string str = context.ToString();

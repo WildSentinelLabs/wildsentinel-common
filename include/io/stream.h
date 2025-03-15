@@ -1,9 +1,11 @@
 #pragma once
 #include <cstddef>
+
+#include "base/idisposable.h"
 namespace ws {
 namespace io {
 
-class Stream {
+class Stream : public IDisposable {
  public:
   virtual ~Stream() = default;
 
@@ -27,8 +29,6 @@ class Stream {
   virtual bool WriteTo(Stream& stream) = 0;
 
   virtual unsigned char* ToArray() = 0;
-
-  virtual void Dispose() = 0;
 };
 }  // namespace io
 }  // namespace ws

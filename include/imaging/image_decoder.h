@@ -1,13 +1,15 @@
 #pragma once
+#include "base/idisposable.h"
 #include "imaging/image.h"
 #include "imaging/image_format.h"
 #include "io/stream.h"
 #include "logging/enrichers/thread_id_enricher.h"
 #include "logging/ilogger.h"
 #include "logging/logger_configuration.h"
+
 namespace ws {
 namespace imaging {
-class ImageDecoder {
+class ImageDecoder : public IDisposable {
  public:
   static ws::logging::LoggerConfiguration logger_configuration_;
 
@@ -17,8 +19,6 @@ class ImageDecoder {
 
   virtual Image* Decode(ws::io::Stream& stream) const = 0;
   // TODO: Enable async
-
-  virtual void Dispose() = 0;
 
  protected:
   std::unique_ptr<ws::logging::ILogger> logger_;

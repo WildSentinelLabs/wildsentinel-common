@@ -22,6 +22,11 @@ endif()
 
 option(WSCOMMON_BUILD_IMAGING "Build imaging and pixel modules" ON)
 option(WSCOMMON_BUILD_LOGGING "Build logging module" ON)
+option(WSCOMMON_BUILD_POOLING "Build pooling module" ON)
+
+if(WSCOMMON_BUILD_IMAGING)
+    set(WSCOMMON_BUILD_LOGGING ON)
+endif()
 
 # Set default build type if not specified
 if(NOT CMAKE_BUILD_TYPE)

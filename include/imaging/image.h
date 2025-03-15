@@ -2,6 +2,7 @@
 #include <cstring>
 #include <vector>
 
+#include "base/idisposable.h"
 #include "imaging/chroma_subsampling.h"
 #include "imaging/color_space.h"
 #include "imaging/image_component.h"
@@ -10,7 +11,7 @@
 namespace ws {
 namespace imaging {
 
-class Image {
+class Image : public IDisposable {
  public:
   Image(ImageComponent** components, const uint8_t num_components,
         const uint32_t width, const uint32_t height,
@@ -41,7 +42,7 @@ class Image {
 
   std::string ToString() const;
 
-  void Dispose();
+  void Dispose() override;
 
  private:
   ImageComponent** components_;

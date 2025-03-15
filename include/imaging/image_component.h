@@ -4,11 +4,12 @@
 #include <cstdint>
 #include <sstream>
 
+#include "base/idisposable.h"
 #include "imaging/pixel/pixel_allowed_types.h"
 namespace ws {
 namespace imaging {
 
-class ImageComponent {
+class ImageComponent : public IDisposable {
  public:
   enum class BufferType : int8_t {
     kUInt8,
@@ -44,7 +45,7 @@ class ImageComponent {
 
   std::string ToString() const;
 
-  void Dispose();
+  void Dispose() override;
 
  protected:
   void* buffer_;

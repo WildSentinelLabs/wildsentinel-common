@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
+
 namespace ws {
 namespace imaging {
 
@@ -45,8 +46,6 @@ struct ImageContext {
   std::string ToString() const;
 
   void Clear();
-
-  void Dispose();
 
  private:
   map_type data;

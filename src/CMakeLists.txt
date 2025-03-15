@@ -47,6 +47,7 @@ install(TARGETS wscommon
 install(
     DIRECTORY
         ${WSCOMMON_SOURCE_DIR}/include/arch
+        ${WSCOMMON_SOURCE_DIR}/include/base
         ${WSCOMMON_SOURCE_DIR}/include/concurrency
         ${WSCOMMON_SOURCE_DIR}/include/io
         ${WSCOMMON_SOURCE_DIR}/include/threading
@@ -65,6 +66,14 @@ if (WSCOMMON_BUILD_LOGGING)
     install(
         DIRECTORY
             ${WSCOMMON_SOURCE_DIR}/include/logging
+        DESTINATION include
+    )
+endif()
+
+if (WSCOMMON_BUILD_POOLING)
+    install(
+        DIRECTORY
+            ${WSCOMMON_SOURCE_DIR}/include/pooling
         DESTINATION include
     )
 endif()

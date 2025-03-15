@@ -1,4 +1,5 @@
 #pragma once
+#include "base/idisposable.h"
 #include "imaging/image.h"
 #include "imaging/image_encoding_type.h"
 #include "imaging/image_format.h"
@@ -6,10 +7,11 @@
 #include "logging/enrichers/thread_id_enricher.h"
 #include "logging/ilogger.h"
 #include "logging/logger_configuration.h"
+
 namespace ws {
 namespace imaging {
 
-class ImageEncoder {
+class ImageEncoder : public IDisposable {
  public:
   static ws::logging::LoggerConfiguration logger_configuration_;
 
@@ -19,8 +21,6 @@ class ImageEncoder {
 
   virtual bool Encode(ws::io::Stream& stream, const Image& image) const = 0;
   // TODO: Enable async
-
-  virtual void Dispose() = 0;
 
  protected:
   std::unique_ptr<ws::logging::ILogger> logger_;
