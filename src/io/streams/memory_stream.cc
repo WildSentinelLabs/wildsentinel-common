@@ -132,3 +132,6 @@ void MemoryStream::Dispose() {
 }  // namespace io
 }  // namespace ws
 // TODO: USE DISPOSED_
+// TODO: DONT USE LITTLE CHUNKS
+// TODO: SET A FIXED EXPANDABLE CUANTITY
+// TODO: BOOL EXPANDABLE? DEFAULT TRUE
