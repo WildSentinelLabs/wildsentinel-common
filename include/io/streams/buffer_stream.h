@@ -9,7 +9,6 @@
 
 namespace ws {
 namespace io {
-namespace streams {
 
 class BufferStream : public Stream {
  public:
@@ -49,6 +48,5 @@ class BufferStream : public Stream {
   bool is_writable_;
   std::atomic<bool> disposed_;
 };
-}  // namespace streams
 }  // namespace io
 }  // namespace ws

@@ -1,14 +1,15 @@
 #pragma once
 
+#include <algorithm>
 #include <atomic>
 #include <cstddef>
+#include <cstring>
 #include <stdexcept>
 
 #include "io/stream.h"
 
 namespace ws {
 namespace io {
-namespace streams {
 
 class FileStream : public Stream {
  public:
@@ -48,6 +49,5 @@ class FileStream : public Stream {
   std::atomic<bool> disposed_;
 };
 
-}  // namespace streams
 }  // namespace io
 }  // namespace ws

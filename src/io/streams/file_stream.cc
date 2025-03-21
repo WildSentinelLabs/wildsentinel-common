@@ -1,8 +1,5 @@
 #include "io/streams/file_stream.h"
 
-#include <algorithm>
-#include <cstring>
-
 #ifdef _WIN32
 #include <windows.h>
 #else
@@ -13,7 +10,6 @@
 
 namespace ws {
 namespace io {
-namespace streams {
 
 #ifdef _WIN32
 
@@ -298,6 +294,5 @@ void FileStream::Dispose() {
 
 #endif
 
-}  // namespace streams
 }  // namespace io
 }  // namespace ws
