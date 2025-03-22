@@ -26,7 +26,7 @@ class Logger : public ILogger {
                       std::vector<std::shared_ptr<ILogEnricher>>(),
                   LogLevel min_log_level = LogLevel::kInformation);
 
-  void Log(LogLevel level, const std::string& message) override;
+  void Log(LogLevel level, const std::string& message) const override;
 
   void SetMinimumLogLevel(LogLevel level) override;
 
