@@ -3,8 +3,8 @@
 #include <atomic>
 #include <stdexcept>
 
-#include "base/delegate.h"
 #include "concurrency/collections/concurrent_queue.h"
+#include "delegate.h"
 #include "pooling/iobject_pool.h"
 
 namespace ws {

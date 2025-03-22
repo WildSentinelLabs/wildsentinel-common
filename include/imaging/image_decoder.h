@@ -1,5 +1,5 @@
 #pragma once
-#include "base/idisposable.h"
+#include "idisposable.h"
 #include "imaging/image.h"
 #include "imaging/image_format.h"
 #include "io/stream.h"

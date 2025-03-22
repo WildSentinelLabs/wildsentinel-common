@@ -3,9 +3,9 @@
 #include <functional>
 #include <stdexcept>
 
-#include "base/delegate.h"
-#include "base/idisposable.h"
 #include "concurrency/collections/blocking_queue.h"
+#include "delegate.h"
+#include "idisposable.h"
 #include "pooling/iobject_pool.h"
 
 namespace ws {

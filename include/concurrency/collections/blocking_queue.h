@@ -3,9 +3,9 @@
 #include <cstdint>
 #include <memory>
 
-#include "base/delegate.h"
 #include "concurrency/detail/concurrent_monitor.h"
 #include "concurrency/detail/concurrent_queue_base.h"
+#include "delegate.h"
 
 namespace ws {
 namespace concurrency {

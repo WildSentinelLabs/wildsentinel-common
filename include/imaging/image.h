@@ -3,7 +3,7 @@
 #include <cstring>
 #include <vector>
 
-#include "base/idisposable.h"
+#include "idisposable.h"
 #include "imaging/chroma_subsampling.h"
 #include "imaging/color_space.h"
 #include "imaging/image_component.h"

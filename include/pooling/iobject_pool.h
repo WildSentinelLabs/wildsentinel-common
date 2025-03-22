@@ -1,6 +1,6 @@
 #pragma once
 
-#include "base/idisposable.h"
+#include "idisposable.h"
 namespace ws {
 namespace pooling {
 template <typename T>

@@ -44,10 +44,16 @@ install(TARGETS wscommon
 )
 
 # Install public headers
+install(FILES
+    ${WSCOMMON_SOURCE_DIR}/include/array.h
+    ${WSCOMMON_SOURCE_DIR}/include/delegate.h
+    ${WSCOMMON_SOURCE_DIR}/include/idisposable.h
+    DESTINATION include
+)
+
 install(
     DIRECTORY
         ${WSCOMMON_SOURCE_DIR}/include/arch
-        ${WSCOMMON_SOURCE_DIR}/include/base
         ${WSCOMMON_SOURCE_DIR}/include/concurrency
         ${WSCOMMON_SOURCE_DIR}/include/io
         ${WSCOMMON_SOURCE_DIR}/include/threading

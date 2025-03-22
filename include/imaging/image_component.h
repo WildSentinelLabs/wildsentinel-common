@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <sstream>
 
-#include "base/idisposable.h"
+#include "idisposable.h"
 #include "imaging/pixel/pixel_allowed_types.h"
 namespace ws {
 namespace imaging {
