@@ -28,6 +28,18 @@ struct Array {
 
   operator const T*() const { return data.get(); }
 
+  T* begin() { return data.get(); }
+
+  T* end() { return data.get() + length; }
+
+  const T* begin() const { return data.get(); }
+
+  const T* end() const { return data.get() + length; }
+
+  const T* cbegin() const { return data.get(); }
+
+  const T* cend() const { return data.get() + length; }
+
  private:
   std::unique_ptr<T[]> data;
   std::size_t length;
