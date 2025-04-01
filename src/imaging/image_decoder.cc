@@ -2,8 +2,8 @@
 namespace ws {
 namespace imaging {
 
-ImageDecoder::ImageDecoder(const ImageContext context,
-                           const std::string source_context)
+ImageDecoder::ImageDecoder(const ImageContext& context,
+                           const std::string& source_context)
     : context_(context),
       logger_(logger_configuration_.CreateLogger(source_context)) {};
 

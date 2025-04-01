@@ -35,8 +35,8 @@ std::optional<ImageContext::mapped_type> ImageContext::Get(
   return std::nullopt;
 }
 
-void ImageContext::Add(const ImageContext::key_type key,
-                       const ImageContext::mapped_type value) {
+void ImageContext::Add(const ImageContext::key_type& key,
+                       const ImageContext::mapped_type& value) {
   data.insert_or_assign(key, value);
 }
 

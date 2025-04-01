@@ -1,34 +1,106 @@
 #pragma once
+#include <climits>
 #include <cstddef>
+#include <string>
 
+#include "array.h"
 #include "idisposable.h"
+#include "io/seek_origin.h"
+#include "span.h"
+#include "types.h"
 namespace ws {
 namespace io {
+struct stream_closed_exception : public disposed_object_exception {
+  const char* what() const noexcept override;
+};
+
+struct unwritable_stream_exception : public std::exception {
+  const char* what() const noexcept override;
+};
+
+struct unreadable_stream_exception : public std::exception {
+  const char* what() const noexcept override;
+};
+
+struct stream_too_long_exception : public std::exception {
+  const char* what() const noexcept override;
+};
 
 class Stream : public IDisposable {
  public:
   virtual ~Stream() = default;
 
+  virtual bool CanSeek() = 0;
+
   virtual bool CanRead() const = 0;
 
   virtual bool CanWrite() const = 0;
 
-  virtual size_t GetLength() const = 0;
+  virtual offset_t Length() = 0;
 
-  virtual size_t GetPosition() const = 0;
+  virtual offset_t Position() = 0;
 
-  virtual void SetPosition(size_t offset) = 0;
+  virtual void SetPosition(offset_t value) = 0;
 
-  virtual size_t Read(unsigned char buffer[], size_t offset, size_t count) = 0;
+  virtual offset_t Read(Span<unsigned char>& buffer, offset_t offset,
+                        offset_t count) = 0;
 
-  virtual size_t Read(unsigned char buffer[], size_t count) = 0;
+  virtual offset_t Read(Span<unsigned char>& buffer) = 0;
 
-  virtual bool Write(const unsigned char buffer[], size_t offset,
-                     size_t count) = 0;
+  virtual int16_t ReadByte() = 0;
 
-  virtual bool WriteTo(Stream& stream) = 0;
+  virtual offset_t Seek(offset_t offset, SeekOrigin origin) = 0;
 
-  virtual unsigned char* ToArray() = 0;
+  virtual void Write(const ReadOnlySpan<unsigned char>& buffer, offset_t offset,
+                     offset_t count) = 0;
+
+  virtual void Write(const ReadOnlySpan<unsigned char>& buffer) = 0;
+
+  virtual void WriteByte(unsigned char value) = 0;
+
+  virtual Array<unsigned char> ToArray() = 0;
+
+  virtual void Close() = 0;
+
+  virtual void CopyTo(Stream& stream);
+
+ protected:
+#if defined(_WIN32)
+// En Windows, la API usa enteros de 64 bits (LARGE_INTEGER) incluso en sistemas
+// de 32 bits.
+#if UINTPTR_MAX == 0xffffffffffffffffULL              // 64 bits
+  static constexpr offset_t kMaxLength = 1ULL << 34;  // 16 GB
+#elif UINTPTR_MAX == 0xffffffffULL                    // 32 bits
+  static constexpr offset_t kMaxLength = 1ULL << 31;  // 2 GB
+#else
+  static constexpr offset_t kMaxLength = 1ULL << 31;  // Default
+#endif
+#elif defined(__unix__)
+#if UINTPTR_MAX == 0xffffffffffffffffULL  // 64 bits
+  static constexpr offset_t kMaxLength = 1ULL << 34;  // 16 GB
+#elif UINTPTR_MAX == 0xffffffffULL        // 32 bits
+  static constexpr offset_t kMaxLength = 1ULL << 33;  // 8 GB
+#else
+  static constexpr offset_t kMaxLength = 1ULL << 31;  // Default
+#endif
+#else
+  static constexpr offset_t kMaxLength = 1ULL << 31;  // Default
+#endif
+
+  static bool WillOverflow(offset_t a, offset_t b);
+
+  static void ValidateBufferArguments(const ReadOnlySpan<unsigned char>& buffer,
+                                      offset_t offset, offset_t count);
+
+  static void ValidateSeekArguments(offset_t offset, SeekOrigin origin);
+
+  static void ValidateCopyToArguments(Stream& stream, offset_t buffer_size);
+
+  virtual void CopyTo(Stream& stream, offset_t buffer_size);
+
+ private:
+  static constexpr const offset_t kDefaultCopyBufferSize = 81920;
 };
+
 }  // namespace io
 }  // namespace ws

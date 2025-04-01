@@ -27,7 +27,7 @@ void ConsoleLogSink::EnableAsync() {
 }
 
 void ConsoleLogSink::Display(ws::logging::events::LogEvent event) {
-  if (event.GetLevel() < min_log_level_) return;
+  if (event.Level() < min_log_level_) return;
   std::string formatted_message = renderer_.Render(event);
   if (dispatcher_) dispatcher_->Dispatch(formatted_message);
 }

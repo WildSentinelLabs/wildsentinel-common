@@ -9,18 +9,18 @@ namespace events {
 
 class LogEvent {
  public:
-  LogEvent(const std::string source_context, const std::string message,
-           const LogLevel level = LogLevel::kInformation,
-           const std::unordered_map<std::string, std::string> properties =
+  LogEvent(const std::string& source_context, const std::string& message,
+           LogLevel level = LogLevel::kInformation,
+           const std::unordered_map<std::string, std::string>& properties =
                std::unordered_map<std::string, std::string>());
 
-  const std::string GetSourceContext() const;
+  std::string SourceContext() const;
 
-  LogLevel GetLevel() const;
+  LogLevel Level() const;
 
-  const std::string GetMessage() const;
+  std::string Message() const;
 
-  std::chrono::system_clock::time_point GetTimestamp() const;
+  std::chrono::system_clock::time_point Timestamp() const;
 
   std::optional<std::string> GetProperty(const std::string& key) const;
 

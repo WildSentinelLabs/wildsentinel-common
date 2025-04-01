@@ -59,13 +59,13 @@ void MessageRenderer::ParseTemplate(const std::string& format) {
 std::string MessageRenderer::RenderPlaceholder(
     const TemplatePart& part, const ws::logging::events::LogEvent& event) {
   if (part.key == kSourceContextKey) {
-    return event.GetSourceContext();
+    return event.SourceContext();
   } else if (part.key == kMessageKey) {
-    return event.GetMessage();
+    return event.Message();
   } else if (part.key == kLevelKey) {
-    return FormatLogLevel(event.GetLevel(), part.format);
+    return FormatLogLevel(event.Level(), part.format);
   } else if (part.key == kTimeStampKey) {
-    return FormatTimestamp(event.GetTimestamp(), part.format);
+    return FormatTimestamp(event.Timestamp(), part.format);
   } else {
     if (auto prop = event.GetProperty(part.key)) return *prop;
   }

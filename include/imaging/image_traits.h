@@ -10,11 +10,11 @@ namespace imaging {
 
 class ImageTraits {
  public:
-  static uint8_t GetBitAlignment(const uint8_t& bit_depth);
+  static uint8_t GetBitAlignment(uint8_t bit_depth);
 
-  static uint8_t GetChromaAlignment(const ChromaSubsampling& subsampling);
+  static uint8_t GetChromaAlignment(ChromaSubsampling subsampling);
 
-  static bool IsSigned(const uint8_t& bit_depth);
+  static bool IsSigned(uint8_t bit_depth);
 
   template <ws::imaging::pixel::IsAllowedPixelNumericType T>
   static constexpr T Clamp(T value, T min_value, T max_value) {

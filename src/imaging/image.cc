@@ -2,63 +2,69 @@
 namespace ws {
 namespace imaging {
 
-Image::Image(ImageComponent** components, const uint8_t num_components,
-             const uint32_t width, const uint32_t height,
-             const ColorSpace color_space,
-             const ChromaSubsampling chroma_subsampling)
-    : components_(components),
-      num_components_(num_components),
+Image::Image(Array<std::unique_ptr<IImageComponent>>&& components,
+             uint32_t width, uint32_t height, ColorSpace color_space,
+             ChromaSubsampling chroma_subsampling)
+    : components_(std::move(components)),
       width_(width),
       height_(height),
       color_space_(color_space),
-      chroma_subsampling_(chroma_subsampling) {
+      chroma_subsampling_(chroma_subsampling),
+      context_(ImageContext()) {
   if (!IsValid())
     throw std::invalid_argument(
         "Invalid parameters: buffers, dimensions, and bit depth must be "
         "non-null and non-zero");
-
-  context_ = new ImageContext();
 }
 
 Image::~Image() { Dispose(); }
 
-void Image::LoadContext(ImageContext context) const {
+void Image::LoadContext(const ImageContext& context) {
   if (disposed_.load()) throw disposed_object_exception();
-  context_->Clear();
+  context_.Clear();
   for (const auto& [key, value] : context) {
-    context_->Add(key, value);
+    context_.Add(key, value);
   }
 }
 
-const ImageContext* Image::GetContext() const {
+ImageContext Image::Context() const {
   if (disposed_.load()) throw disposed_object_exception();
   return context_;
 }
 
-uint8_t Image::GetNumComponents() const {
+uint8_t Image::NumComponents() const {
   if (disposed_.load()) throw disposed_object_exception();
-  return num_components_;
+  return components_.Length();
 }
 
-const ImageComponent* Image::GetComponent(uint8_t comp_num) const {
+const IImageComponent* Image::GetComponent(uint8_t comp_num) const {
   if (disposed_.load()) throw disposed_object_exception();
-  if (comp_num >= num_components_ || comp_num < 0) return nullptr;
-  return components_[comp_num];
+  return components_[comp_num].get();
 }
 
-uint32_t Image::GetWidth() const { return width_; }
+const Array<IImageComponent*> Image::Components() const {
+  if (disposed_.load()) throw disposed_object_exception();
+  Array<IImageComponent*> components_array(components_.Length());
+  for (size_t i = 0; i < components_.Length(); i++) {
+    components_array[i] = components_[i].get();
+  }
 
-uint32_t Image::GetHeight() const { return height_; }
+  return components_array;
+}
 
-const ColorSpace Image::GetColorSpace() const { return color_space_; }
+uint32_t Image::Width() const { return width_; }
 
-const ChromaSubsampling Image::GetChromaSubsampling() const {
+uint32_t Image::Height() const { return height_; }
+
+ColorSpace Image::GetColorSpace() const { return color_space_; }
+
+ChromaSubsampling Image::GetChromaSubsampling() const {
   return chroma_subsampling_;
 }
 
 bool Image::HasAlpha() const {
   if (disposed_.load()) throw disposed_object_exception();
-  for (uint8_t c = 0; c < num_components_; c++) {
+  for (uint8_t c = 0; c < components_.Length(); c++) {
     if (components_[c]->IsAlpha()) return true;
   }
 
@@ -67,10 +73,10 @@ bool Image::HasAlpha() const {
 
 bool Image::IsValid() const {
   if (disposed_.load()) return false;
-  bool result = !(components_ == nullptr || width_ == 0 || height_ == 0 ||
+  bool result = !(components_.IsEmpty() || width_ == 0 || height_ == 0 ||
                   color_space_ == ColorSpace::kUnsupported ||
                   chroma_subsampling_ == ChromaSubsampling::kUnsupported);
-  for (uint8_t c = 0; c < num_components_; ++c) {
+  for (uint8_t c = 0; c < components_.Length(); ++c) {
     result = result && components_[c]->IsValid();
   }
 
@@ -85,7 +91,7 @@ std::string Image::ToString() const {
   ss << " ColorSpace: " << ColorSpaceToString(color_space_) << "\n";
   ss << " ChromaSubsampling: " << ChromaSubsamplingToString(chroma_subsampling_)
      << "\n";
-  for (uint8_t c = 0; c < num_components_; ++c) {
+  for (uint8_t c = 0; c < components_.Length(); ++c) {
     ss << " Component " << static_cast<int>(c) << ": "
        << components_[c]->ToString() << "\n";
   }
@@ -95,22 +101,9 @@ std::string Image::ToString() const {
 
 void Image::Dispose() {
   if (disposed_.exchange(true)) return;
-  if (components_) {
-    for (uint8_t c = 0; c < num_components_; ++c) {
-      if (!components_[c]) continue;
-      components_[c]->Dispose();
-      delete components_[c];
-      components_[c] = nullptr;
-    }
-
-    delete[] components_;
-    components_ = nullptr;
-    num_components_ = 0;
-  }
-
-  if (context_) {
-    delete context_;
-    context_ = nullptr;
+  for (uint8_t c = 0; c < components_.Length(); ++c) {
+    if (!components_[c]) continue;
+    components_[c]->Dispose();
   }
 }
 

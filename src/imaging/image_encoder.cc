@@ -2,8 +2,8 @@
 namespace ws {
 namespace imaging {
 
-ImageEncoder::ImageEncoder(const ImageContext context, const int quality,
-                           const std::string source_context)
+ImageEncoder::ImageEncoder(const ImageContext& context, int quality,
+                           const std::string& source_context)
     : encoding_type_(ImageEncodingType::kLossy),
       context_(context),
       quality_(quality),
@@ -13,8 +13,8 @@ ImageEncoder::ImageEncoder(const ImageContext context, const int quality,
   }
 }
 
-ImageEncoder::ImageEncoder(const ImageContext context,
-                           const std::string source_context)
+ImageEncoder::ImageEncoder(const ImageContext& context,
+                           const std::string& source_context)
     : encoding_type_(ImageEncodingType::kLossless),
       context_(context),
       quality_(0),

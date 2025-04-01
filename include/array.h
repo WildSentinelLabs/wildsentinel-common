@@ -1,28 +1,74 @@
 #pragma once
 
+#include <cassert>
 #include <cstddef>
 #include <memory>
 
 namespace ws {
 template <typename T>
+struct Span;
+
+template <typename T>
 struct Array {
+  Array() : data(nullptr), length(0) {}
+
   Array(std::size_t length)
-      : data(std::make_unique<T[]>(length)), length(length) {}
+      : data(length > 0 ? std::make_unique<T[]>(length) : nullptr),
+        length(length) {
+    assert((length == 0 || data != nullptr) &&
+           "Data pointer must not be null if length > 0");
+  }
+
+  Array(std::initializer_list<T> init)
+      : data(init.size() > 0 ? std::make_unique<T[]>(init.size()) : nullptr),
+        length(init.size()) {
+    assert((init.size() == 0 || data != nullptr) &&
+           "Data pointer must not be null if initializer list is non-empty");
+    std::copy(init.begin(), init.end(), data.get());
+  }
+
+  Array(std::unique_ptr<T[]>&& data, std::size_t length)
+      : data(std::move(data)), length(length) {
+    assert((length == 0 || this->data != nullptr) &&
+           "Unique_ptr data must not be null if length > 0");
+  }
+
+  Array(Array&& other) noexcept
+      : data(std::move(other.data)), length(other.length) {
+    assert((other.length == 0 || data != nullptr) &&
+           "Moved data pointer must not be null if length > 0");
+    other = Array::Empty();
+  }
 
   Array(const Array&) = delete;
 
-  Array(Array&& other) noexcept
-      : length(other.length), data(std::move(other.data)) {}
+  static Array<T> Empty() { return Array<T>(); }
 
   std::size_t Length() const { return length; }
 
+  bool IsEmpty() const { return length == 0; }
+
   Array& operator=(const Array&) = delete;
 
-  Array& operator=(Array&& other) noexcept = delete;
+  Array& operator=(Array&& other) noexcept {
+    if (this != &other) {
+      data = std::move(other.data);
+      length = other.length;
+      other = Array::Empty();
+    }
 
-  T& operator[](std::size_t index) { return data[index]; }
+    return *this;
+  }
 
-  const T& operator[](std::size_t index) const { return data[index]; }
+  T& operator[](std::size_t index) {
+    assert(index < length && "Array index out of range");
+    return data[index];
+  }
+
+  const T& operator[](std::size_t index) const {
+    assert(index < length && "Array index out of range");
+    return data[index];
+  }
 
   operator T*() { return data.get(); }
 
@@ -43,5 +89,8 @@ struct Array {
  private:
   std::unique_ptr<T[]> data;
   std::size_t length;
+
+  template <typename TU>
+  friend struct Span;
 };
 }  // namespace ws

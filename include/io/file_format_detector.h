@@ -14,9 +14,9 @@ class FileFormatDetector {
 
   virtual uint16_t HeaderSize() const = 0;
 
-  virtual bool Detect(Stream* stream) const = 0;
+  virtual bool Detect(Stream& stream) const = 0;
 
-  virtual bool Detect(const uint8_t* header, size_t length) const = 0;
+  virtual bool Detect(const Span<unsigned char>& header_span) const = 0;
 };
 }  // namespace io
 }  // namespace ws

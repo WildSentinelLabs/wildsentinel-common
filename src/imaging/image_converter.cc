@@ -4,19 +4,19 @@
 namespace ws {
 namespace imaging {
 
-ImageConverter::ImageConverter(const std::string source_context,
-                               const ColorSpace color_space,
-                               const ChromaSubsampling chroma_subsampling,
-                               const uint8_t num_components)
+ImageConverter::ImageConverter(ColorSpace color_space,
+                               ChromaSubsampling chroma_subsampling,
+                               uint8_t num_components,
+                               std::string& source_context)
     : logger_(logger_configuration_.CreateLogger(source_context)),
       color_space_(color_space),
       chroma_subsampling_(chroma_subsampling),
       num_components_(num_components),
       alignment_(ImageTraits::GetChromaAlignment(chroma_subsampling)) {};
 
-const ColorSpace ImageConverter::GetColorSpace() const { return color_space_; }
+ColorSpace ImageConverter::GetColorSpace() const { return color_space_; }
 
-const ChromaSubsampling ImageConverter::GetChromaSubsampling() const {
+ChromaSubsampling ImageConverter::GetChromaSubsampling() const {
   return chroma_subsampling_;
 }
 

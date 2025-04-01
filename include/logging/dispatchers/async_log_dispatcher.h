@@ -2,7 +2,6 @@
 
 #include <condition_variable>
 #include <memory>
-#include <vector>
 
 #include "concurrency/collections/concurrent_queue.h"
 #include "logging/ilog_dispatcher.h"

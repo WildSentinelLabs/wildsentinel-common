@@ -17,14 +17,14 @@ class ImageDecoder : public IDisposable {
 
   virtual const ImageFormat& Format() const = 0;
 
-  virtual Image* Decode(ws::io::Stream& stream) const = 0;
+  virtual std::unique_ptr<Image> Decode(ws::io::Stream& stream) const = 0;
   // TODO: Enable async
 
  protected:
   std::unique_ptr<ws::logging::ILogger> logger_;
   ImageContext context_;
 
-  ImageDecoder(const ImageContext context, const std::string source_context);
+  ImageDecoder(const ImageContext& context, const std::string& source_context);
 };
 }  // namespace imaging
 }  // namespace ws
