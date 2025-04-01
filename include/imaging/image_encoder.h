@@ -19,7 +19,7 @@ class ImageEncoder : public IDisposable {
 
   virtual const ImageFormat& Format() const = 0;
 
-  virtual bool Encode(const Image& image, ws::io::Stream& stream) const = 0;
+  virtual void Encode(const Image& image, ws::io::Stream& stream) const = 0;
   // TODO: Enable async
 
  protected:

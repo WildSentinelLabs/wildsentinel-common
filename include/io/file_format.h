@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <string>
 
-#include "array.h"
+#include "span.h"
 
 namespace ws {
 namespace io {
