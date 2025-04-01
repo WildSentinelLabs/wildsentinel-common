@@ -41,7 +41,7 @@ MemoryStream::MemoryStream(MemoryStream&& other) noexcept
       writable_(other.writable_),
       exposable_(other.exposable_),
       is_open_(other.is_open_) {
-  other.Dispose();
+  other = MemoryStream();
 }
 
 MemoryStream::~MemoryStream() { Dispose(); }
@@ -294,7 +294,8 @@ MemoryStream& MemoryStream::operator=(MemoryStream&& other) noexcept {
     writable_ = other.writable_;
     expandable_ = other.expandable_;
     exposable_ = other.exposable_;
-    other.Dispose();
+
+    other = MemoryStream();
   }
 
   return *this;

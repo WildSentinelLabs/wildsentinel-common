@@ -3,6 +3,15 @@ namespace ws {
 namespace imaging {
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
+ImageComponent<T>::ImageComponent()
+    : buffer_(Array<T>::Empty()),
+      buffer_type_(ImageBufferType::kUnknown),
+      width_(0),
+      height_(0),
+      bit_depth_(0),
+      is_alpha_(false) {}
+
+template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 ImageComponent<T>::ImageComponent(Array<T>&& buffer, uint32_t width,
                                   uint32_t height, uint8_t bit_depth,
                                   bool is_alpha)
@@ -17,15 +26,26 @@ ImageComponent<T>::ImageComponent(Array<T>&& buffer, uint32_t width,
 }
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
-ImageComponent<T>::~ImageComponent() {
-  Dispose();
+ImageComponent<T>::ImageComponent(ImageComponent<T>&& other) noexcept
+    : buffer_(std::move(other.buffer_)),
+      buffer_type_(other.buffer_type_),
+      width_(other.width_),
+      height_(other.height_),
+      bit_depth_(other.bit_depth_),
+      is_alpha_(other.is_alpha_) {
+  other = ImageComponent<T>::Empty();
+}
+
+template <ws::imaging::pixel::IsAllowedPixelNumericType T>
+ImageComponent<T> ImageComponent<T>::Empty() {
+  return ImageComponent<T>();
 }
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 const void* ImageComponent<T>::Buffer() const {
-  if (disposed_.load()) throw disposed_object_exception();
   return static_cast<const T*>(buffer_);
 }
+
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 uint32_t ImageComponent<T>::Width() const {
   return width_;
@@ -53,8 +73,7 @@ bool ImageComponent<T>::IsAlpha() const {
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 bool ImageComponent<T>::IsValid() const {
-  return !disposed_.load() && !(buffer_ == nullptr || width_ == 0 ||
-                                height_ == 0 || bit_depth_ == 0);
+  return !(buffer_.IsEmpty() || width_ == 0 || height_ == 0 || bit_depth_ == 0);
 }
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
@@ -64,22 +83,27 @@ ImageBufferType ImageComponent<T>::GetBufferType() const {
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 std::string ImageComponent<T>::ToString() const {
-  std::ostringstream ss;
-  ss << "ImageComponent<" << ImageBufferTypeToString(buffer_type_) << ">("
-     << " Width: " << width_ << " Height: " << height_
-     << ", Bit Depth: " << static_cast<int>(bit_depth_)
-     << ", Alpha: " << (is_alpha_ ? "True" : "False") << ")";
-  return ss.str();
+  return std::format(
+      "ImageComponent<{}>( Width: {} Height: {} Bit Depth: {} Alpha: {} )",
+      ImageBufferTypeToString(buffer_type_), width_, height_,
+      static_cast<int>(bit_depth_), (is_alpha_ ? "True" : "False"));
 }
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
-void ImageComponent<T>::Dispose() {
-  if (disposed_.exchange(true)) return;
-}
+ImageComponent<T>& ImageComponent<T>::operator=(
+    ImageComponent<T>&& other) noexcept {
+  if (this != &other) {
+    buffer_ = std::move(other.buffer_);
+    buffer_type_ = other.buffer_type_;
+    width_ = other.width_;
+    height_ = other.height_;
+    bit_depth_ = other.bit_depth_;
+    is_alpha_ = other.is_alpha_;
 
-template <ws::imaging::pixel::IsAllowedPixelNumericType T>
-ImageComponent<T>::operator const T*() const {
-  return buffer_;
+    other = ImageComponent<T>::Empty();
+  }
+
+  return *this;
 }
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
@@ -88,10 +112,9 @@ const T& ImageComponent<T>::operator[](std::size_t index) const {
   return buffer_[index];
 }
 
-std::ostream& operator<<(std::ostream& os,
-                         const IImageComponent& image_component) {
-  os << image_component.ToString();
-  return os;
+template <ws::imaging::pixel::IsAllowedPixelNumericType T>
+ImageComponent<T>::operator const T*() const {
+  return buffer_;
 }
 
 template class ImageComponent<int8_t>;

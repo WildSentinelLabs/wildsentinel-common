@@ -35,8 +35,6 @@ struct Array {
 
   Array(Array&& other) noexcept
       : data(std::move(other.data)), length(other.length) {
-    assert((other.length == 0 || data != nullptr) &&
-           "Moved data pointer must not be null if length > 0");
     other = Array::Empty();
   }
 

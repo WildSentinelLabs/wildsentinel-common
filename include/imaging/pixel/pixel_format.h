@@ -30,8 +30,6 @@ enum class PixelFormat : int8_t {
 };
 
 const std::string PixelFormatToString(const PixelFormat& pixel_format);
-
-std::ostream& operator<<(std::ostream& os, const PixelFormat& pixel_format);
 }  // namespace pixel
 }  // namespace imaging
 }  // namespace ws

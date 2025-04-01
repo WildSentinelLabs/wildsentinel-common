@@ -12,7 +12,5 @@ enum class LogLevel : int8_t {
 };
 
 const std::string LogLevelToString(const LogLevel& log_level);
-
-std::ostream& operator<<(std::ostream& os, const LogLevel& log_level);
 }  // namespace logging
 }  // namespace ws

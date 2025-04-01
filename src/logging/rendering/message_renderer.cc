@@ -8,16 +8,16 @@ MessageRenderer::MessageRenderer(const std::string& template_format) {
 
 std::string MessageRenderer::Render(
     const ws::logging::events::LogEvent& event) const {
-  std::ostringstream oss;
+  std::string result;
   for (const auto& part : template_parts_) {
     if (part.type == TemplatePart::Type::Text) {
-      oss << part.key;
+      result += part.key;
     } else {
-      oss << RenderPlaceholder(part, event);
+      result += RenderPlaceholder(part, event);
     }
   }
 
-  return oss.str();
+  return result;
 }
 
 MessageRenderer::TemplatePart::TemplatePart(Type type, const std::string& key,
@@ -86,11 +86,10 @@ std::string MessageRenderer::FormatTimestamp(
     std::chrono::system_clock::time_point timestamp,
     const std::string& format) {
   auto in_time_t = std::chrono::system_clock::to_time_t(timestamp);
+
   auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                 timestamp.time_since_epoch()) %
             1000;
-
-  std::ostringstream time_ss;
   std::tm localTime;
 #ifdef _WIN32
   localtime_s(&localTime, &in_time_t);
@@ -98,19 +97,26 @@ std::string MessageRenderer::FormatTimestamp(
   localtime_r(&in_time_t, &localTime);
 #endif
 
+  char timeBuffer[128];
   std::string adjusted_format = format;
-  bool include_ms = (format.find("%f") != std::string::npos);
-  if (include_ms) {
-    adjusted_format = format;
-    adjusted_format.erase(adjusted_format.find("%f"), 2);
+
+  bool include_ms = false;
+  size_t pos = adjusted_format.find("%f");
+  if (pos != std::string::npos) {
+    include_ms = true;
+    adjusted_format.erase(pos, 2);
   }
 
-  time_ss << std::put_time(&localTime, adjusted_format.c_str());
+  std::strftime(timeBuffer, sizeof(timeBuffer), adjusted_format.c_str(),
+                &localTime);
+  std::string timeStr(timeBuffer);
   if (include_ms) {
-    time_ss << std::setfill('0') << std::setw(3) << ms.count();
+    std::ostringstream oss;
+    oss << timeStr << std::setfill('0') << std::setw(3) << ms.count();
+    return oss.str();
   }
 
-  return time_ss.str();
+  return timeStr;
 }
 }  // namespace rendering
 }  // namespace logging

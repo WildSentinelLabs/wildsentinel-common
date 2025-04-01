@@ -13,12 +13,20 @@ class ImageDecoder : public IDisposable {
  public:
   static ws::logging::LoggerConfiguration logger_configuration_;
 
+  ImageDecoder(const ImageDecoder& other);
+
+  ImageDecoder(ImageDecoder&& other) noexcept;
+
   virtual ~ImageDecoder() = default;
 
   virtual const ImageFormat& Format() const = 0;
 
-  virtual std::unique_ptr<Image> Decode(ws::io::Stream& stream) const = 0;
+  virtual Image Decode(ws::io::Stream& stream) const = 0;
   // TODO: Enable async
+
+  ImageDecoder& operator=(const ImageDecoder& other);
+
+  ImageDecoder& operator=(ImageDecoder&& other) noexcept;
 
  protected:
   std::unique_ptr<ws::logging::ILogger> logger_;

@@ -4,7 +4,6 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
-#include <sstream>
 
 #include "array.h"
 #include "idisposable.h"
@@ -14,7 +13,7 @@
 namespace ws {
 namespace imaging {
 
-class IImageComponent : public IDisposable {
+class IImageComponent {
  public:
   ~IImageComponent() = default;
 
@@ -37,16 +36,21 @@ class IImageComponent : public IDisposable {
   virtual std::string ToString() const = 0;
 };
 
-std::ostream& operator<<(std::ostream& os,
-                         const IImageComponent& image_component);
-
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 class ImageComponent : public IImageComponent {
  public:
+  ImageComponent();
+
   ImageComponent(Array<T>&& buffer, uint32_t width, uint32_t height,
                  uint8_t bit_depth, bool is_alpha = false);
 
-  ~ImageComponent();
+  ~ImageComponent() = default;
+
+  ImageComponent(ImageComponent&& other) noexcept;
+
+  ImageComponent(const ImageComponent&) = delete;
+
+  static ImageComponent Empty();
 
   const void* Buffer() const override;
 
@@ -66,11 +70,13 @@ class ImageComponent : public IImageComponent {
 
   std::string ToString() const override;
 
-  void Dispose() override;
+  ImageComponent& operator=(const ImageComponent&) = delete;
 
-  operator const T*() const;
+  ImageComponent& operator=(ImageComponent&& other) noexcept;
 
   const T& operator[](std::size_t index) const;
+
+  operator const T*() const;
 
  private:
   Array<T> buffer_;
@@ -79,7 +85,6 @@ class ImageComponent : public IImageComponent {
   uint32_t height_;
   uint8_t bit_depth_;
   bool is_alpha_;
-  std::atomic<bool> disposed_;
 };
 }  // namespace imaging
 }  // namespace ws

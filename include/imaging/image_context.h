@@ -1,7 +1,6 @@
 #pragma once
 #include <iostream>
 #include <optional>
-#include <sstream>
 #include <string>
 #include <unordered_map>
 
@@ -50,8 +49,5 @@ struct ImageContext {
  private:
   map_type data;
 };
-
-std::ostream& operator<<(std::ostream& os, const ImageContext& context);
-
 }  // namespace imaging
 }  // namespace ws

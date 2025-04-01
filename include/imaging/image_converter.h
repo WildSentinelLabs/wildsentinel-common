@@ -12,13 +12,21 @@ class ImageConverter {
  public:
   static ws::logging::LoggerConfiguration logger_configuration_;
 
+  ImageConverter(const ImageConverter& other);
+
+  ImageConverter(ImageConverter&& other) noexcept;
+
   virtual ~ImageConverter() = default;
 
-  virtual std::unique_ptr<Image> Convert(const Image& source) const = 0;
+  virtual Image Convert(const Image& source) const = 0;
 
   ColorSpace GetColorSpace() const;
 
   ChromaSubsampling GetChromaSubsampling() const;
+
+  ImageConverter& operator=(const ImageConverter& other);
+
+  ImageConverter& operator=(ImageConverter&& other) noexcept;
 
  protected:
   std::unique_ptr<ws::logging::ILogger> logger_;

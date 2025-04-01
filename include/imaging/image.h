@@ -12,13 +12,21 @@
 namespace ws {
 namespace imaging {
 
-class Image : public IDisposable {
+class Image {
  public:
+  Image();
+
   Image(Array<std::unique_ptr<IImageComponent>>&& components, uint32_t width,
         uint32_t height, ColorSpace color_space,
         ChromaSubsampling chroma_subsampling);
 
-  ~Image();
+  ~Image() = default;
+
+  Image(Image&& other) noexcept;
+
+  Image(const Image&) = delete;
+
+  static Image Empty();
 
   void LoadContext(const ImageContext& context);
 
@@ -44,7 +52,9 @@ class Image : public IDisposable {
 
   std::string ToString() const;
 
-  void Dispose() override;
+  Image& operator=(const Image&) = delete;
+
+  Image& operator=(Image&& other) noexcept;
 
  private:
   Array<std::unique_ptr<IImageComponent>> components_;
@@ -53,10 +63,7 @@ class Image : public IDisposable {
   uint32_t height_;
   ColorSpace color_space_;
   ChromaSubsampling chroma_subsampling_;
-  std::atomic<bool> disposed_;
 };
-
-std::ostream& operator<<(std::ostream& os, const Image& image);
 
 // TODO: Enhace image::Load and image::AsArray
 // TODO: Enable async operations

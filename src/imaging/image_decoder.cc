@@ -7,6 +7,35 @@ ImageDecoder::ImageDecoder(const ImageContext& context,
     : context_(context),
       logger_(logger_configuration_.CreateLogger(source_context)) {};
 
+ImageDecoder::ImageDecoder(const ImageDecoder& other)
+    : context_(other.context_),
+      logger_(logger_configuration_.CreateLogger("ImageDecoder")) {}
+
+ImageDecoder::ImageDecoder(ImageDecoder&& other) noexcept
+    : context_(std::move(other.context_)), logger_(std::move(other.logger_)) {
+  other.context_ = ImageContext();
+}
+
+ImageDecoder& ImageDecoder::operator=(const ImageDecoder& other) {
+  if (this != &other) {
+    context_ = other.context_;
+    logger_ = logger_configuration_.CreateLogger("ImageDecoder");
+  }
+
+  return *this;
+}
+
+ImageDecoder& ImageDecoder::operator=(ImageDecoder&& other) noexcept {
+  if (this != &other) {
+    context_ = std::move(other.context_);
+    logger_ = std::move(other.logger_);
+
+    other.context_ = ImageContext();
+  }
+
+  return *this;
+}
+
 ws::logging::LoggerConfiguration ImageDecoder::logger_configuration_ =
     ws::logging::LoggerConfiguration()
         .SetMinimumLogLevel(ws::logging::LogLevel::kInformation)

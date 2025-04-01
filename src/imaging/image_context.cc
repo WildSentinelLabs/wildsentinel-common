@@ -53,20 +53,15 @@ ImageContext::map_type::const_iterator ImageContext::end() const {
 }
 
 std::string ImageContext::ToString() const {
-  std::ostringstream ss;
+  std::string result;
   for (const auto& [tag, value] : data) {
-    ss << tag << ": " << value << "\n";
+    result += std::format("{}: {}\n", tag, value);
   }
 
-  return ss.str();
+  return result;
 }
 
 void ImageContext::Clear() { data.clear(); }
 
-std::ostream& operator<<(std::ostream& os, const ImageContext& context) {
-  std::string str = context.ToString();
-  os << str;
-  return os;
-}
 }  // namespace imaging
 }  // namespace ws

@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <vector>
 
 #include "array.h"
 
@@ -25,11 +26,6 @@ struct Span {
 
   Span(const Array<T>& arr) : data(arr.data.get()), length(arr.Length()) {}
 
-  Span(const Array<T>& arr, std::size_t len)
-      : data(arr.data.get()), length(len) {
-    assert(len <= arr.Length() && "Specified length exceeds array's length");
-  }
-
   Span(const Array<T>& arr, std::size_t start, std::size_t len)
       : data(arr.data.get() + start), length(len) {
     assert(start <= arr.Length() && "Starting index exceeds array's length");
@@ -38,12 +34,6 @@ struct Span {
   }
 
   constexpr Span(const Span& span) : data(span.data), length(span.length) {}
-
-  constexpr Span(const Span& span, std::size_t len)
-      : data(span.data), length(len) {
-    assert(len <= span.length &&
-           "New span length exceeds the original span length");
-  }
 
   constexpr Span(const Span& span, std::size_t start, std::size_t len)
       : data(span.data + start), length(len) {
@@ -98,37 +88,57 @@ struct ReadOnlySpan {
   constexpr ReadOnlySpan() : data(nullptr), length(0) {}
 
   constexpr ReadOnlySpan(const T* ptr, std::size_t len)
-      : data(ptr), length(len) {}
+      : data(ptr), length(len) {
+    assert((ptr != nullptr) ||
+           (len == 0) && "If length is non-zero, pointer must not be null");
+  }
 
   constexpr ReadOnlySpan(const T* ptr, std::size_t start, std::size_t len)
-      : data(ptr + start), length(len) {}
+      : data(ptr + start), length(len) {
+    assert(ptr != nullptr && "Pointer must not be null");
+  }
+
+  constexpr ReadOnlySpan(const std::vector<T>& vec)
+      : data(vec.data()), length(vec.size()) {}
+
+  constexpr ReadOnlySpan(const std::vector<T>& vec, std::size_t start,
+                         std::size_t len)
+      : data(vec.data() + start), length(len) {
+    assert(start + len <= vec.size());
+  }
 
   ReadOnlySpan(const Array<T>& arr) : data(arr), length(arr.Length()) {}
 
-  ReadOnlySpan(const Array<T>& arr, std::size_t len) : data(arr), length(len) {}
-
   ReadOnlySpan(const Array<T>& arr, std::size_t start, std::size_t len)
-      : data(arr + start), length(len) {}
+      : data(arr + start), length(len) {
+    assert(start <= arr.Length() && "Starting index exceeds array's length");
+    assert(start + len <= arr.Length() &&
+           "Specified range exceeds the array boundaries");
+  }
 
   constexpr ReadOnlySpan(const Span<T>& span)
       : data(span.data), length(span.length) {}
 
-  constexpr ReadOnlySpan(const Span<T>& span, std::size_t len)
-      : data(span.data), length(len) {}
-
   constexpr ReadOnlySpan(const Span<T>& span, std::size_t start,
                          std::size_t len)
-      : data(span.data + start), length(len) {}
+      : data(span.data + start), length(len) {
+    assert(start <= span.length &&
+           "Starting index exceeds the original span length");
+    assert(start + len <= span.length &&
+           "Specified range exceeds the original span's boundaries");
+  }
 
   constexpr ReadOnlySpan(const ReadOnlySpan& span)
       : data(span.data), length(span.length) {}
 
-  constexpr ReadOnlySpan(const ReadOnlySpan& span, std::size_t len)
-      : data(span.data), length(len) {}
-
   constexpr ReadOnlySpan(const ReadOnlySpan& span, std::size_t start,
                          std::size_t len)
-      : data(span.data + start), length(len) {}
+      : data(span.data + start), length(len) {
+    assert(start <= span.length &&
+           "Starting index exceeds the original span length");
+    assert(start + len <= span.length &&
+           "Specified range exceeds the original span's boundaries");
+  }
 
   constexpr static ReadOnlySpan<T> Empty() { return ReadOnlySpan<T>(); }
 

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <sstream>
-
 #include "arch/cpu_arch.h"
 #include "logging/events/log_event.h"
 #include "logging/ilog_enricher.h"
