@@ -75,7 +75,7 @@ void FileHandle::SetFileLength(FileHandle& handle, offset_t length) {
 }
 
 offset_t FileHandle::ReadAtOffset(FileHandle& handle,
-                                  Span<unsigned char>& buffer,
+                                  Span<unsigned char> buffer,
                                   offset_t file_offset) {
   OVERLAPPED overlapped = OverlappedForSyncHandle(handle, file_offset);
   DWORD num_bytes_read = 0;
@@ -115,7 +115,7 @@ offset_t FileHandle::Seek(FileHandle& handle, offset_t offset,
 }
 
 void FileHandle::WriteAtOffset(FileHandle& handle,
-                               const ReadOnlySpan<unsigned char>& buffer,
+                               ReadOnlySpan<unsigned char> buffer,
                                offset_t file_offset) {
   if (buffer.IsEmpty()) return;
 

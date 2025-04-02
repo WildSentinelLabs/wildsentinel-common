@@ -42,19 +42,19 @@ class Stream : public IDisposable {
 
   virtual void SetPosition(offset_t value) = 0;
 
-  virtual offset_t Read(Span<unsigned char>& buffer, offset_t offset,
+  virtual offset_t Read(Span<unsigned char> buffer, offset_t offset,
                         offset_t count) = 0;
 
-  virtual offset_t Read(Span<unsigned char>& buffer) = 0;
+  virtual offset_t Read(Span<unsigned char> buffer) = 0;
 
   virtual int16_t ReadByte() = 0;
 
   virtual offset_t Seek(offset_t offset, SeekOrigin origin) = 0;
 
-  virtual void Write(const ReadOnlySpan<unsigned char>& buffer, offset_t offset,
+  virtual void Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
                      offset_t count) = 0;
 
-  virtual void Write(const ReadOnlySpan<unsigned char>& buffer) = 0;
+  virtual void Write(ReadOnlySpan<unsigned char> buffer) = 0;
 
   virtual void WriteByte(unsigned char value) = 0;
 
@@ -89,7 +89,7 @@ class Stream : public IDisposable {
 
   static bool WillOverflow(offset_t a, offset_t b);
 
-  static void ValidateBufferArguments(const ReadOnlySpan<unsigned char>& buffer,
+  static void ValidateBufferArguments(ReadOnlySpan<unsigned char> buffer,
                                       offset_t offset, offset_t count);
 
   static void ValidateSeekArguments(offset_t offset, SeekOrigin origin);

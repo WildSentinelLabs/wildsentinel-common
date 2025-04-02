@@ -112,7 +112,7 @@ void MemoryStream::SetCapacity(offset_t value) {
   }
 }
 
-offset_t MemoryStream::Read(Span<unsigned char>& buffer, offset_t offset,
+offset_t MemoryStream::Read(Span<unsigned char> buffer, offset_t offset,
                             offset_t count) {
   ValidateBufferArguments(buffer, offset, count);
   EnsureNotClosed();
@@ -125,7 +125,7 @@ offset_t MemoryStream::Read(Span<unsigned char>& buffer, offset_t offset,
   return n;
 }
 
-offset_t MemoryStream::Read(Span<unsigned char>& buffer) {
+offset_t MemoryStream::Read(Span<unsigned char> buffer) {
   EnsureNotClosed();
   offset_t n =
       std::min(static_cast<offset_t>(buffer.Length()), length_ - position_);
@@ -166,8 +166,8 @@ offset_t MemoryStream::Seek(offset_t offset, SeekOrigin origin) {
   return position_;
 }
 
-void MemoryStream::Write(const ReadOnlySpan<unsigned char>& buffer,
-                         offset_t offset, offset_t count) {
+void MemoryStream::Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
+                         offset_t count) {
   ValidateBufferArguments(buffer, offset, count);
   EnsureNotClosed();
   EnsureWriteable();
@@ -188,7 +188,7 @@ void MemoryStream::Write(const ReadOnlySpan<unsigned char>& buffer,
   position_ = i;
 }
 
-void MemoryStream::Write(const ReadOnlySpan<unsigned char>& buffer) {
+void MemoryStream::Write(ReadOnlySpan<unsigned char> buffer) {
   EnsureNotClosed();
   EnsureWriteable();
   if (buffer.Length() > kMaxLength - position_)

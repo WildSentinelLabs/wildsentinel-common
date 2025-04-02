@@ -8,6 +8,7 @@
 #include "imaging/pixel/pixel_allowed_types.h"
 #include "imaging/pixel/pixel_format.h"
 #include "imaging/pixel/pixel_format_details.h"
+#include "imaging/point.h"
 
 namespace ws {
 namespace imaging {
@@ -239,9 +240,10 @@ class PixelFormatConstraints {
 
   static const PixelFormatDetails* GetFormat(PixelFormat pixel_format);
 
-  static Array<std::pair<uint32_t, uint32_t>> GetDimensions(
-      uint32_t width, uint32_t height, uint8_t num_components,
-      ChromaSubsampling chroma_subsampling, bool has_alpha);
+  static Array<Point> GetDimensions(uint32_t width, uint32_t height,
+                                    uint8_t num_components,
+                                    ChromaSubsampling chroma_subsampling,
+                                    bool has_alpha);
 };
 
 // TODO: Enhace pixel_format management and structures if needed

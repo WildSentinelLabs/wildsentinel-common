@@ -21,7 +21,7 @@ const char* stream_too_long_exception::what() const noexcept {
 
 void Stream::CopyTo(Stream& stream) { CopyTo(stream, kDefaultCopyBufferSize); }
 
-void Stream::ValidateBufferArguments(const ReadOnlySpan<unsigned char>& buffer,
+void Stream::ValidateBufferArguments(ReadOnlySpan<unsigned char> buffer,
                                      offset_t offset, offset_t count) {
   if (offset < 0 || offset > buffer.Length())
     throw std::runtime_error("Offset out of range");

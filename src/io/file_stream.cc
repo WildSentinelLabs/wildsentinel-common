@@ -82,14 +82,14 @@ void FileStream::SetLength(offset_t value) {
   if (position_ > value) position_ = value;
 }
 
-offset_t FileStream::Read(Span<unsigned char>& buffer, offset_t offset,
+offset_t FileStream::Read(Span<unsigned char> buffer, offset_t offset,
                           offset_t count) {
   ValidateBufferArguments(buffer, offset, count);
   Span<unsigned char> span(buffer, offset, count);
   return Read(span);
 }
 
-offset_t FileStream::Read(Span<unsigned char>& buffer) {
+offset_t FileStream::Read(Span<unsigned char> buffer) {
   if (file_handle_.IsClosed())
     throw disposed_object_exception();
   else if ((access_ & FileAccess::kRead) == static_cast<FileAccess>(0))
@@ -139,14 +139,14 @@ offset_t FileStream::Seek(offset_t offset, SeekOrigin origin) {
   return pos;
 }
 
-void FileStream::Write(const ReadOnlySpan<unsigned char>& buffer,
-                       offset_t offset, offset_t count) {
+void FileStream::Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
+                       offset_t count) {
   ValidateBufferArguments(buffer, offset, count);
   ReadOnlySpan<unsigned char> span(buffer, offset, count);
   Write(span);
 }
 
-void FileStream::Write(const ReadOnlySpan<unsigned char>& buffer) {
+void FileStream::Write(ReadOnlySpan<unsigned char> buffer) {
   if (file_handle_.IsClosed())
     throw disposed_object_exception();
   else if ((access_ & FileAccess::kWrite) == static_cast<FileAccess>(0))

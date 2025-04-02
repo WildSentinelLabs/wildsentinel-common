@@ -65,8 +65,6 @@ class Image {
   ChromaSubsampling chroma_subsampling_;
 };
 
-// TODO: Enhace image::Load and image::AsArray
 // TODO: Enable async operations
-// TODO: Use owner Array and Span in operations and storage
 }  // namespace imaging
 }  // namespace ws

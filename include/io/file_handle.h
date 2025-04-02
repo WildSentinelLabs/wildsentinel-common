@@ -22,14 +22,14 @@ class FileHandle : public IDisposable {
 
   static void SetFileLength(FileHandle& handle, offset_t length);
 
-  static offset_t ReadAtOffset(FileHandle& handle, Span<unsigned char>& buffer,
+  static offset_t ReadAtOffset(FileHandle& handle, Span<unsigned char> buffer,
                                offset_t file_offset);
 
   static offset_t Seek(FileHandle& handle, offset_t offset, SeekOrigin origin,
                        bool close_invalid_handle = false);
 
   static void WriteAtOffset(FileHandle& handle,
-                            const ReadOnlySpan<unsigned char>& buffer,
+                            ReadOnlySpan<unsigned char> buffer,
                             offset_t file_offset);
 
   static bool IsEndOfFile(offset_t error_code, FileHandle& handle,

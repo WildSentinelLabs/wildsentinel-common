@@ -12,11 +12,11 @@ namespace io {
 
 class BufferStream : public Stream {
  public:
-  BufferStream(const Span<unsigned char>& buffer);
+  BufferStream(Span<unsigned char> buffer);
 
-  BufferStream(const Span<unsigned char>& buffer, bool writable);
+  BufferStream(Span<unsigned char> buffer, bool writable);
 
-  BufferStream(const Span<unsigned char>& buffer, bool writable, bool visible);
+  BufferStream(Span<unsigned char> buffer, bool writable, bool visible);
 
   ~BufferStream() override;
 
@@ -34,19 +34,19 @@ class BufferStream : public Stream {
 
   void SetPosition(offset_t value) override;
 
-  offset_t Read(Span<unsigned char>& buffer, offset_t offset,
+  offset_t Read(Span<unsigned char> buffer, offset_t offset,
                 offset_t count) override;
 
-  offset_t Read(Span<unsigned char>& buffer) override;
+  offset_t Read(Span<unsigned char> buffer) override;
 
   int16_t ReadByte() override;
 
   offset_t Seek(offset_t offset, SeekOrigin origin) override;
 
-  void Write(const ReadOnlySpan<unsigned char>& buffer, offset_t offset,
+  void Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
              offset_t count) override;
 
-  void Write(const ReadOnlySpan<unsigned char>& buffer) override;
+  void Write(ReadOnlySpan<unsigned char> buffer) override;
 
   void WriteByte(unsigned char value) override;
 

@@ -6,6 +6,7 @@ template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 Array<T> ImageBufferExporter<T>::ExportToInterleavedBuffer(
     const Image& image, ws::imaging::pixel::PixelFormat pixel_format) {
   if (!image.IsValid()) return Array<T>::Empty();
+
   const ws::imaging::pixel::PixelFormatDetails* pixel_format_details =
       ws::imaging::pixel::PixelFormatConstraints::GetFormat(pixel_format);
   if (!pixel_format_details ||
@@ -13,6 +14,7 @@ Array<T> ImageBufferExporter<T>::ExportToInterleavedBuffer(
        ws::imaging::pixel::PixelLayoutFlag::kInterleaved) ==
           static_cast<ws::imaging::pixel::PixelLayoutFlag>(0))
     return Array<T>::Empty();
+
   if (image.GetColorSpace() != pixel_format_details->color_space ||
       image.GetChromaSubsampling() !=
           pixel_format_details->chroma_subsampling ||
@@ -21,12 +23,11 @@ Array<T> ImageBufferExporter<T>::ExportToInterleavedBuffer(
     return Array<T>::Empty();
   }
 
-  ReadOnlySpan<uint8_t> components_order =
-      pixel_format_details->components_order;
   const ImageComponent<T>* components[image.NumComponents()];
   size_t image_size = 0;
-  for (uint8_t i = 0; i < components_order.Length(); ++i) {
-    uint8_t c = components_order[i];
+  for (uint8_t i = 0; i < pixel_format_details->components_order.Length();
+       ++i) {
+    uint8_t c = pixel_format_details->components_order[i];
     if (components[c]) continue;
     components[c] =
         dynamic_cast<const ImageComponent<T>*>(image.GetComponent(c));
@@ -41,8 +42,9 @@ Array<T> ImageBufferExporter<T>::ExportToInterleavedBuffer(
   }
 
   while (offset < image_size) {
-    for (uint8_t i = 0; i < components_order.Length(); i++) {
-      uint8_t c = components_order[i];
+    for (uint8_t i = 0; i < pixel_format_details->components_order.Length();
+         i++) {
+      uint8_t c = pixel_format_details->components_order[i];
       buffer[offset] = static_cast<const T*>(*components[c])[comps_index[c]++];
       offset++;
     }
@@ -62,6 +64,7 @@ Array<T> ImageBufferExporter<T>::ExportToPlanarBuffer(
        ws::imaging::pixel::PixelLayoutFlag::kPlanar) ==
           static_cast<ws::imaging::pixel::PixelLayoutFlag>(0))
     return Array<T>::Empty();
+
   if (image.GetColorSpace() != pixel_format_details->color_space ||
       image.GetChromaSubsampling() !=
           pixel_format_details->chroma_subsampling ||
@@ -70,12 +73,11 @@ Array<T> ImageBufferExporter<T>::ExportToPlanarBuffer(
     return Array<T>::Empty();
   }
 
-  ReadOnlySpan<uint8_t> components_order =
-      pixel_format_details->components_order;
   const ImageComponent<T>* components[image.NumComponents()];
   size_t image_size = 0;
-  for (uint8_t i = 0; i < components_order.Length(); ++i) {
-    uint8_t c = components_order[i];
+  for (uint8_t i = 0; i < pixel_format_details->components_order.Length();
+       ++i) {
+    uint8_t c = pixel_format_details->components_order[i];
     if (components[c]) continue;
     components[c] =
         dynamic_cast<const ImageComponent<T>*>(image.GetComponent(c));
@@ -84,8 +86,9 @@ Array<T> ImageBufferExporter<T>::ExportToPlanarBuffer(
 
   Array<T> buffer(image_size);
   size_t offset = 0;
-  for (uint8_t i = 0; i < components_order.Length(); ++i) {
-    uint8_t c = components_order[i];
+  for (uint8_t i = 0; i < pixel_format_details->components_order.Length();
+       ++i) {
+    uint8_t c = pixel_format_details->components_order[i];
     std::memcpy(buffer + offset, static_cast<const T*>(*components[c]),
                 components[c]->Length() * sizeof(T));
     offset += components[c]->Length();

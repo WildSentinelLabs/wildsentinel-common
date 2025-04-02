@@ -3,13 +3,13 @@
 namespace ws {
 namespace io {
 
-BufferStream::BufferStream(const Span<unsigned char>& buffer)
+BufferStream::BufferStream(Span<unsigned char> buffer)
     : BufferStream(buffer, true) {}
 
-BufferStream::BufferStream(const Span<unsigned char>& buffer, bool writable)
+BufferStream::BufferStream(Span<unsigned char> buffer, bool writable)
     : BufferStream(buffer, writable, false) {}
 
-BufferStream::BufferStream(const Span<unsigned char>& buffer, bool writable,
+BufferStream::BufferStream(Span<unsigned char> buffer, bool writable,
                            bool visible)
     : buffer_(buffer),
       origin_(0),
@@ -54,7 +54,7 @@ void BufferStream::SetPosition(offset_t value) {
   position_ = origin_ + value;
 }
 
-offset_t BufferStream::Read(Span<unsigned char>& buffer, offset_t offset,
+offset_t BufferStream::Read(Span<unsigned char> buffer, offset_t offset,
                             offset_t count) {
   ValidateBufferArguments(buffer, offset, count);
   EnsureNotClosed();
@@ -67,7 +67,7 @@ offset_t BufferStream::Read(Span<unsigned char>& buffer, offset_t offset,
   return n;
 }
 
-offset_t BufferStream::Read(Span<unsigned char>& buffer) {
+offset_t BufferStream::Read(Span<unsigned char> buffer) {
   EnsureNotClosed();
   offset_t n =
       std::min(static_cast<offset_t>(buffer.Length()), length_ - position_);
@@ -108,8 +108,8 @@ offset_t BufferStream::Seek(offset_t offset, SeekOrigin origin) {
   return position_;
 }
 
-void BufferStream::Write(const ReadOnlySpan<unsigned char>& buffer,
-                         offset_t offset, offset_t count) {
+void BufferStream::Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
+                         offset_t count) {
   ValidateBufferArguments(buffer, offset, count);
   EnsureNotClosed();
   EnsureWriteable();
@@ -118,7 +118,7 @@ void BufferStream::Write(const ReadOnlySpan<unsigned char>& buffer,
   position_ += count;
 }
 
-void BufferStream::Write(const ReadOnlySpan<unsigned char>& buffer) {
+void BufferStream::Write(ReadOnlySpan<unsigned char> buffer) {
   EnsureNotClosed();
   EnsureWriteable();
   if (buffer.Length() > length_ - position_) throw stream_too_long_exception();
