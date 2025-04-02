@@ -19,8 +19,8 @@ FileHandle::FileHandle(void* handle)
       length_can_be_cached_(false),
       file_type_(-1) {}
 
-FileHandle FileHandle::Open(const std::wstring& full_path, FileMode mode,
-                            FileAccess access, FileShare share,
+FileHandle FileHandle::Open(const std::filesystem::path& full_path,
+                            FileMode mode, FileAccess access, FileShare share,
                             offset_t preallocation_size) {
   DWORD attributes = GetFileAttributesW(full_path.c_str());
   bool exists = (attributes != INVALID_FILE_ATTRIBUTES);
@@ -150,28 +150,17 @@ bool FileHandle::IsEndOfFile(offset_t error_code, FileHandle& handle,
   return false;
 }
 
-std::wstring FileHandle::GetFullPath(const std::wstring& path) {
-  DWORD required_size = GetFullPathNameW(path.c_str(), 0, nullptr, nullptr);
-  if (required_size == 0) {
-    DWORD error_code = GetLastError();
-    throw std::runtime_error("GetFullPathNameW failed with error " +
-                             std::to_string(error_code));
-  }
-
-  std::wstring full_path(required_size, L'\0');
-  DWORD result =
-      GetFullPathNameW(path.c_str(), required_size, &full_path[0], nullptr);
-  if (result == 0 || result >= required_size) {
-    DWORD error_code = GetLastError();
-    throw std::runtime_error("GetFullPathNameW failed with error " +
-                             std::to_string(error_code));
-  }
-
-  full_path.resize(result);
-  return full_path;
+std::filesystem::path FileHandle::GetFullPath(const std::string& input) {
+  std::filesystem::path userPath(input);
+  return std::filesystem::absolute(userPath);
 }
 
-std::wstring FileHandle::Path() const { return path_; }
+std::filesystem::path FileHandle::GetFullPath(const std::wstring& input) {
+  std::filesystem::path userPath(input);
+  return std::filesystem::absolute(userPath);
+}
+
+std::filesystem::path FileHandle::Path() const { return path_; }
 
 bool FileHandle::IsClosed() const {
   return handle_ == nullptr || handle_ == INVALID_HANDLE_VALUE;

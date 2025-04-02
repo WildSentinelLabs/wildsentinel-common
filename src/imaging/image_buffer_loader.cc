@@ -4,7 +4,7 @@ namespace ws {
 namespace imaging {
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 Image ImageBufferLoader<T>::LoadFromInterleavedBuffer(
-    Span<T> buffer, uint32_t width, uint32_t height, uint8_t bit_depth,
+    ReadOnlySpan<T> buffer, uint32_t width, uint32_t height, uint8_t bit_depth,
     const ws::imaging::pixel::PixelFormatDetails* pixel_format_details) {
   if (!pixel_format_details ||
       (pixel_format_details->layout &
@@ -57,7 +57,7 @@ Image ImageBufferLoader<T>::LoadFromInterleavedBuffer(
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 Image ImageBufferLoader<T>::LoadFromInterleavedBuffer(
-    Span<T> buffer, uint32_t width, uint32_t height, uint8_t bit_depth,
+    ReadOnlySpan<T> buffer, uint32_t width, uint32_t height, uint8_t bit_depth,
     const ws::imaging::pixel::PixelFormat pixel_format) {
   if (buffer.IsEmpty() || width == 0 || height == 0) return Image::Empty();
 
@@ -75,7 +75,7 @@ Image ImageBufferLoader<T>::LoadFromInterleavedBuffer(
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 Image ImageBufferLoader<T>::LoadFromPlanarBuffer(
-    Span<T> buffer, uint32_t width, uint32_t height, uint8_t bit_depth,
+    ReadOnlySpan<T> buffer, uint32_t width, uint32_t height, uint8_t bit_depth,
     const ws::imaging::pixel::PixelFormatDetails* pixel_format_details) {
   if (!pixel_format_details ||
       (pixel_format_details->layout &
@@ -113,7 +113,7 @@ Image ImageBufferLoader<T>::LoadFromPlanarBuffer(
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 Image ImageBufferLoader<T>::LoadFromPlanarBuffer(
-    Span<T> buffer, uint32_t width, uint32_t height, uint8_t bit_depth,
+    ReadOnlySpan<T> buffer, uint32_t width, uint32_t height, uint8_t bit_depth,
     const ws::imaging::pixel::PixelFormat pixel_format) {
   if (buffer.IsEmpty() || width == 0 || height == 0) return Image::Empty();
 

@@ -5,33 +5,38 @@ namespace io {
 
 #ifdef _WIN32
 
-FileStream::FileStream(const std::wstring& path, FileMode mode)
+FileStream::FileStream()
+    : file_handle_(FileHandle()),
+      position_(0),
+      append_start_(0),
+      access_(static_cast<FileAccess>(0)) {}
+
+FileStream::FileStream(const std::string& path, FileMode mode)
     : FileStream(path, mode,
                  mode == FileMode::kAppend
                      ? FileAccess::kWrite
                      : FileAccess::kRead | FileAccess::kWrite,
                  kDefaultShare, kDefaultBufferSize) {}
 
-FileStream::FileStream(const std::wstring& path, FileMode mode,
+FileStream::FileStream(const std::string& path, FileMode mode,
                        FileAccess access)
     : FileStream(path, mode, access, kDefaultShare, kDefaultBufferSize) {}
 
-FileStream::FileStream(const std::wstring& path, FileMode mode,
+FileStream::FileStream(const std::string& path, FileMode mode,
                        FileAccess access, FileShare share)
     : FileStream(path, mode, access, share, kDefaultBufferSize) {}
 
-FileStream::FileStream(const std::wstring& path, FileMode mode,
+FileStream::FileStream(const std::string& path, FileMode mode,
                        FileAccess access, FileShare share, offset_t buffer_size)
     : FileStream(path, mode, access, share, buffer_size, 0) {}
 
-FileStream::FileStream(const std::wstring& path, FileMode mode,
+FileStream::FileStream(const std::string& path, FileMode mode,
                        FileAccess access, FileShare share, offset_t buffer_size,
                        offset_t preallocation_size) {
-  std::wstring full_path = FileHandle::GetFullPath(path);
+  std::filesystem::path full_path = std::filesystem::absolute(path);
   access_ = access;
   file_handle_ =
       FileHandle::Open(full_path, mode, access, share, preallocation_size);
-
   try {
     if (mode == FileMode::kAppend && CanSeek()) {
       append_start_ = position_ = Length();
@@ -46,7 +51,7 @@ FileStream::FileStream(const std::wstring& path, FileMode mode,
 
 FileStream::~FileStream() { Dispose(); }
 
-std::wstring FileStream::Name() const { return file_handle_.Path(); }
+std::string FileStream::Name() const { return file_handle_.Path().string(); }
 
 bool FileStream::CanSeek() { return file_handle_.CanSeek(); }
 

@@ -1,4 +1,5 @@
 #pragma once
+#include <filesystem>
 #include <stdexcept>
 #include <string>
 
@@ -16,7 +17,7 @@ class FileHandle : public IDisposable {
  public:
   explicit FileHandle();
 
-  static FileHandle Open(const std::wstring& full_path, FileMode mode,
+  static FileHandle Open(const std::filesystem::path& full_path, FileMode mode,
                          FileAccess access, FileShare share,
                          offset_t preallocation_size = 0);
 
@@ -35,9 +36,11 @@ class FileHandle : public IDisposable {
   static bool IsEndOfFile(offset_t error_code, FileHandle& handle,
                           offset_t file_offset);
 
-  static std::wstring GetFullPath(const std::wstring& path);
+  static std::filesystem::path GetFullPath(const std::string& input);
 
-  std::wstring Path() const;
+  static std::filesystem::path GetFullPath(const std::wstring& input);
+
+  std::filesystem::path Path() const;
 
   bool IsClosed() const;
 
@@ -57,7 +60,7 @@ class FileHandle : public IDisposable {
   explicit FileHandle(void* handle);
 
   void* handle_;
-  std::wstring path_;
+  std::filesystem::path path_;
   offset_t length_;
   bool length_can_be_cached_;
   offset_t file_type_;

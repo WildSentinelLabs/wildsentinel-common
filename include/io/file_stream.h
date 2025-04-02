@@ -16,21 +16,23 @@ namespace io {
 
 class FileStream : public Stream {
  public:
-  FileStream(const std::wstring& path);
+  FileStream();
 
-  FileStream(const std::wstring& path, FileMode mode);
+  FileStream(const std::string& path);
 
-  FileStream(const std::wstring& path, FileMode mode, FileAccess access);
+  FileStream(const std::string& path, FileMode mode);
 
-  FileStream(const std::wstring& path, FileMode mode, FileAccess access,
+  FileStream(const std::string& path, FileMode mode, FileAccess access);
+
+  FileStream(const std::string& path, FileMode mode, FileAccess access,
              FileShare share);
 
-  FileStream(const std::wstring& path, FileMode mode, FileAccess access,
+  FileStream(const std::string& path, FileMode mode, FileAccess access,
              FileShare share, offset_t buffer_size);
 
   ~FileStream() override;
 
-  std::wstring Name() const;
+  std::string Name() const;
 
   bool CanSeek() override;
 
@@ -72,7 +74,7 @@ class FileStream : public Stream {
   static constexpr offset_t kDefaultBufferSize = 4096;
   static constexpr FileShare kDefaultShare = FileShare::kRead;
 
-  FileStream(const std::wstring& path, FileMode mode, FileAccess access,
+  FileStream(const std::string& path, FileMode mode, FileAccess access,
              FileShare share, offset_t buffer_size,
              offset_t preallocation_size);
 
