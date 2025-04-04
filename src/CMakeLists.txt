@@ -1,5 +1,5 @@
 # Set necessary files
-file(GLOB WSCOMMON_IO_FILES io/*/*.cc)
+file(GLOB WSCOMMON_IO_FILES io/*/*.cc io/*.cc)
 file(GLOB WSCOMMON_IMAGING_FILES "")
 file(GLOB WSCOMMON_LOGGING_FILES "")
 file(GLOB WSCOMMON_THREADING_FILES threading/*.cc)

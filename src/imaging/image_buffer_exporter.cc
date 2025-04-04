@@ -3,51 +3,49 @@ namespace ws {
 namespace imaging {
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
-T* ImageBufferExporter<T>::ExportToInterleavedBuffer(
-    const Image& image, const ws::imaging::pixel::PixelFormat& pixel_format) {
-  if (!image.IsValid()) return nullptr;
+Array<T> ImageBufferExporter<T>::ExportToInterleavedBuffer(
+    const Image& image, ws::imaging::pixel::PixelFormat pixel_format) {
+  if (!image.IsValid()) return Array<T>::Empty();
+
   const ws::imaging::pixel::PixelFormatDetails* pixel_format_details =
-      ws::imaging::pixel::PixelFormatConstraints::GetInterleavedFormat(
-          pixel_format);
-  if (!pixel_format_details) return nullptr;
+      ws::imaging::pixel::PixelFormatConstraints::GetFormat(pixel_format);
+  if (!pixel_format_details ||
+      (pixel_format_details->layout &
+       ws::imaging::pixel::PixelLayoutFlag::kInterleaved) ==
+          static_cast<ws::imaging::pixel::PixelLayoutFlag>(0))
+    return Array<T>::Empty();
+
   if (image.GetColorSpace() != pixel_format_details->color_space ||
       image.GetChromaSubsampling() !=
           pixel_format_details->chroma_subsampling ||
-      image.GetNumComponents() != pixel_format_details->num_components ||
+      image.NumComponents() != pixel_format_details->num_components ||
       image.HasAlpha() != pixel_format_details->HasAlpha()) {
-    return nullptr;
+    return Array<T>::Empty();
   }
 
-  const uint8_t components_order_size =
-      pixel_format_details->components_order_size;
-  const uint8_t* components_order_sequence =
-      pixel_format_details->components_order_sequence;
-  const ImageComponent* comp = nullptr;
-  T* comps_buffer[image.GetNumComponents()] = {nullptr};
-  size_t total_size = 0;
-  for (uint8_t i = 0; i < components_order_size; ++i) {
-    uint8_t c = components_order_sequence[i];
-    if (comps_buffer[c]) {
-      continue;
-    } else {
-      comp = image.GetComponent(c);
-    }
-
-    comps_buffer[c] = (T*)comp->GetBuffer();
-    total_size += comp->GetSize();
+  const ImageComponent<T>* components[image.NumComponents()] = {nullptr};
+  size_t image_size = 0;
+  for (uint8_t i = 0; i < pixel_format_details->components_order.Length();
+       ++i) {
+    uint8_t c = pixel_format_details->components_order[i];
+    if (components[c]) continue;
+    components[c] =
+        dynamic_cast<const ImageComponent<T>*>(image.GetComponent(c));
+    image_size += components[c]->Length();
   }
 
-  T* buffer = new T[total_size];
+  Array<T> buffer(image_size);
   size_t offset = 0;
-  size_t comps_index[image.GetNumComponents()];
-  for (size_t i = 0; i < image.GetNumComponents(); i++) {
+  size_t comps_index[image.NumComponents()];
+  for (size_t i = 0; i < image.NumComponents(); i++) {
     comps_index[i] = 0;
   }
 
-  while (offset < total_size) {
-    for (uint8_t i = 0; i < components_order_size; i++) {
-      uint8_t c = components_order_sequence[i];
-      buffer[offset] = comps_buffer[c][comps_index[c]++];
+  while (offset < image_size) {
+    for (uint8_t i = 0; i < pixel_format_details->components_order.Length();
+         i++) {
+      uint8_t c = pixel_format_details->components_order[i];
+      buffer[offset] = static_cast<const T*>(*components[c])[comps_index[c]++];
       offset++;
     }
   }
@@ -56,47 +54,44 @@ T* ImageBufferExporter<T>::ExportToInterleavedBuffer(
 }
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
-T* ImageBufferExporter<T>::ExportToPlanarBuffer(
-    const Image& image, const ws::imaging::pixel::PixelFormat& pixel_format) {
-  if (!image.IsValid()) return nullptr;
+Array<T> ImageBufferExporter<T>::ExportToPlanarBuffer(
+    const Image& image, ws::imaging::pixel::PixelFormat pixel_format) {
+  if (!image.IsValid()) return Array<T>::Empty();
   const ws::imaging::pixel::PixelFormatDetails* pixel_format_details =
-      ws::imaging::pixel::PixelFormatConstraints::GetPlanarFormat(pixel_format);
-  if (!pixel_format_details) return nullptr;
+      ws::imaging::pixel::PixelFormatConstraints::GetFormat(pixel_format);
+  if (!pixel_format_details ||
+      (pixel_format_details->layout &
+       ws::imaging::pixel::PixelLayoutFlag::kPlanar) ==
+          static_cast<ws::imaging::pixel::PixelLayoutFlag>(0))
+    return Array<T>::Empty();
+
   if (image.GetColorSpace() != pixel_format_details->color_space ||
       image.GetChromaSubsampling() !=
           pixel_format_details->chroma_subsampling ||
-      image.GetNumComponents() != pixel_format_details->num_components ||
+      image.NumComponents() != pixel_format_details->num_components ||
       image.HasAlpha() != pixel_format_details->HasAlpha()) {
-    return nullptr;
+    return Array<T>::Empty();
   }
 
-  const uint8_t components_order_size =
-      pixel_format_details->components_order_size;
-  const uint8_t* components_order_sequence =
-      pixel_format_details->components_order_sequence;
-  const ImageComponent* comp = nullptr;
-  size_t comps_size[image.GetNumComponents()];
-  T* comps_buffer[image.GetNumComponents()] = {nullptr};
-  size_t total_size = 0;
-  for (uint8_t i = 0; i < components_order_size; ++i) {
-    uint8_t c = components_order_sequence[i];
-    if (comps_buffer[c]) {
-      continue;
-    } else {
-      comp = image.GetComponent(c);
-    }
-
-    comps_buffer[c] = (T*)comp->GetBuffer();
-    comps_size[c] = comp->GetSize();
-    total_size += comps_size[c];
+  const ImageComponent<T>* components[image.NumComponents()] = {nullptr};
+  size_t image_size = 0;
+  for (uint8_t i = 0; i < pixel_format_details->components_order.Length();
+       ++i) {
+    uint8_t c = pixel_format_details->components_order[i];
+    if (components[c]) continue;
+    components[c] =
+        dynamic_cast<const ImageComponent<T>*>(image.GetComponent(c));
+    image_size += components[c]->Length();
   }
 
-  T* buffer = new T[total_size];
+  Array<T> buffer(image_size);
   size_t offset = 0;
-  for (uint8_t i = 0; i < components_order_size; ++i) {
-    uint8_t c = components_order_sequence[i];
-    std::memcpy(buffer + offset, comps_buffer[c], comps_size[c] * sizeof(T));
-    offset += comps_size[c];
+  for (uint8_t i = 0; i < pixel_format_details->components_order.Length();
+       ++i) {
+    uint8_t c = pixel_format_details->components_order[i];
+    std::memcpy(buffer + offset, static_cast<const T*>(*components[c]),
+                components[c]->Length() * sizeof(T));
+    offset += components[c]->Length();
   }
 
   return buffer;
@@ -110,3 +105,4 @@ template class ImageBufferExporter<uint32_t>;
 template class ImageBufferExporter<int32_t>;
 }  // namespace imaging
 }  // namespace ws
+// TODO: Separate common_sequence and non common

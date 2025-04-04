@@ -3,9 +3,9 @@ namespace ws {
 namespace logging {
 namespace events {
 LogEvent::LogEvent(
-    const std::string source_context, const std::string message,
-    const LogLevel level,
-    const std::unordered_map<std::string, std::string> properties)
+    const std::string& source_context, const std::string& message,
+    LogLevel level,
+    const std::unordered_map<std::string, std::string>& properties)
     : source_context_(source_context),
       level_(level),
       message_(message),
@@ -13,13 +13,13 @@ LogEvent::LogEvent(
   timestamp_ = std::chrono::system_clock::now();
 }
 
-const std::string LogEvent::GetSourceContext() const { return source_context_; }
+std::string LogEvent::SourceContext() const { return source_context_; }
 
-LogLevel LogEvent::GetLevel() const { return level_; }
+LogLevel LogEvent::Level() const { return level_; }
 
-const std::string LogEvent::GetMessage() const { return message_; }
+std::string LogEvent::Message() const { return message_; }
 
-std::chrono::system_clock::time_point LogEvent::GetTimestamp() const {
+std::chrono::system_clock::time_point LogEvent::Timestamp() const {
   return timestamp_;
 }
 

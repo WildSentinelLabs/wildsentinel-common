@@ -1,8 +1,8 @@
 #pragma once
 #include <atomic>
 #include <cstring>
-#include <vector>
 
+#include "array.h"
 #include "idisposable.h"
 #include "imaging/chroma_subsampling.h"
 #include "imaging/color_space.h"
@@ -12,30 +12,39 @@
 namespace ws {
 namespace imaging {
 
-class Image : public IDisposable {
+class Image {
  public:
-  Image(ImageComponent** components, const uint8_t num_components,
-        const uint32_t width, const uint32_t height,
-        const ColorSpace color_space,
-        const ChromaSubsampling chroma_subsampling);
+  Image();
 
-  ~Image();
+  Image(Array<std::unique_ptr<IImageComponent>>&& components, uint32_t width,
+        uint32_t height, ColorSpace color_space,
+        ChromaSubsampling chroma_subsampling);
 
-  void LoadContext(ImageContext context) const;
+  ~Image() = default;
 
-  const ImageContext* GetContext() const;
+  Image(Image&& other) noexcept;
 
-  uint8_t GetNumComponents() const;
+  Image(const Image&) = delete;
 
-  const ImageComponent* GetComponent(uint8_t comp_num) const;
+  static Image Empty();
 
-  uint32_t GetWidth() const;
+  void LoadContext(const ImageContext& context);
 
-  uint32_t GetHeight() const;
+  ImageContext Context() const;
 
-  const ColorSpace GetColorSpace() const;
+  uint8_t NumComponents() const;
 
-  const ChromaSubsampling GetChromaSubsampling() const;
+  const IImageComponent* GetComponent(uint8_t comp_num) const;
+
+  Array<const IImageComponent*> Components() const;
+
+  uint32_t Width() const;
+
+  uint32_t Height() const;
+
+  ColorSpace GetColorSpace() const;
+
+  ChromaSubsampling GetChromaSubsampling() const;
 
   bool HasAlpha() const;
 
@@ -43,22 +52,19 @@ class Image : public IDisposable {
 
   std::string ToString() const;
 
-  void Dispose() override;
+  Image& operator=(const Image&) = delete;
+
+  Image& operator=(Image&& other) noexcept;
 
  private:
-  ImageComponent** components_;
-  ImageContext* context_;
-  std::uint8_t num_components_;
+  Array<std::unique_ptr<IImageComponent>> components_;
+  ImageContext context_;
   uint32_t width_;
   uint32_t height_;
   ColorSpace color_space_;
   ChromaSubsampling chroma_subsampling_;
-  std::atomic<bool> disposed_;
 };
 
-std::ostream& operator<<(std::ostream& os, const Image& image);
-
-// TODO: Enhace image::Load and image::AsArray
 // TODO: Enable async operations
 }  // namespace imaging
 }  // namespace ws

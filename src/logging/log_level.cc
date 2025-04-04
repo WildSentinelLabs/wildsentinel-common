@@ -16,10 +16,5 @@ const std::string LogLevelToString(const LogLevel& log_level) {
       return "UNKNOWN";
   }
 }
-
-std::ostream& operator<<(std::ostream& os, const LogLevel& log_level) {
-  os << LogLevelToString(log_level);
-  return os;
-}
 }  // namespace logging
 }  // namespace ws

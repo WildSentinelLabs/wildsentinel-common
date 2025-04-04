@@ -12,13 +12,21 @@ class ImageConverter {
  public:
   static ws::logging::LoggerConfiguration logger_configuration_;
 
+  ImageConverter(const ImageConverter& other);
+
+  ImageConverter(ImageConverter&& other) noexcept;
+
   virtual ~ImageConverter() = default;
 
-  virtual Image* Convert(const Image& source) const = 0;
+  virtual Image Convert(const Image& source) const = 0;
 
-  const ColorSpace GetColorSpace() const;
+  ColorSpace GetColorSpace() const;
 
-  const ChromaSubsampling GetChromaSubsampling() const;
+  ChromaSubsampling GetChromaSubsampling() const;
+
+  ImageConverter& operator=(const ImageConverter& other);
+
+  ImageConverter& operator=(ImageConverter&& other) noexcept;
 
  protected:
   std::unique_ptr<ws::logging::ILogger> logger_;
@@ -27,9 +35,8 @@ class ImageConverter {
   uint8_t num_components_;
   uint8_t alignment_;
 
-  ImageConverter(const std::string source_context, const ColorSpace color_space,
-                 const ChromaSubsampling chroma_subsampling,
-                 const uint8_t num_components);
+  ImageConverter(ColorSpace color_space, ChromaSubsampling chroma_subsampling,
+                 uint8_t num_components, const std::string& source_context);
 };
 }  // namespace imaging
 }  // namespace ws

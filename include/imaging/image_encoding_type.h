@@ -12,8 +12,5 @@ enum class ImageEncodingType : int8_t {
 
 const std::string ImageEncodingTypeToString(
     const ImageEncodingType& encoding_type);
-
-std::ostream& operator<<(std::ostream& os,
-                         const ImageEncodingType& encoding_type);
 }  // namespace imaging
 }  // namespace ws

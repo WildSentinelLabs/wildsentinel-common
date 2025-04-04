@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 
 #include "logging/ilog_enricher.h"
 #include "logging/ilogger.h"

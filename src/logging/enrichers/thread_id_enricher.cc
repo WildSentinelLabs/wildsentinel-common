@@ -3,9 +3,7 @@ namespace ws {
 namespace logging {
 namespace enrichers {
 void ThreadIdEnricher::Enrich(ws::logging::events::LogEvent& event) const {
-  std::ostringstream oss;
-  oss << std::this_thread::get_id();
-  event.AddProperty(kKey, oss.str());
+  event.AddProperty(kKey, std::format("{}", std::this_thread::get_id()));
 }
 
 const std::string ThreadIdEnricher::kKey = "ThreadId";

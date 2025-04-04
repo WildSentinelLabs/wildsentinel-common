@@ -21,10 +21,5 @@ const std::string ColorSpaceToString(const ColorSpace& color_space) {
       return "UNSUPPORTED";
   }
 }
-
-std::ostream& operator<<(std::ostream& os, const ColorSpace& color_space) {
-  os << ColorSpaceToString(color_space);
-  return os;
-}
 }  // namespace imaging
 }  // namespace ws

@@ -12,7 +12,7 @@
 
 namespace ws {
 
-struct bad_delegate_call : public std::exception {
+struct bad_delegate_call_exception : public std::exception {
   const char* what() const noexcept override { return "Bad delegate call"; }
 };
 
@@ -118,7 +118,7 @@ class Delegate<R(Args...)> {
   }
 
   R operator()(Args... args) const {
-    if (!call_fn_) throw bad_delegate_call();
+    if (!call_fn_) throw bad_delegate_call_exception();
     return call_fn_(static_cast<const void*>(storage_),
                     std::forward<Args>(args)...);
   }

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <vector>
 
 #include "logging/ilog_dispatcher.h"
 #include "logging/ilog_sink.h"

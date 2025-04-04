@@ -22,11 +22,5 @@ const std::string ChromaSubsamplingToString(
       return "Unsupported";
   }
 }
-
-std::ostream& operator<<(std::ostream& os,
-                         const ChromaSubsampling& subsampling) {
-  os << ChromaSubsamplingToString(subsampling);
-  return os;
-}
 }  // namespace imaging
 }  // namespace ws

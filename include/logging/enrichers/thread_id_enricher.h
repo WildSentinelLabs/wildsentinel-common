@@ -1,6 +1,5 @@
 #pragma once
 
-#include <sstream>
 #include <thread>
 
 #include "logging/events/log_event.h"

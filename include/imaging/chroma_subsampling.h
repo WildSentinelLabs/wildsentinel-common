@@ -1,6 +1,6 @@
 #pragma once
 
-#include <sstream>
+#include <cstdint>
 #include <string>
 namespace ws {
 namespace imaging {
@@ -19,8 +19,5 @@ enum class ChromaSubsampling : int8_t {
 
 const std::string ChromaSubsamplingToString(
     const ChromaSubsampling& subsampling);
-
-std::ostream& operator<<(std::ostream& os,
-                         const ChromaSubsampling& subsampling);
 }  // namespace imaging
 }  // namespace ws

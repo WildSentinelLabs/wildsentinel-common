@@ -15,11 +15,5 @@ const std::string ImageEncodingTypeToString(
       return "UNSUPPORTED";
   }
 }
-
-std::ostream& operator<<(std::ostream& os,
-                         const ImageEncodingType& encoding_type) {
-  os << ImageEncodingTypeToString(encoding_type);
-  return os;
-}
 }  // namespace imaging
 }  // namespace ws

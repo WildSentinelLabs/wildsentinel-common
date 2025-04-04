@@ -1,7 +1,6 @@
 #pragma once
 #include <iostream>
 #include <optional>
-#include <sstream>
 #include <string>
 #include <unordered_map>
 
@@ -15,9 +14,9 @@ struct ImageContext {
   using size_type = std::size_t;
   using map_type = std::unordered_map<key_type, mapped_type>;
 
-  explicit ImageContext();
+  ImageContext();
 
-  explicit ImageContext(const map_type& tags);
+  ImageContext(const map_type& tags);
 
   ~ImageContext();
 
@@ -33,7 +32,7 @@ struct ImageContext {
 
   std::optional<mapped_type> Get(const key_type& key) const;
 
-  void Add(const key_type key, const mapped_type value);
+  void Add(const key_type& key, const mapped_type& value);
 
   map_type::iterator begin();
 
@@ -50,8 +49,5 @@ struct ImageContext {
  private:
   map_type data;
 };
-
-std::ostream& operator<<(std::ostream& os, const ImageContext& context);
-
 }  // namespace imaging
 }  // namespace ws

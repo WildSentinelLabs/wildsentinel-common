@@ -27,22 +27,22 @@ class PixelColorConverter {
   T max_value_;
 
   // BT.601 (SD)
-  static constexpr Rgb<double> GetBT601Coefficients() {
+  static constexpr Rgb<double> BT601Coefficients() {
     return {0.299, 0.587, 0.114};
   }
 
   // BT.709 (HD)
-  static constexpr Rgb<double> GetBT709Coefficients() {
+  static constexpr Rgb<double> BT709Coefficients() {
     return {0.2126, 0.7152, 0.0722};
   }
 
   // BT.2020 (UHD)
-  static constexpr Rgb<double> GetBT2020Coefficients() {
+  static constexpr Rgb<double> BT2020Coefficients() {
     return {0.2627, 0.6780, 0.0593};
   }
 
   // BT.2100 (HDR)
-  static constexpr Rgb<double> GetBT2100Coefficients() {
+  static constexpr Rgb<double> BT2100Coefficients() {
     return {0.2627, 0.6780, 0.0593};
   }
 };

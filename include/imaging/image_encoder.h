@@ -15,12 +15,20 @@ class ImageEncoder : public IDisposable {
  public:
   static ws::logging::LoggerConfiguration logger_configuration_;
 
+  ImageEncoder(const ImageEncoder& other);
+
+  ImageEncoder(ImageEncoder&& other) noexcept;
+
   virtual ~ImageEncoder() = default;
 
   virtual const ImageFormat& Format() const = 0;
 
-  virtual bool Encode(ws::io::Stream& stream, const Image& image) const = 0;
+  virtual void Encode(const Image& image, ws::io::Stream& stream) const = 0;
   // TODO: Enable async
+
+  ImageEncoder& operator=(const ImageEncoder& other);
+
+  ImageEncoder& operator=(ImageEncoder&& other) noexcept;
 
  protected:
   std::unique_ptr<ws::logging::ILogger> logger_;
@@ -28,10 +36,10 @@ class ImageEncoder : public IDisposable {
   ImageContext context_;
   int quality_;
 
-  ImageEncoder(const ImageContext context, const int quality,
-               const std::string source_context);
+  ImageEncoder(const ImageContext& context, int quality,
+               const std::string& source_context);
 
-  ImageEncoder(const ImageContext context, const std::string source_context);
+  ImageEncoder(const ImageContext& context, const std::string& source_context);
 };
 }  // namespace imaging
 }  // namespace ws

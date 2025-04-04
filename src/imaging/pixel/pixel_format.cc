@@ -47,11 +47,6 @@ const std::string PixelFormatToString(const PixelFormat& pixel_format) {
       return "Unsupported";
   }
 }
-
-std::ostream& operator<<(std::ostream& os, const PixelFormat& pixel_format) {
-  os << PixelFormatToString(pixel_format);
-  return os;
-}
 }  // namespace pixel
 }  // namespace imaging
 }  // namespace ws

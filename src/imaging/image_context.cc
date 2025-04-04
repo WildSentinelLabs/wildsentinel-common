@@ -35,8 +35,8 @@ std::optional<ImageContext::mapped_type> ImageContext::Get(
   return std::nullopt;
 }
 
-void ImageContext::Add(const ImageContext::key_type key,
-                       const ImageContext::mapped_type value) {
+void ImageContext::Add(const ImageContext::key_type& key,
+                       const ImageContext::mapped_type& value) {
   data.insert_or_assign(key, value);
 }
 
@@ -53,20 +53,15 @@ ImageContext::map_type::const_iterator ImageContext::end() const {
 }
 
 std::string ImageContext::ToString() const {
-  std::ostringstream ss;
+  std::string result;
   for (const auto& [tag, value] : data) {
-    ss << tag << ": " << value << "\n";
+    result += std::format("{}: {}\n", tag, value);
   }
 
-  return ss.str();
+  return result;
 }
 
 void ImageContext::Clear() { data.clear(); }
 
-std::ostream& operator<<(std::ostream& os, const ImageContext& context) {
-  std::string str = context.ToString();
-  os << str;
-  return os;
-}
 }  // namespace imaging
 }  // namespace ws
