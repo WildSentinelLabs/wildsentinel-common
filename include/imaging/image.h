@@ -36,7 +36,7 @@ class Image {
 
   const IImageComponent* GetComponent(uint8_t comp_num) const;
 
-  const Array<IImageComponent*> Components() const;
+  Array<const IImageComponent*> Components() const;
 
   uint32_t Width() const;
 

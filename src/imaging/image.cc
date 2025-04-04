@@ -57,8 +57,8 @@ const IImageComponent* Image::GetComponent(uint8_t comp_num) const {
   return components_[comp_num].get();
 }
 
-const Array<IImageComponent*> Image::Components() const {
-  Array<IImageComponent*> components_array(components_.Length());
+Array<const IImageComponent*> Image::Components() const {
+  Array<const IImageComponent*> components_array(components_.Length());
   for (size_t i = 0; i < components_.Length(); i++) {
     components_array[i] = components_[i].get();
   }
