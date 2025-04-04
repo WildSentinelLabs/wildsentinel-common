@@ -36,7 +36,7 @@ class ImageConverter {
   uint8_t alignment_;
 
   ImageConverter(ColorSpace color_space, ChromaSubsampling chroma_subsampling,
-                 uint8_t num_components, std::string& source_context);
+                 uint8_t num_components, const std::string& source_context);
 };
 }  // namespace imaging
 }  // namespace ws

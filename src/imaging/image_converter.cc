@@ -7,7 +7,7 @@ namespace imaging {
 ImageConverter::ImageConverter(ColorSpace color_space,
                                ChromaSubsampling chroma_subsampling,
                                uint8_t num_components,
-                               std::string& source_context)
+                               const std::string& source_context)
     : color_space_(color_space),
       chroma_subsampling_(chroma_subsampling),
       num_components_(num_components),
