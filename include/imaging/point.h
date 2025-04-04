@@ -8,9 +8,9 @@ struct Point {
   offset_t x;
   offset_t y;
 
-  Point() : x(0), y(0) {}
+  constexpr Point() : x(0), y(0) {}
 
-  Point(offset_t x, offset_t y) : x(x), y(y) {}
+  constexpr Point(offset_t x, offset_t y) : x(x), y(y) {}
 };
 }  // namespace imaging
 }  // namespace ws

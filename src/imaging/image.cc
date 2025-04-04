@@ -32,7 +32,12 @@ Image::Image(Image&& other) noexcept
       height_(other.height_),
       color_space_(other.color_space_),
       chroma_subsampling_(other.chroma_subsampling_) {
-  other = Image::Empty();
+  other.components_ = Array<std::unique_ptr<IImageComponent>>::Empty();
+  other.context_ = ImageContext();
+  other.width_ = 0;
+  other.height_ = 0;
+  other.color_space_ = ColorSpace::kUnsupported;
+  other.chroma_subsampling_ = ChromaSubsampling::kUnsupported;
 }
 
 Image Image::Empty() { return Image(); }
@@ -114,7 +119,12 @@ Image& Image::operator=(Image&& other) noexcept {
     color_space_ = other.color_space_;
     chroma_subsampling_ = other.chroma_subsampling_;
 
-    other = Image::Empty();
+    other.components_ = Array<std::unique_ptr<IImageComponent>>::Empty();
+    other.context_ = ImageContext();
+    other.width_ = 0;
+    other.height_ = 0;
+    other.color_space_ = ColorSpace::kUnsupported;
+    other.chroma_subsampling_ = ChromaSubsampling::kUnsupported;
   }
 
   return *this;

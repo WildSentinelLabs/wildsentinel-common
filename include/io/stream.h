@@ -87,8 +87,6 @@ class Stream : public IDisposable {
   static constexpr offset_t kMaxLength = 1ULL << 31;  // Default
 #endif
 
-  static bool WillOverflow(offset_t a, offset_t b);
-
   static void ValidateBufferArguments(ReadOnlySpan<unsigned char> buffer,
                                       offset_t offset, offset_t count);
 

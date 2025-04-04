@@ -35,7 +35,8 @@ struct Array {
 
   Array(Array&& other) noexcept
       : data(std::move(other.data)), length(other.length) {
-    other = Array::Empty();
+    other.data = nullptr;
+    other.length = 0;
   }
 
   Array(const Array&) = delete;
@@ -52,7 +53,9 @@ struct Array {
     if (this != &other) {
       data = std::move(other.data);
       length = other.length;
-      other = Array::Empty();
+
+      other.data = nullptr;
+      other.length = 0;
     }
 
     return *this;

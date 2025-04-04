@@ -23,7 +23,7 @@ Array<T> ImageBufferExporter<T>::ExportToInterleavedBuffer(
     return Array<T>::Empty();
   }
 
-  const ImageComponent<T>* components[image.NumComponents()];
+  const ImageComponent<T>* components[image.NumComponents()] = {nullptr};
   size_t image_size = 0;
   for (uint8_t i = 0; i < pixel_format_details->components_order.Length();
        ++i) {
@@ -73,7 +73,7 @@ Array<T> ImageBufferExporter<T>::ExportToPlanarBuffer(
     return Array<T>::Empty();
   }
 
-  const ImageComponent<T>* components[image.NumComponents()];
+  const ImageComponent<T>* components[image.NumComponents()] = {nullptr};
   size_t image_size = 0;
   for (uint8_t i = 0; i < pixel_format_details->components_order.Length();
        ++i) {

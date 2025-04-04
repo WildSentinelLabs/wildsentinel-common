@@ -79,7 +79,8 @@ offset_t FileHandle::ReadAtOffset(FileHandle& handle,
                                   offset_t file_offset) {
   OVERLAPPED overlapped = OverlappedForSyncHandle(handle, file_offset);
   DWORD num_bytes_read = 0;
-  if (ReadFile(static_cast<HANDLE>(handle.Get()), buffer,
+  if (ReadFile(static_cast<HANDLE>(handle.Get()),
+               static_cast<unsigned char*>(buffer),
                static_cast<DWORD>(buffer.Length()), &num_bytes_read,
                &overlapped)) {
     return static_cast<offset_t>(num_bytes_read);
@@ -121,7 +122,8 @@ void FileHandle::WriteAtOffset(FileHandle& handle,
 
   OVERLAPPED overlapped = OverlappedForSyncHandle(handle, file_offset);
   DWORD num_bytes_written = 0;
-  if (WriteFile(static_cast<HANDLE>(handle.Get()), buffer,
+  if (WriteFile(static_cast<HANDLE>(handle.Get()),
+                static_cast<const unsigned char*>(buffer),
                 static_cast<DWORD>(buffer.Length()), &num_bytes_written,
                 &overlapped)) {
     if (num_bytes_written != buffer.Length())

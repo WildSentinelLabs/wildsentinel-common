@@ -32,7 +32,11 @@ FileStream::FileStream(const std::string& path, FileMode mode,
 
 FileStream::FileStream(const std::string& path, FileMode mode,
                        FileAccess access, FileShare share, offset_t buffer_size,
-                       offset_t preallocation_size) {
+                       offset_t preallocation_size)
+    : file_handle_(FileHandle()),
+      position_(0),
+      append_start_(-1),
+      access_(static_cast<FileAccess>(0)) {
   std::filesystem::path full_path = std::filesystem::absolute(path);
   access_ = access;
   file_handle_ =

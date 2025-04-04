@@ -33,7 +33,12 @@ ImageComponent<T>::ImageComponent(ImageComponent<T>&& other) noexcept
       height_(other.height_),
       bit_depth_(other.bit_depth_),
       is_alpha_(other.is_alpha_) {
-  other = ImageComponent<T>::Empty();
+  other.buffer_ = Array<T>::Empty();
+  other.buffer_type_ = ImageBufferType::kUnknown;
+  other.width_ = 0;
+  other.height_ = 0;
+  other.bit_depth_ = 0;
+  other.is_alpha_ = false;
 }
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
@@ -100,7 +105,12 @@ ImageComponent<T>& ImageComponent<T>::operator=(
     bit_depth_ = other.bit_depth_;
     is_alpha_ = other.is_alpha_;
 
-    other = ImageComponent<T>::Empty();
+    other.buffer_ = Array<T>::Empty();
+    other.buffer_type_ = ImageBufferType::kUnknown;
+    other.width_ = 0;
+    other.height_ = 0;
+    other.bit_depth_ = 0;
+    other.is_alpha_ = false;
   }
 
   return *this;
