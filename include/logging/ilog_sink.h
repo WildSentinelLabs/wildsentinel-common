@@ -16,7 +16,7 @@ class ILogSink {
 
   virtual void Display(ws::logging::events::LogEvent event) = 0;
 
-  virtual void Display(const std::string& message) = 0;
+  virtual void Display(const std::string& message) const = 0;
 
   virtual ~ILogSink() = default;
 };

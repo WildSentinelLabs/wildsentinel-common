@@ -16,13 +16,12 @@ namespace ws {
 namespace logging {
 namespace sinks {
 
-class ConsoleLogSink : public ILogSink,
-                       public std::enable_shared_from_this<ConsoleLogSink> {
+class ConsoleLogSink : public ILogSink {
  public:
-  explicit ConsoleLogSink(LogLevel min_log_level = LogLevel::kInformation,
-                          const std::string& template_format =
-                              "{Timestamp:%Y-%m-%d %X} [{Level:u3}] "
-                              "{Message:lj}{NewLine}{Exception}");
+  ConsoleLogSink(LogLevel min_log_level = LogLevel::kInformation,
+                 const std::string& template_format =
+                     "{Timestamp:%Y-%m-%d %X} [{Level:u3}] "
+                     "{Message:lj}{NewLine}{Exception}");
 
   ~ConsoleLogSink() override;
 
@@ -32,7 +31,7 @@ class ConsoleLogSink : public ILogSink,
 
   void Display(ws::logging::events::LogEvent event) override;
 
-  void Display(const std::string& message) override;
+  void Display(const std::string& message) const override;
 
  private:
   static std::mutex console_mutex_;

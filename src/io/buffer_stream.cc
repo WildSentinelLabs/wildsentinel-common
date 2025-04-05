@@ -19,8 +19,6 @@ BufferStream::BufferStream(Span<unsigned char> buffer, bool writable,
       writable_(writable),
       exposable_(visible) {}
 
-BufferStream::~BufferStream() { Dispose(); }
-
 bool BufferStream::CanSeek() { return is_open_; }
 
 bool BufferStream::CanRead() const { return is_open_; }

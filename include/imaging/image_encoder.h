@@ -32,6 +32,7 @@ class ImageEncoder : public IDisposable {
 
  protected:
   std::unique_ptr<ws::logging::ILogger> logger_;
+  std::string source_context_;
   ImageEncodingType encoding_type_;
   ImageContext context_;
   int quality_;

@@ -11,14 +11,11 @@ namespace dispatchers {
 
 class SyncLogDispatcher : public ILogDispatcher {
  public:
-  explicit SyncLogDispatcher(std::weak_ptr<ILogSink> sink);
+  SyncLogDispatcher();
 
-  void Dispatch(const std::string& message) override;
+  void Dispatch(const ILogSink& sink, const std::string& message) override;
 
   void Await() override;
-
- private:
-  std::weak_ptr<ILogSink> sink_;
 };
 }  // namespace dispatchers
 }  // namespace logging

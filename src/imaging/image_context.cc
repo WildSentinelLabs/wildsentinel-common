@@ -6,8 +6,6 @@ ImageContext::ImageContext() : data(ImageContext::map_type()) {}
 
 ImageContext::ImageContext(const ImageContext::map_type& tags) : data(tags) {}
 
-ImageContext::~ImageContext() { Clear(); }
-
 bool ImageContext::Empty() const { return data.empty(); }
 
 ImageContext::size_type ImageContext::Size() const { return data.size(); }

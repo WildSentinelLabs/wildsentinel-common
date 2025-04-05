@@ -30,6 +30,7 @@ class ImageDecoder : public IDisposable {
 
  protected:
   std::unique_ptr<ws::logging::ILogger> logger_;
+  std::string source_context_;
   ImageContext context_;
 
   ImageDecoder(const ImageContext& context, const std::string& source_context);

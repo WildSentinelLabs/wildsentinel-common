@@ -6,7 +6,7 @@ namespace io {
 enum class FileShare : uint8_t {
   kRead = 1 << 0,
   kWrite = 1 << 1,
-  Delete = 1 << 2,
+  kDelete = 1 << 2,
 };
 
 constexpr FileShare operator|(FileShare a, FileShare b) {

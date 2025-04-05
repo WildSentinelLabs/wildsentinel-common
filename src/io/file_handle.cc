@@ -249,7 +249,7 @@ DWORD ParseShareMode(FileShare share) {
     case FileShare::kWrite:
       share_mode = FILE_SHARE_WRITE;
       break;
-    case FileShare::Delete:
+    case FileShare::kDelete:
       share_mode = FILE_SHARE_DELETE;
       break;
     default:
@@ -257,7 +257,7 @@ DWORD ParseShareMode(FileShare share) {
         share_mode |= FILE_SHARE_READ;
       if ((share & FileShare::kWrite) == FileShare::kWrite)
         share_mode |= FILE_SHARE_WRITE;
-      if ((share & FileShare::Delete) == FileShare::Delete)
+      if ((share & FileShare::kDelete) == FileShare::kDelete)
         share_mode |= FILE_SHARE_DELETE;
       break;
   }

@@ -13,20 +13,24 @@ namespace dispatchers {
 
 class AsyncLogDispatcher : public ILogDispatcher {
  public:
-  explicit AsyncLogDispatcher(std::weak_ptr<ILogSink> sink);
+  AsyncLogDispatcher();
 
   ~AsyncLogDispatcher();
 
-  void Dispatch(const std::string& message) override;
+  void Dispatch(const ILogSink& sink, const std::string& message) override;
 
   void Await() override;
 
  private:
+  struct DispatchEvent {
+    const ILogSink* sink;
+    std::string message;
+  };
+
   void ProcessQueue();
 
   std::atomic<bool> running_;
-  std::weak_ptr<ILogSink> sink_;
-  ws::concurrency::collections::ConcurrentQueue<std::string> log_queue_;
+  ws::concurrency::collections::ConcurrentQueue<DispatchEvent> log_queue_;
   std::thread log_thread_;
   std::mutex mutex_;
   std::condition_variable cv_;

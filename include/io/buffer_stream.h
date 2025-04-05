@@ -18,7 +18,7 @@ class BufferStream : public Stream {
 
   BufferStream(Span<unsigned char> buffer, bool writable, bool visible);
 
-  ~BufferStream() override;
+  ~BufferStream() = default;
 
   bool CanSeek() override;
 

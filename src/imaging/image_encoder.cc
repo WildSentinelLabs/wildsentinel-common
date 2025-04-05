@@ -5,6 +5,7 @@ namespace imaging {
 ImageEncoder::ImageEncoder(const ImageContext& context, int quality,
                            const std::string& source_context)
     : context_(context),
+      source_context_(source_context),
       encoding_type_(ImageEncodingType::kLossy),
       quality_(quality),
       logger_(logger_configuration_.CreateLogger(source_context)) {
@@ -16,18 +17,21 @@ ImageEncoder::ImageEncoder(const ImageContext& context, int quality,
 ImageEncoder::ImageEncoder(const ImageContext& context,
                            const std::string& source_context)
     : context_(context),
+      source_context_(source_context),
       encoding_type_(ImageEncodingType::kLossless),
       quality_(0),
       logger_(logger_configuration_.CreateLogger(source_context)) {}
 
 ImageEncoder::ImageEncoder(const ImageEncoder& other)
     : context_(other.context_),
+      source_context_(other.source_context_),
       encoding_type_(other.encoding_type_),
       quality_(other.quality_),
-      logger_(logger_configuration_.CreateLogger("ImageEncoder")) {}
+      logger_(logger_configuration_.CreateLogger(source_context_)) {}
 
 ImageEncoder::ImageEncoder(ImageEncoder&& other) noexcept
     : context_(std::move(other.context_)),
+      source_context_(other.source_context_),
       encoding_type_(other.encoding_type_),
       quality_(other.quality_),
       logger_(std::move(other.logger_)) {
@@ -40,7 +44,8 @@ ImageEncoder& ImageEncoder::operator=(const ImageEncoder& other) {
     context_ = other.context_;
     encoding_type_ = other.encoding_type_;
     quality_ = other.quality_;
-    logger_ = logger_configuration_.CreateLogger("ImageEncoder");
+    source_context_ = other.source_context_;
+    logger_ = logger_configuration_.CreateLogger(source_context_);
   }
 
   return *this;
@@ -51,6 +56,7 @@ ImageEncoder& ImageEncoder::operator=(ImageEncoder&& other) noexcept {
     context_ = std::move(other.context_);
     encoding_type_ = other.encoding_type_;
     quality_ = other.quality_;
+    source_context_ = other.source_context_;
     logger_ = std::move(other.logger_);
 
     other.context_ = ImageContext();
@@ -63,8 +69,7 @@ ImageEncoder& ImageEncoder::operator=(ImageEncoder&& other) noexcept {
 ws::logging::LoggerConfiguration ImageEncoder::logger_configuration_ =
     ws::logging::LoggerConfiguration()
         .SetMinimumLogLevel(ws::logging::LogLevel::kInformation)
-        .AddEnricher(
-            std::make_shared<ws::logging::enrichers::ThreadIdEnricher>())
+        .AddEnricher<ws::logging::enrichers::ThreadIdEnricher>()
         .AddConsoleSink(ws::logging::LogLevel::kVerbose,
                         "{Timestamp:%Y-%m-%d %X.%f} [{Level:u3}] - "
                         "[ThreadId: {ThreadId}] "

@@ -30,6 +30,7 @@ class ImageConverter {
 
  protected:
   std::unique_ptr<ws::logging::ILogger> logger_;
+  std::string source_context_;
   ColorSpace color_space_;
   ChromaSubsampling chroma_subsampling_;
   uint8_t num_components_;

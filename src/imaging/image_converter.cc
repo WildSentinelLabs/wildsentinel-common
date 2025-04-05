@@ -12,6 +12,7 @@ ImageConverter::ImageConverter(ColorSpace color_space,
       chroma_subsampling_(chroma_subsampling),
       num_components_(num_components),
       alignment_(ImageTraits::GetChromaAlignment(chroma_subsampling)),
+      source_context_(source_context),
       logger_(logger_configuration_.CreateLogger(source_context)) {};
 
 ImageConverter::ImageConverter(const ImageConverter& other)
@@ -19,13 +20,15 @@ ImageConverter::ImageConverter(const ImageConverter& other)
       chroma_subsampling_(other.chroma_subsampling_),
       num_components_(other.num_components_),
       alignment_(other.alignment_),
-      logger_(logger_configuration_.CreateLogger("ImageConverter")) {}
+      source_context_(other.source_context_),
+      logger_(logger_configuration_.CreateLogger(source_context_)) {}
 
 ImageConverter::ImageConverter(ImageConverter&& other) noexcept
     : color_space_(other.color_space_),
       chroma_subsampling_(other.chroma_subsampling_),
       num_components_(other.num_components_),
       alignment_(other.alignment_),
+      source_context_(other.source_context_),
       logger_(std::move(other.logger_)) {
   other.color_space_ = ColorSpace::kUnsupported;
   other.chroma_subsampling_ = ChromaSubsampling::kUnsupported;
@@ -45,7 +48,8 @@ ImageConverter& ImageConverter::operator=(const ImageConverter& other) {
     chroma_subsampling_ = other.chroma_subsampling_;
     num_components_ = other.num_components_;
     alignment_ = other.alignment_;
-    logger_ = logger_configuration_.CreateLogger("ImageConverter");
+    source_context_ = other.source_context_;
+    logger_ = logger_configuration_.CreateLogger(source_context_);
   }
 
   return *this;
@@ -57,6 +61,7 @@ ImageConverter& ImageConverter::operator=(ImageConverter&& other) noexcept {
     chroma_subsampling_ = other.chroma_subsampling_;
     num_components_ = other.num_components_;
     alignment_ = other.alignment_;
+    source_context_ = other.source_context_;
     logger_ = std::move(other.logger_);
 
     other.color_space_ = ColorSpace::kUnsupported;
@@ -71,8 +76,7 @@ ImageConverter& ImageConverter::operator=(ImageConverter&& other) noexcept {
 ws::logging::LoggerConfiguration ImageConverter::logger_configuration_ =
     ws::logging::LoggerConfiguration()
         .SetMinimumLogLevel(ws::logging::LogLevel::kInformation)
-        .AddEnricher(
-            std::make_shared<ws::logging::enrichers::ThreadIdEnricher>())
+        .AddEnricher<ws::logging::enrichers::ThreadIdEnricher>()
         .AddConsoleSink(ws::logging::LogLevel::kVerbose,
                         "{Timestamp:%Y-%m-%d %X} [{Level:u3}] - "
                         "[ThreadId: {ThreadId}] "

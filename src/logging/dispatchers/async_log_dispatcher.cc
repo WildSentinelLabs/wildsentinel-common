@@ -2,10 +2,8 @@
 namespace ws {
 namespace logging {
 namespace dispatchers {
-AsyncLogDispatcher::AsyncLogDispatcher(std::weak_ptr<ILogSink> sink)
-    : sink_(sink),
-      running_(true),
-      log_thread_(&AsyncLogDispatcher::ProcessQueue, this) {}
+AsyncLogDispatcher::AsyncLogDispatcher()
+    : running_(true), log_thread_(&AsyncLogDispatcher::ProcessQueue, this) {}
 
 AsyncLogDispatcher::~AsyncLogDispatcher() {
   {
@@ -18,8 +16,9 @@ AsyncLogDispatcher::~AsyncLogDispatcher() {
   }
 }
 
-void AsyncLogDispatcher::Dispatch(const std::string& message) {
-  log_queue_.Push(message);
+void AsyncLogDispatcher::Dispatch(const ILogSink& sink,
+                                  const std::string& message) {
+  log_queue_.Push({&sink, message});
   cv_.notify_one();
 }
 
@@ -34,10 +33,9 @@ void AsyncLogDispatcher::ProcessQueue() {
       }
     }
 
-    std::string message;
-    while (log_queue_.TryPop(message)) {
-      auto sink = sink_.lock();
-      if (sink) sink->Display(message);
+    DispatchEvent event;
+    while (log_queue_.TryPop(event)) {
+      event.sink->Display(event.message);
     }
   }
 }

@@ -15,7 +15,7 @@ namespace ws {
 namespace io {
 class FileHandle : public IDisposable {
  public:
-  explicit FileHandle();
+  FileHandle();
 
   static FileHandle Open(const std::filesystem::path& full_path, FileMode mode,
                          FileAccess access, FileShare share,
@@ -57,7 +57,7 @@ class FileHandle : public IDisposable {
   void Dispose() override;
 
  private:
-  explicit FileHandle(void* handle);
+  FileHandle(void* handle);
 
   void* handle_;
   std::filesystem::path path_;

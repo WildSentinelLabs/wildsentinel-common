@@ -3,12 +3,11 @@ namespace ws {
 namespace logging {
 namespace dispatchers {
 
-SyncLogDispatcher::SyncLogDispatcher(std::weak_ptr<ILogSink> sink)
-    : sink_(sink) {}
+SyncLogDispatcher::SyncLogDispatcher() {}
 
-void SyncLogDispatcher::Dispatch(const std::string& message) {
-  auto sink = sink_.lock();
-  if (sink) sink->Display(message);
+void SyncLogDispatcher::Dispatch(const ILogSink& sink,
+                                 const std::string& message) {
+  sink.Display(message);
 }
 
 void SyncLogDispatcher::Await() {}

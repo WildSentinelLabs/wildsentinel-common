@@ -26,7 +26,7 @@ class MemoryStream : public Stream {
 
   MemoryStream(const MemoryStream&) = delete;
 
-  ~MemoryStream() override;
+  ~MemoryStream() = default;
 
   bool CanSeek() override;
 

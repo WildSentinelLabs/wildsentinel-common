@@ -44,8 +44,6 @@ MemoryStream::MemoryStream(MemoryStream&& other) noexcept
   other = MemoryStream();
 }
 
-MemoryStream::~MemoryStream() { Dispose(); }
-
 bool MemoryStream::CanSeek() { return is_open_; }
 
 bool MemoryStream::CanRead() const { return is_open_; }

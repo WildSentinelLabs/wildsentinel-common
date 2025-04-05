@@ -18,7 +18,7 @@ struct ImageContext {
 
   ImageContext(const map_type& tags);
 
-  ~ImageContext();
+  ~ImageContext() = default;
 
   bool Empty() const;
 
