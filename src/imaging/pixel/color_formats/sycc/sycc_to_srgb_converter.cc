@@ -22,6 +22,7 @@ void SYccToRgbConverter<T>::Convert(const Ycc<T>& ycc, Rgb<T>& rgb) const {
   rgb.g = static_cast<T>(g * this->max_value_);
   rgb.b = static_cast<T>(b * this->max_value_);
 }
+// TODO: ADD ENUM FOR MethodSUPPORT
 
 template class SYccToRgbConverter<uint8_t>;
 template class SYccToRgbConverter<int8_t>;

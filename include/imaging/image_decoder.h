@@ -9,7 +9,7 @@
 
 namespace ws {
 namespace imaging {
-class ImageDecoder : public IDisposable {
+class ImageDecoder {
  public:
   static ws::logging::LoggerConfiguration logger_configuration_;
 
@@ -22,7 +22,6 @@ class ImageDecoder : public IDisposable {
   virtual const ImageFormat& Format() const = 0;
 
   virtual Image Decode(ws::io::Stream& stream) const = 0;
-  // TODO: Enable async
 
   ImageDecoder& operator=(const ImageDecoder& other);
 

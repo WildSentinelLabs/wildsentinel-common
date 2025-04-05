@@ -22,6 +22,7 @@ void SRgbToSYccConverter<T>::Convert(const Rgb<T>& rgb, Ycc<T>& ycc) const {
   ycc.cb = this->max_value_ * cb;
   ycc.cr = this->max_value_ * cr;
 }
+// TODO: ADD ENUM FOR MethodSUPPORT
 
 template class SRgbToSYccConverter<uint8_t>;
 template class SRgbToSYccConverter<int8_t>;

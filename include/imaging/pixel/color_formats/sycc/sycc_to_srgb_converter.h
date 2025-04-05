@@ -16,8 +16,6 @@ class SYccToRgbConverter : public PixelColorConverter<T> {
  private:
   Rgb<double> coeffs_;
 };
-
-// TODO: ADD ENUM FOR BTSUPPORT
 }  // namespace pixel
 }  // namespace imaging
 }  // namespace ws

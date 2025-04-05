@@ -18,7 +18,6 @@ class SRgbToGrayConverter : public PixelColorConverter<T> {
  protected:
   Rgb<double> coeffs_;
 };
-// TODO: ADD ENUM FOR MethodSUPPORT
 }  // namespace pixel
 }  // namespace imaging
 }  // namespace ws

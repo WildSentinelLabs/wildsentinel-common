@@ -167,4 +167,3 @@ struct ReadOnlySpan {
 };
 
 }  // namespace ws
-// TODO: Add validations in contructor

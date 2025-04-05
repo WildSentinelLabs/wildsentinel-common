@@ -11,7 +11,7 @@
 namespace ws {
 namespace imaging {
 
-class ImageEncoder : public IDisposable {
+class ImageEncoder {
  public:
   static ws::logging::LoggerConfiguration logger_configuration_;
 
@@ -24,7 +24,6 @@ class ImageEncoder : public IDisposable {
   virtual const ImageFormat& Format() const = 0;
 
   virtual void Encode(const Image& image, ws::io::Stream& stream) const = 0;
-  // TODO: Enable async
 
   ImageEncoder& operator=(const ImageEncoder& other);
 

@@ -64,7 +64,5 @@ class Image {
   ColorSpace color_space_;
   ChromaSubsampling chroma_subsampling_;
 };
-
-// TODO: Enable async operations
 }  // namespace imaging
 }  // namespace ws

@@ -187,7 +187,7 @@ void FileStream::Dispose() {
 }
 
 #else
-// TODO: USE DISPOSED_ IN LINUX
+// TODO: Fix Linux implementation
 FileStream::FileStream(const std::string& filename, bool writable, int flags,
                        int mode)
     : length_(0),
