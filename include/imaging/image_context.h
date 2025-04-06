@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <format>
+#include <iostream>
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -49,6 +50,6 @@ struct ImageContext {
 
  private:
   map_type data;
-};
+};  // TODO: REMOVE IOSTREAM
 }  // namespace imaging
 }  // namespace ws
