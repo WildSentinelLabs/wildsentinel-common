@@ -301,32 +301,35 @@ FileHandle FileHandle::Open(const std::filesystem::path& full_path,
   if (fd == -1)
     throw std::runtime_error("Error opening file: " +
                              std::string(std::strerror(errno)));
-#ifdef __APPLE__
-  fstore_t store = {0};
-  store.fst_flags = F_ALLOCATECONTIG;
-  store.fst_posmode = F_PEOFPOSMODE;
-  store.fst_offset = 0;
-  store.fst_length = preallocation_size;
-  store.fst_bytesalloc = 0;
-  int ret = fcntl(fd, F_PREALLOCATE, &store);
-  if (ret == -1) {
-    store.fst_flags = F_ALLOCATEALL;
-    ret = fcntl(fd, F_PREALLOCATE, &store);
-  }
 
-  if (ret == -1) {
-    ::close(fd);
-    throw std::runtime_error("Error preallocating space (F_PREALLOCATE): " +
-                             std::string(std::strerror(errno)));
-  }
+  if (preallocation_size > 0) {
+#ifdef __APPLE__
+    fstore_t store = {0};
+    store.fst_flags = F_ALLOCATECONTIG;
+    store.fst_posmode = F_PEOFPOSMODE;
+    store.fst_offset = 0;
+    store.fst_length = preallocation_size;
+    store.fst_bytesalloc = 0;
+    int ret = fcntl(fd, F_PREALLOCATE, &store);
+    if (ret == -1) {
+      store.fst_flags = F_ALLOCATEALL;
+      ret = fcntl(fd, F_PREALLOCATE, &store);
+    }
+
+    if (ret == -1) {
+      ::close(fd);
+      throw std::runtime_error("Error preallocating space (F_PREALLOCATE): " +
+                               std::string(std::strerror(errno)));
+    }
 #else
-  int ret = posix_fallocate(fd, 0, preallocation_size);
-  if (ret != 0) {
-    ::close(fd);
-    throw std::runtime_error("Error preallocating space: " +
-                             std::string(std::strerror(ret)));
-  }
+    int ret = posix_fallocate(fd, 0, preallocation_size);
+    if (ret != 0) {
+      ::close(fd);
+      throw std::runtime_error("Error preallocating space: " +
+                               std::string(std::strerror(ret)));
+    }
 #endif
+  }
 
   FileHandle handle(fd);
   handle.path_ = full_path;

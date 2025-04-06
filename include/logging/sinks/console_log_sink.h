@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 #include <memory>
 #include <mutex>
 
@@ -39,7 +38,6 @@ class ConsoleLogSink : public ILogSink {
   std::unique_ptr<ILogDispatcher> dispatcher_;
   ws::logging::rendering::MessageRenderer renderer_;
 };
-// TODO: DONT USE IOSTREAM
 }  // namespace sinks
 }  // namespace logging
 }  // namespace ws

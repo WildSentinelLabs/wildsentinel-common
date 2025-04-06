@@ -215,5 +215,43 @@ inline int GetPid() {
 #endif
 }
 
+static std::mutex console_mutex;
+
+inline void ConsoleWrite(const std::string& message) {
+  std::lock_guard<std::mutex> lock(console_mutex);
+
+#ifdef _WIN32
+  HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+  if (hConsole == INVALID_HANDLE_VALUE) return;
+  DWORD written = 0;
+  WriteConsoleA(hConsole, message.c_str(), static_cast<DWORD>(message.size()),
+                &written, nullptr);
+  WriteConsoleA(hConsole, "\n", 1, &written, nullptr);
+#elif defined(__APPLE__) || defined(__linux__)
+  ::write(STDOUT_FILENO, message.c_str(), message.size());
+  ::write(STDOUT_FILENO, "\n", 1);
+#else
+  fprintf(stdout, "%s\n", message.c_str());
+#endif
+}
+
+inline void ConsoleError(const std::string& message) {
+  std::lock_guard<std::mutex> lock(console_mutex);
+
+#ifdef _WIN32
+  HANDLE hError = GetStdHandle(STD_ERROR_HANDLE);
+  if (hError == INVALID_HANDLE_VALUE) return;
+  DWORD written = 0;
+  WriteConsoleA(hError, message.c_str(), static_cast<DWORD>(message.size()),
+                &written, nullptr);
+  WriteConsoleA(hError, "\n", 1, &written, nullptr);
+#elif defined(__APPLE__) || defined(__linux__)
+  ::write(STDERR_FILENO, message.c_str(), message.size());
+  ::write(STDERR_FILENO, "\n", 1);
+#else
+  fprintf(stderr, "%s\n", message.c_str());
+#endif
+}
+
 }  // namespace arch
 }  // namespace ws

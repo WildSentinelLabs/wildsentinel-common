@@ -33,7 +33,7 @@ void ConsoleLogSink::Display(ws::logging::events::LogEvent event) {
 
 void ConsoleLogSink::Display(const std::string& message) const {
   std::lock_guard<std::mutex> lock(console_mutex_);
-  std::cout << message << std::endl;
+  ws::arch::ConsoleWrite(message);
 }
 
 std::mutex ConsoleLogSink::console_mutex_;
