@@ -199,6 +199,7 @@ T CpuReverseBits(T src) {
 #endif
 }
 
+static std::mutex console_mutex;
 }  // namespace detail
 
 inline void FormatConsoleOutput() {
@@ -215,10 +216,8 @@ inline int GetPid() {
 #endif
 }
 
-static std::mutex console_mutex;
-
 inline void ConsoleWrite(const std::string& message) {
-  std::lock_guard<std::mutex> lock(console_mutex);
+  std::lock_guard<std::mutex> lock(detail::console_mutex);
 
 #ifdef _WIN32
   HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -236,7 +235,7 @@ inline void ConsoleWrite(const std::string& message) {
 }
 
 inline void ConsoleError(const std::string& message) {
-  std::lock_guard<std::mutex> lock(console_mutex);
+  std::lock_guard<std::mutex> lock(detail::console_mutex);
 
 #ifdef _WIN32
   HANDLE hError = GetStdHandle(STD_ERROR_HANDLE);

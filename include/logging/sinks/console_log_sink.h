@@ -33,7 +33,6 @@ class ConsoleLogSink : public ILogSink {
   void Display(const std::string& message) const override;
 
  private:
-  static std::mutex console_mutex_;
   LogLevel min_log_level_;
   std::unique_ptr<ILogDispatcher> dispatcher_;
   ws::logging::rendering::MessageRenderer renderer_;
