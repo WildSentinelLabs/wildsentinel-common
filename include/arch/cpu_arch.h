@@ -6,7 +6,11 @@
 #undef KEEP_WIN_ORDER
 #include <windows.h>
 #else
+extern "C" {
+#include <fcntl.h>
+#include <sys/stat.h>
 #include <unistd.h>
+}
 #endif
 
 #include <cstdint>

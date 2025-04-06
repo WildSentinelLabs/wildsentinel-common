@@ -5,17 +5,7 @@
 #include <stdexcept>
 #include <string>
 
-#ifdef _WIN32
-#include <windows.h>
-#else
-extern "C" {
-#include <fcntl.h>
-#include <sys/stat.h>
-#include <unistd.h>
-}
-
-#endif
-
+#include "arch/cpu_arch.h"
 #include "idisposable.h"
 #include "io/file_access.h"
 #include "io/file_mode.h"
