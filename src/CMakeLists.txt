@@ -44,10 +44,9 @@ install(TARGETS wscommon
 )
 
 # Install public headers
+file(GLOB INCLUDE_BASE_FILES ${WSCOMMON_SOURCE_DIR}/include/*.h)
 install(FILES
-    ${WSCOMMON_SOURCE_DIR}/include/array.h
-    ${WSCOMMON_SOURCE_DIR}/include/delegate.h
-    ${WSCOMMON_SOURCE_DIR}/include/idisposable.h
+    ${INCLUDE_BASE_FILES}
     DESTINATION include
 )
 

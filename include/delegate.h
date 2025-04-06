@@ -2,7 +2,6 @@
 
 #include <cstddef>
 #include <cstring>
-#include <iostream>
 #include <new>
 #include <stdexcept>
 #include <type_traits>

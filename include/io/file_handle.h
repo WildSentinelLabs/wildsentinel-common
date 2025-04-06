@@ -1,7 +1,20 @@
 #pragma once
+#include <cerrno>
+#include <cstring>
 #include <filesystem>
 #include <stdexcept>
 #include <string>
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+extern "C" {
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
+}
+
+#endif
 
 #include "idisposable.h"
 #include "io/file_access.h"
@@ -48,8 +61,6 @@ class FileHandle : public IDisposable {
 
   bool TryGetCachedLength(offset_t& cached_length);
 
-  void* Get();
-
   offset_t FileType();
 
   offset_t FileLength();
@@ -57,9 +68,14 @@ class FileHandle : public IDisposable {
   void Dispose() override;
 
  private:
-  FileHandle(void* handle);
+#ifdef _WIN32
+  FileHandle(void* fd);
+  void* fd_;
+#else
+  FileHandle(int fd);
+  int fd_;
+#endif
 
-  void* handle_;
   std::filesystem::path path_;
   offset_t length_;
   bool length_can_be_cached_;

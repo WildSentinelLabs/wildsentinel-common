@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <format>
 
 #include "array.h"
 #include "idisposable.h"

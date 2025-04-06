@@ -1,6 +1,7 @@
 #pragma once
 #include <atomic>
 #include <cstring>
+#include <format>
 
 #include "array.h"
 #include "idisposable.h"
