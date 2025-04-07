@@ -3,17 +3,19 @@
 namespace ws {
 namespace logging {
 namespace enrichers {
-void ThreadIdEnricher::Enrich(ws::logging::events::LogEvent& event) const {
-  thread_local std::string cachedThreadId = []() {
-    std::ostringstream oss;
-    oss << std::this_thread::get_id();
-    return oss.str();
-  }();
+std::string GetCachedThreadId();
 
-  event.AddProperty(kKey, cachedThreadId);
+void ThreadIdEnricher::Enrich(ws::logging::events::LogEvent& event) const {
+  event.AddProperty(kKey, GetCachedThreadId());
 }
 
 const std::string ThreadIdEnricher::kKey = "ThreadId";
+
+std::string GetCachedThreadId() {
+  std::ostringstream oss;
+  oss << std::this_thread::get_id();
+  return oss.str();
+}
 }  // namespace enrichers
 }  // namespace logging
 }  // namespace ws

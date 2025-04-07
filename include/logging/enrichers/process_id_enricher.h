@@ -9,6 +9,10 @@ namespace enrichers {
 
 class ProcessIdEnricher : public ILogEnricher {
  public:
+  ProcessIdEnricher() = default;
+
+  ~ProcessIdEnricher() override = default;
+
   void Enrich(ws::logging::events::LogEvent& event) const override;
 
  private:

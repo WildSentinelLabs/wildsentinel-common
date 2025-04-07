@@ -11,6 +11,10 @@ namespace enrichers {
 
 class ThreadIdEnricher : public ILogEnricher {
  public:
+  ThreadIdEnricher() = default;
+
+  ~ThreadIdEnricher() override = default;
+
   void Enrich(ws::logging::events::LogEvent& event) const override;
 
  private:
