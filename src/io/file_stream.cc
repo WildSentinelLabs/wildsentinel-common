@@ -179,7 +179,7 @@ Array<unsigned char> FileStream::ToArray() {
 void FileStream::Close() { Dispose(); }
 
 void FileStream::Dispose() {
-  if (file_handle_.IsClosed()) {
+  if (!file_handle_.IsClosed()) {
     file_handle_.Dispose();
   }
 }
