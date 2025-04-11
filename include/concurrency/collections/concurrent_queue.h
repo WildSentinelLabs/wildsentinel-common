@@ -253,7 +253,7 @@ class concurrent_queue {
   void pop(value_type& __x) { internal_instance_.TryPop(__x); }
 
   void pop() {
-    value_type & __x;
+    value_type __x;
     internal_instance_.TryPop(__x);
   }
 
