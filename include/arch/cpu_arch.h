@@ -22,6 +22,7 @@ extern "C" {
 
 #endif
 #include <cassert>
+#include <mutex>
 #include <thread>
 
 namespace ws {

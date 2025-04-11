@@ -111,6 +111,7 @@ std::string MessageRenderer::FormatTimestamp(
                 &localTime);
   std::string timeStr(timeBuffer);
   if (include_ms) {
+    // TODO: DONT USE SSTREAM
     std::ostringstream oss;
     oss << timeStr << std::setfill('0') << std::setw(3) << ms.count();
     return oss.str();
