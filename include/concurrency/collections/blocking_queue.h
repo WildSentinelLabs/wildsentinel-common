@@ -175,7 +175,7 @@ class BlockingQueue {
 
   size_type Capacity() const { return capacity_; }
 
-  _GLIBCXX_NODISCARD bool Empty() const { return queue_rep_ptr_->Empty(); }
+  [[nodiscard]] bool Empty() const { return queue_rep_ptr_->Empty(); }
 
   void Clear() { queue_rep_ptr_->Clear(allocator_); }
 
@@ -368,10 +368,12 @@ class blocking_queue {
   blocking_queue(blocking_queue&& other, const allocator_type& alloc) noexcept
       : internal_instance_(std::move(other.internal_instance_), alloc) {}
 
-  _GLIBCXX_NODISCARD bool empty() const { return internal_instance_.Empty(); }
+  [[nodiscard]] bool empty() const { return internal_instance_.Empty(); }
 
-  _GLIBCXX_NODISCARD
-  size_type size() const { return internal_instance_.UnsafeSize(); }
+  [[nodiscard]]
+  size_type size() const {
+    return internal_instance_.UnsafeSize();
+  }
 
   bool try_push(const value_type& __x) {
     return internal_instance_.TryPush(__x);

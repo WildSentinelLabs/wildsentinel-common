@@ -40,7 +40,7 @@ class NodeHandleBase {
     nh.node_ = nullptr;
   }
 
-  _GLIBCXX_NODISCARD bool Empty() const { return node_ == nullptr; }
+  [[nodiscard]] bool Empty() const { return node_ == nullptr; }
   explicit operator bool() const { return node_ != nullptr; }
 
   ~NodeHandleBase() { InternalDestroy(); }

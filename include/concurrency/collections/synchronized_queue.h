@@ -156,9 +156,9 @@ class synchronized_queue {
   synchronized_queue(synchronized_queue&& other) noexcept
       : internal_instance_(std::move(other.internal_instance_)) {}
 
-  _GLIBCXX_NODISCARD bool empty() const { return internal_instance_.Empty(); }
+  [[nodiscard]] bool empty() const { return internal_instance_.Empty(); }
 
-  _GLIBCXX_NODISCARD size_type size() const {
+  [[nodiscard]] size_type size() const {
     return internal_instance_.UnsafeSize();
   }
 

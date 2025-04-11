@@ -290,7 +290,7 @@ class concurrent_unordered_set {
     return internal_instance_.get_allocator();
   }
 
-  _GLIBCXX_NODISCARD bool empty() const noexcept {
+  [[nodiscard]] bool empty() const noexcept {
     return internal_instance_.Empty();
   }
 

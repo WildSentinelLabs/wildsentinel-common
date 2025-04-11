@@ -34,17 +34,38 @@ inline constexpr std::size_t kMaxNfsSizeExp = 7;
 static_assert(1 << kMaxNfsSizeExp == kMaxNfsSize,
               "kMaxNfsSizeExp must be a log2(kMaxNfsSize)");
 
-inline const std::size_t CpuLineSize() {
+inline std::size_t CpuLineSize() {
 #if defined(_WIN32)
+  DWORD bufferSize = 0;
+  GetLogicalProcessorInformation(nullptr, &bufferSize);
+  if (bufferSize == 0) return kMaxNfsSize;
 
-  DWORD buffer_size = 0;
-  SYSTEM_LOGICAL_PROCESSOR_INFORMATION info;
-  GetLogicalProcessorInformation(&info, &buffer_size);
-  return info.Cache.LineSize ? info.Cache.LineSize : kMaxNfsSize;
+  auto buffer = std::make_unique<char[]>(bufferSize);
+  PSYSTEM_LOGICAL_PROCESSOR_INFORMATION info =
+      reinterpret_cast<PSYSTEM_LOGICAL_PROCESSOR_INFORMATION>(buffer.get());
+
+  if (GetLogicalProcessorInformation(info, &bufferSize) == FALSE)
+    return kMaxNfsSize;
+
+  std::size_t lineSize = 0;
+  DWORD entryCount = bufferSize / sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION);
+  for (DWORD i = 0; i < entryCount; ++i) {
+    if (info[i].Relationship == RelationCache && info[i].Cache.Level == 1) {
+      lineSize = info[i].Cache.LineSize;
+      break;
+    }
+  }
+  return (lineSize > 0) ? lineSize : kMaxNfsSize;
+#elif defined(__APPLE__)
+  std::size_t lineSize = 0;
+  std::size_t size = sizeof(lineSize);
+  if (sysctlbyname("hw.cachelinesize", &lineSize, &size, nullptr, 0) == 0)
+    return lineSize;
+  else
+    return kMaxNfsSize;
 #else
-
-  long size = sysconf(_SC_LEVEL1_DCACHE_LINESIZE);
-  return (size > 0) ? static_cast<std::size_t>(size) : kMaxNfsSize;
+  long value = sysconf(_SC_LEVEL1_DCACHE_LINESIZE);
+  return (value > 0) ? static_cast<std::size_t>(value) : kMaxNfsSize;
 #endif
 }
 

@@ -130,7 +130,7 @@ class ConcurrentQueue {
     return size < 0 ? 0 : size_type(size);
   }
 
-  _GLIBCXX_NODISCARD bool Empty() const { return queue_rep_ptr->Empty(); }
+  [[nodiscard]] bool Empty() const { return queue_rep_ptr->Empty(); }
 
   void Clear() { queue_rep_ptr->Clear(allocator_); }
 
@@ -232,10 +232,12 @@ class concurrent_queue {
                    const allocator_type& alloc) noexcept
       : internal_instance_(std::move(other.internal_instance_), alloc) {}
 
-  _GLIBCXX_NODISCARD bool empty() const { return internal_instance_.Empty(); }
+  [[nodiscard]] bool empty() const { return internal_instance_.Empty(); }
 
-  _GLIBCXX_NODISCARD
-  size_type size() const { return internal_instance_.UnsafeSize(); }
+  [[nodiscard]]
+  size_type size() const {
+    return internal_instance_.UnsafeSize();
+  }
 
   void push(const value_type& __x) { internal_instance_.Push(__x); }
 

@@ -387,7 +387,7 @@ class ConcurrentUnorderedBase {
     }
   }
 
-  _GLIBCXX_NODISCARD bool Empty() const noexcept { return Size() == 0; }
+  [[nodiscard]] bool Empty() const noexcept { return Size() == 0; }
 
   allocator_type get_allocator() const noexcept {
     return segments_.get_allocator();
