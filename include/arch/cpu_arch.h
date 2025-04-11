@@ -57,12 +57,8 @@ inline std::size_t CpuLineSize() {
   }
   return (lineSize > 0) ? lineSize : kMaxNfsSize;
 #elif defined(__APPLE__)
-  std::size_t lineSize = 0;
-  std::size_t size = sizeof(lineSize);
-  if (sysctlbyname("hw.cachelinesize", &lineSize, &size, nullptr, 0) == 0)
-    return lineSize;
-  else
-    return kMaxNfsSize;
+  // TODO: FIX IN APPLE
+  return kMaxNfsSize;
 #else
   long value = sysconf(_SC_LEVEL1_DCACHE_LINESIZE);
   return (value > 0) ? static_cast<std::size_t>(value) : kMaxNfsSize;
