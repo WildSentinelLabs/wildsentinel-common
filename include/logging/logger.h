@@ -3,8 +3,10 @@
 #include <atomic>
 #include <future>
 #include <memory>
+#include <mutex>
 #include <thread>
 #include <unordered_map>
+#include <vector>
 
 #include "logging/events/log_event.h"
 #include "logging/ilog_enricher.h"
