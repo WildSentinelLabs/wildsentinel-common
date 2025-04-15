@@ -1,5 +1,6 @@
 #pragma once
 
+#include <format>
 #include <thread>
 
 #include "logging/events/log_event.h"

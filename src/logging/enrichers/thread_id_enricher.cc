@@ -12,9 +12,7 @@ void ThreadIdEnricher::Enrich(ws::logging::events::LogEvent& event) const {
 const std::string ThreadIdEnricher::kKey = "ThreadId";
 
 std::string GetCachedThreadId() {
-  auto id = std::this_thread::get_id();
-  auto hashed = std::hash<std::thread::id>{}(id);
-  return std::to_string(hashed);
+  return std::format("{}", std::this_thread::get_id());
 }
 
 }  // namespace enrichers
