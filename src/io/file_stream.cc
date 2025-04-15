@@ -5,7 +5,7 @@ namespace io {
 
 FileStream::FileStream()
     : file_handle_(FileHandle()),
-      position_(0),
+      position_(-1),
       append_start_(0),
       access_(static_cast<FileAccess>(0)) {}
 
@@ -49,6 +49,15 @@ FileStream::FileStream(const std::string& path, FileMode mode,
     file_handle_.Dispose();
     throw std::runtime_error("Failed to open file: " + std::string(e.what()));
   }
+}
+
+FileStream::FileStream(FileStream&& other) noexcept
+    : file_handle_(std::move(file_handle_)),
+      position_(other.position_),
+      append_start_(other.append_start_),
+      access_(other.access_) {
+  other.file_handle_ = FileHandle();
+  other.append_start_ = -1;
 }
 
 FileStream::~FileStream() { Dispose(); }
@@ -182,6 +191,20 @@ void FileStream::Dispose() {
   if (!file_handle_.IsClosed()) {
     file_handle_.Dispose();
   }
+}
+
+FileStream& FileStream::operator=(FileStream&& other) noexcept {
+  if (this != &other) {
+    file_handle_ = std::move(file_handle_);
+    position_ = other.position_;
+    append_start_ = other.append_start_;
+    access_ = other.access_;
+
+    other.file_handle_ = FileHandle();
+    other.append_start_ = -1;
+  }
+
+  return *this;
 }
 
 }  // namespace io

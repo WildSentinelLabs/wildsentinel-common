@@ -41,7 +41,9 @@ MemoryStream::MemoryStream(MemoryStream&& other) noexcept
       writable_(other.writable_),
       exposable_(other.exposable_),
       is_open_(other.is_open_) {
-  other = MemoryStream();
+  other.writable_ = false;
+  other.is_open_ = false;
+  other.exposable_ = false;
 }
 
 bool MemoryStream::CanSeek() { return is_open_; }
@@ -293,7 +295,9 @@ MemoryStream& MemoryStream::operator=(MemoryStream&& other) noexcept {
     expandable_ = other.expandable_;
     exposable_ = other.exposable_;
 
-    other = MemoryStream();
+    other.writable_ = false;
+    other.is_open_ = false;
+    other.exposable_ = false;
   }
 
   return *this;

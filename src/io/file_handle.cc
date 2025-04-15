@@ -39,8 +39,11 @@ FileHandle FileHandle::Open(const std::filesystem::path& full_path,
   DWORD creation_disposition = ParseCreationDisposition(mode, exists);
   DWORD desired_access = ParseDesiredAccess(access);
   DWORD share_mode = ParseShareMode(share);
+  DWORD flags_and_attributes = FILE_ATTRIBUTE_NORMAL;
+  flags_and_attributes |= SECURITY_SQOS_PRESENT;
+  flags_and_attributes |= SECURITY_ANONYMOUS;
   HANDLE h = CreateFileW(full_path.c_str(), desired_access, share_mode, nullptr,
-                         creation_disposition, FILE_ATTRIBUTE_NORMAL, nullptr);
+                         creation_disposition, flags_and_attributes, nullptr);
   if (h == nullptr || h == INVALID_HANDLE_VALUE) {
     throw std::runtime_error(
         "Failed to open file: CreateFileW returned INVALID_HANDLE_VALUE.");
@@ -187,7 +190,9 @@ offset_t FileHandle::FileLength() {
 
   LARGE_INTEGER file_size = {};
   if (!GetFileSizeEx(fd_, &file_size)) {
-    throw std::runtime_error("Error obtaining file size.");
+    DWORD err = GetLastError();
+    throw std::runtime_error("Error obtaining file size. Error code: " +
+                             std::to_string(err));
   }
 
   length_ = file_size.QuadPart;

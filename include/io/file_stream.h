@@ -30,6 +30,10 @@ class FileStream : public Stream {
   FileStream(const std::string& path, FileMode mode, FileAccess access,
              FileShare share, offset_t buffer_size);
 
+  FileStream(FileStream&& other) noexcept;
+
+  FileStream(const FileStream&) = delete;
+
   ~FileStream() override;
 
   std::string Name() const;
@@ -69,6 +73,10 @@ class FileStream : public Stream {
   void Close() override;
 
   void Dispose() override;
+
+  FileStream& operator=(const FileStream&) = delete;
+
+  FileStream& operator=(FileStream&& other) noexcept;
 
  private:
   static constexpr offset_t kDefaultBufferSize = 4096;
