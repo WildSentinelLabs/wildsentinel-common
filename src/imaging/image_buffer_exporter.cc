@@ -5,7 +5,7 @@ namespace imaging {
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 Array<T> ImageBufferExporter<T>::ExportToInterleavedBuffer(
     const Image& image, ws::imaging::pixel::PixelFormat pixel_format) {
-  if (!image.IsValid()) return Array<T>::Empty();
+  if (!image.IsValid()) return Array<T>();
 
   const ws::imaging::pixel::PixelFormatDetails* pixel_format_details =
       ws::imaging::pixel::PixelFormatConstraints::GetFormat(pixel_format);
@@ -13,14 +13,14 @@ Array<T> ImageBufferExporter<T>::ExportToInterleavedBuffer(
       (pixel_format_details->layout &
        ws::imaging::pixel::PixelLayoutFlag::kInterleaved) ==
           static_cast<ws::imaging::pixel::PixelLayoutFlag>(0))
-    return Array<T>::Empty();
+    return Array<T>();
 
   if (image.GetColorSpace() != pixel_format_details->color_space ||
       image.GetChromaSubsampling() !=
           pixel_format_details->chroma_subsampling ||
       image.NumComponents() != pixel_format_details->num_components ||
       image.HasAlpha() != pixel_format_details->HasAlpha()) {
-    return Array<T>::Empty();
+    return Array<T>();
   }
 
   const ImageComponent<T>* components[image.NumComponents()] = {nullptr};
@@ -56,21 +56,21 @@ Array<T> ImageBufferExporter<T>::ExportToInterleavedBuffer(
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 Array<T> ImageBufferExporter<T>::ExportToPlanarBuffer(
     const Image& image, ws::imaging::pixel::PixelFormat pixel_format) {
-  if (!image.IsValid()) return Array<T>::Empty();
+  if (!image.IsValid()) return Array<T>();
   const ws::imaging::pixel::PixelFormatDetails* pixel_format_details =
       ws::imaging::pixel::PixelFormatConstraints::GetFormat(pixel_format);
   if (!pixel_format_details ||
       (pixel_format_details->layout &
        ws::imaging::pixel::PixelLayoutFlag::kPlanar) ==
           static_cast<ws::imaging::pixel::PixelLayoutFlag>(0))
-    return Array<T>::Empty();
+    return Array<T>();
 
   if (image.GetColorSpace() != pixel_format_details->color_space ||
       image.GetChromaSubsampling() !=
           pixel_format_details->chroma_subsampling ||
       image.NumComponents() != pixel_format_details->num_components ||
       image.HasAlpha() != pixel_format_details->HasAlpha()) {
-    return Array<T>::Empty();
+    return Array<T>();
   }
 
   const ImageComponent<T>* components[image.NumComponents()] = {nullptr};

@@ -37,7 +37,7 @@ offset_t BufferStream::Position() {
 
 bool BufferStream::TryGetBuffer(Span<unsigned char>& buffer) const {
   if (!exposable_) {
-    buffer = Span<unsigned char>::Empty();
+    buffer = Span<unsigned char>();
     return false;
   }
 
@@ -139,7 +139,7 @@ void BufferStream::WriteTo(Stream& stream) {
 Array<unsigned char> BufferStream::ToArray() {
   EnsureNotClosed();
   offset_t count = length_ - origin_;
-  if (count == 0) return Array<unsigned char>::Empty();
+  if (count == 0) return Array<unsigned char>();
   Array<unsigned char> array(count);
   std::memcpy(array, buffer_ + origin_, count);
   return array;

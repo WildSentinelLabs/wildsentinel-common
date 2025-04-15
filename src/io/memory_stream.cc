@@ -6,7 +6,7 @@ MemoryStream::MemoryStream() : MemoryStream(0) {}
 
 MemoryStream::MemoryStream(offset_t capacity)
     : buffer_(capacity > 0 ? std::move(Array<unsigned char>(capacity))
-                           : Array<unsigned char>::Empty()),
+                           : Array<unsigned char>()),
       position_(0),
       length_(capacity),
       capacity_(length_),
@@ -67,7 +67,7 @@ offset_t MemoryStream::Capacity() const {
 
 bool MemoryStream::TryGetBuffer(Span<unsigned char>& buffer) const {
   if (!exposable_) {
-    buffer = Span<unsigned char>::Empty();
+    buffer = Span<unsigned char>();
     return false;
   }
 
@@ -103,7 +103,7 @@ void MemoryStream::SetCapacity(offset_t value) {
       if (length_ > 0) std::memcpy(new_buffer, buffer_, length_);
       buffer_ = std::move(new_buffer);
     } else {
-      buffer_ = std::move(Array<unsigned char>::Empty());
+      buffer_ = std::move(Array<unsigned char>());
     }
 
     capacity_ = value;
@@ -227,7 +227,7 @@ void MemoryStream::WriteByte(unsigned char value) {
 
 Array<unsigned char> MemoryStream::ToArray() {
   EnsureNotClosed();
-  if (length_ == 0) return Array<unsigned char>::Empty();
+  if (length_ == 0) return Array<unsigned char>();
   Array<unsigned char> array(length_);
   std::memcpy(array, buffer_, length_);
   return array;

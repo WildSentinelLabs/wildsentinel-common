@@ -1,6 +1,5 @@
 #pragma once
 
-#include <sstream>
 #include <thread>
 
 #include "logging/events/log_event.h"
@@ -20,8 +19,6 @@ class ThreadIdEnricher : public ILogEnricher {
  private:
   static const std::string kKey;
 };
-
-// TODO: DONT USE SSTREAM
 }  // namespace enrichers
 }  // namespace logging
 }  // namespace ws

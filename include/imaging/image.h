@@ -27,8 +27,6 @@ class Image {
 
   Image(const Image&) = delete;
 
-  static Image Empty();
-
   void LoadContext(const ImageContext& context);
 
   ImageContext Context() const;
@@ -48,6 +46,8 @@ class Image {
   ChromaSubsampling GetChromaSubsampling() const;
 
   bool HasAlpha() const;
+
+  bool Empty() const;
 
   bool IsValid() const;
 

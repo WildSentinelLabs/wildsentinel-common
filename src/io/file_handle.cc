@@ -129,7 +129,7 @@ offset_t FileHandle::Seek(FileHandle& handle, offset_t offset,
 void FileHandle::WriteAtOffset(FileHandle& handle,
                                ReadOnlySpan<unsigned char> buffer,
                                offset_t file_offset) {
-  if (buffer.IsEmpty()) return;
+  if (buffer.Empty()) return;
 
   OVERLAPPED overlapped = OverlappedForSyncHandle(handle, file_offset);
   DWORD num_bytes_written = 0;
@@ -377,7 +377,7 @@ offset_t FileHandle::Seek(FileHandle& handle, offset_t offset,
 void FileHandle::WriteAtOffset(FileHandle& handle,
                                ReadOnlySpan<unsigned char> buffer,
                                offset_t file_offset) {
-  if (buffer.IsEmpty()) return;
+  if (buffer.Empty()) return;
   ssize_t bytes_written =
       pwrite(handle.fd_, static_cast<const unsigned char*>(buffer),
              buffer.Length(), file_offset);

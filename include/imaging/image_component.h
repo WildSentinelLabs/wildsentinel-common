@@ -32,6 +32,8 @@ class IImageComponent {
 
   virtual bool IsAlpha() const = 0;
 
+  virtual bool Empty() const = 0;
+
   virtual bool IsValid() const = 0;
 
   virtual std::string ToString() const = 0;
@@ -51,8 +53,6 @@ class ImageComponent : public IImageComponent {
 
   ImageComponent(const ImageComponent&) = delete;
 
-  static ImageComponent Empty();
-
   const void* Buffer() const override;
 
   ImageBufferType GetBufferType() const override;
@@ -66,6 +66,8 @@ class ImageComponent : public IImageComponent {
   uint8_t BitDepth() const override;
 
   bool IsAlpha() const override;
+
+  bool Empty() const override;
 
   bool IsValid() const override;
 

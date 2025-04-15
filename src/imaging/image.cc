@@ -3,7 +3,7 @@ namespace ws {
 namespace imaging {
 
 Image::Image()
-    : components_(Array<std::unique_ptr<IImageComponent>>::Empty()),
+    : components_(Array<std::unique_ptr<IImageComponent>>()),
       context_(ImageContext()),
       width_(0),
       height_(0),
@@ -32,15 +32,13 @@ Image::Image(Image&& other) noexcept
       height_(other.height_),
       color_space_(other.color_space_),
       chroma_subsampling_(other.chroma_subsampling_) {
-  other.components_ = Array<std::unique_ptr<IImageComponent>>::Empty();
+  other.components_ = Array<std::unique_ptr<IImageComponent>>();
   other.context_ = ImageContext();
   other.width_ = 0;
   other.height_ = 0;
   other.color_space_ = ColorSpace::kUnsupported;
   other.chroma_subsampling_ = ChromaSubsampling::kUnsupported;
 }
-
-Image Image::Empty() { return Image(); }
 
 void Image::LoadContext(const ImageContext& context) {
   context_.Clear();
@@ -84,15 +82,21 @@ bool Image::HasAlpha() const {
   return false;
 }
 
+bool Image::Empty() const { return components_.Empty(); }
+
 bool Image::IsValid() const {
-  bool result = !(components_.IsEmpty() || width_ == 0 || height_ == 0 ||
-                  color_space_ == ColorSpace::kUnsupported ||
-                  chroma_subsampling_ == ChromaSubsampling::kUnsupported);
+  if (components_.Empty() || width_ == 0 || height_ == 0 ||
+      color_space_ == ColorSpace::kUnsupported ||
+      chroma_subsampling_ == ChromaSubsampling::kUnsupported)
+    return false;
+
   for (uint8_t c = 0; c < components_.Length(); ++c) {
-    result = result && components_[c]->IsValid();
+    if (!components_[c] || !components_[c]->IsValid()) {
+      return false;
+    }
   }
 
-  return result;
+  return true;
 }
 
 std::string Image::ToString() const {
@@ -119,7 +123,7 @@ Image& Image::operator=(Image&& other) noexcept {
     color_space_ = other.color_space_;
     chroma_subsampling_ = other.chroma_subsampling_;
 
-    other.components_ = Array<std::unique_ptr<IImageComponent>>::Empty();
+    other.components_ = Array<std::unique_ptr<IImageComponent>>();
     other.context_ = ImageContext();
     other.width_ = 0;
     other.height_ = 0;

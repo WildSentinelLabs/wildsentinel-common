@@ -42,7 +42,7 @@ const PixelFormatDetails* PixelFormatConstraints::GetFormat(
 Array<Point> PixelFormatConstraints::GetDimensions(
     uint32_t width, uint32_t height, uint8_t num_components,
     ChromaSubsampling chroma_subsampling, bool has_alpha) {
-  if (num_components < 1) return Array<Point>::Empty();
+  if (num_components < 1) return Array<Point>();
   Array<Point> dimensions(num_components);
   uint8_t num_comps = num_components;
   if (has_alpha && num_components > 1) {
@@ -120,7 +120,7 @@ Array<Point> PixelFormatConstraints::GetDimensions(
       throw std::invalid_argument("Unsupported chroma subsampling.");
   }
 
-  return Array<Point>::Empty();
+  return Array<Point>();
 }
 }  // namespace pixel
 }  // namespace imaging

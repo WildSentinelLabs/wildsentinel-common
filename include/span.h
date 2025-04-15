@@ -43,11 +43,9 @@ struct Span {
            "Specified range exceeds the original span's boundaries");
   }
 
-  constexpr static Span<T> Empty() { return Span<T>(); }
-
   constexpr std::size_t Length() const { return length; }
 
-  constexpr bool IsEmpty() const { return length == 0; }
+  constexpr bool Empty() const { return length == 0; }
 
   constexpr T& operator[](std::size_t index) {
     assert(index < length && "Array index out of range");
@@ -140,11 +138,9 @@ struct ReadOnlySpan {
            "Specified range exceeds the original span's boundaries");
   }
 
-  constexpr static ReadOnlySpan<T> Empty() { return ReadOnlySpan<T>(); }
-
   constexpr std::size_t Length() const { return length; }
 
-  constexpr bool IsEmpty() const { return length == 0; }
+  constexpr bool Empty() const { return length == 0; }
 
   constexpr const T& operator[](std::size_t index) const {
     assert(index < length && "Array index out of range");

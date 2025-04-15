@@ -4,7 +4,7 @@ namespace imaging {
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 ImageComponent<T>::ImageComponent()
-    : buffer_(Array<T>::Empty()),
+    : buffer_(Array<T>()),
       buffer_type_(ImageBufferType::kUnknown),
       width_(0),
       height_(0),
@@ -33,17 +33,12 @@ ImageComponent<T>::ImageComponent(ImageComponent<T>&& other) noexcept
       height_(other.height_),
       bit_depth_(other.bit_depth_),
       is_alpha_(other.is_alpha_) {
-  other.buffer_ = Array<T>::Empty();
+  other.buffer_ = Array<T>();
   other.buffer_type_ = ImageBufferType::kUnknown;
   other.width_ = 0;
   other.height_ = 0;
   other.bit_depth_ = 0;
   other.is_alpha_ = false;
-}
-
-template <ws::imaging::pixel::IsAllowedPixelNumericType T>
-ImageComponent<T> ImageComponent<T>::Empty() {
-  return ImageComponent<T>();
 }
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
@@ -77,8 +72,13 @@ bool ImageComponent<T>::IsAlpha() const {
 }
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
+bool ImageComponent<T>::Empty() const {
+  return buffer_.Empty();
+}
+
+template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 bool ImageComponent<T>::IsValid() const {
-  return !(buffer_.IsEmpty() || width_ == 0 || height_ == 0 || bit_depth_ == 0);
+  return !buffer_.Empty() && width_ != 0 && height_ != 0 && bit_depth_ != 0;
 }
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
@@ -105,7 +105,7 @@ ImageComponent<T>& ImageComponent<T>::operator=(
     bit_depth_ = other.bit_depth_;
     is_alpha_ = other.is_alpha_;
 
-    other.buffer_ = Array<T>::Empty();
+    other.buffer_ = Array<T>();
     other.buffer_type_ = ImageBufferType::kUnknown;
     other.width_ = 0;
     other.height_ = 0;

@@ -10,14 +10,14 @@ Image ImageBufferLoader<T>::LoadFromInterleavedBuffer(
       (pixel_format_details->layout &
        ws::imaging::pixel::PixelLayoutFlag::kInterleaved) ==
           static_cast<ws::imaging::pixel::PixelLayoutFlag>(0))
-    return Image::Empty();
+    return Image();
 
   Array<Point> dimensions =
       ws::imaging::pixel::PixelFormatConstraints::GetDimensions(
           width, height, pixel_format_details->num_components,
           pixel_format_details->chroma_subsampling,
           pixel_format_details->HasAlpha());
-  if (dimensions.IsEmpty()) return Image::Empty();
+  if (dimensions.Empty()) return Image();
 
   Array<T> comps_buffer[pixel_format_details->num_components];
   for (uint8_t i = 0; i < pixel_format_details->components_order.Length();
@@ -59,7 +59,7 @@ template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 Image ImageBufferLoader<T>::LoadFromInterleavedBuffer(
     ReadOnlySpan<T> buffer, uint32_t width, uint32_t height, uint8_t bit_depth,
     const ws::imaging::pixel::PixelFormat pixel_format) {
-  if (buffer.IsEmpty() || width == 0 || height == 0) return Image::Empty();
+  if (buffer.Empty() || width == 0 || height == 0) return Image();
 
   const ws::imaging::pixel::PixelFormatDetails* pixel_format_details =
       ws::imaging::pixel::PixelFormatConstraints::GetFormat(pixel_format);
@@ -67,7 +67,7 @@ Image ImageBufferLoader<T>::LoadFromInterleavedBuffer(
       (pixel_format_details->layout &
        ws::imaging::pixel::PixelLayoutFlag::kInterleaved) ==
           static_cast<ws::imaging::pixel::PixelLayoutFlag>(0))
-    return Image::Empty();
+    return Image();
 
   return ImageBufferLoader<T>::LoadFromInterleavedBuffer(
       buffer, width, height, bit_depth, pixel_format_details);
@@ -81,14 +81,14 @@ Image ImageBufferLoader<T>::LoadFromPlanarBuffer(
       (pixel_format_details->layout &
        ws::imaging::pixel::PixelLayoutFlag::kPlanar) ==
           static_cast<ws::imaging::pixel::PixelLayoutFlag>(0))
-    return Image::Empty();
+    return Image();
 
   Array<Point> dimensions =
       ws::imaging::pixel::PixelFormatConstraints::GetDimensions(
           width, height, pixel_format_details->num_components,
           pixel_format_details->chroma_subsampling,
           pixel_format_details->HasAlpha());
-  if (dimensions.IsEmpty()) return Image::Empty();
+  if (dimensions.Empty()) return Image();
 
   Array<std::unique_ptr<IImageComponent>> components(
       pixel_format_details->num_components);
@@ -115,7 +115,7 @@ template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 Image ImageBufferLoader<T>::LoadFromPlanarBuffer(
     ReadOnlySpan<T> buffer, uint32_t width, uint32_t height, uint8_t bit_depth,
     const ws::imaging::pixel::PixelFormat pixel_format) {
-  if (buffer.IsEmpty() || width == 0 || height == 0) return Image::Empty();
+  if (buffer.Empty() || width == 0 || height == 0) return Image();
 
   const ws::imaging::pixel::PixelFormatDetails* pixel_format_details =
       ws::imaging::pixel::PixelFormatConstraints::GetFormat(pixel_format);
@@ -123,7 +123,7 @@ Image ImageBufferLoader<T>::LoadFromPlanarBuffer(
       (pixel_format_details->layout &
        ws::imaging::pixel::PixelLayoutFlag::kPlanar) ==
           static_cast<ws::imaging::pixel::PixelLayoutFlag>(0))
-    return Image::Empty();
+    return Image();
 
   return LoadFromPlanarBuffer(buffer, width, height, bit_depth,
                               pixel_format_details);

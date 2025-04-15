@@ -41,11 +41,9 @@ struct Array {
 
   Array(const Array&) = delete;
 
-  static Array<T> Empty() { return Array<T>(); }
-
   std::size_t Length() const { return length; }
 
-  bool IsEmpty() const { return length == 0; }
+  bool Empty() const { return length == 0; }
 
   Array& operator=(const Array&) = delete;
 
