@@ -44,6 +44,9 @@ message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 # Global position independent code setting
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+# Configure force no exception
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -fno-asynchronous-unwind-tables -fno-rtti")
+
 # Configure flags based on build type
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     message(STATUS "Using Debug configuration")

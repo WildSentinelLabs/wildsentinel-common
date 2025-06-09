@@ -124,16 +124,6 @@ inline void AlignedDeallocate(void* p) {
 #endif
 }
 
-inline void* AllocateMemory(std::size_t size) {
-  void* result = std::malloc(size);
-  if (!result) throw std::bad_alloc();
-  return result;
-}
-
-inline void DeallocateMemory(void* p) {
-  if (p) std::free(p);
-}
-
 namespace gnu_builtins {
 inline std::uintptr_t Clz(unsigned int x) {
   return static_cast<std::uintptr_t>(__builtin_clz(x));

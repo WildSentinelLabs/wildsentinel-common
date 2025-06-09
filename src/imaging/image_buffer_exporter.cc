@@ -30,7 +30,7 @@ Array<T> ImageBufferExporter<T>::ExportToInterleavedBuffer(
     uint8_t c = pixel_format_details->components_order[i];
     if (components[c]) continue;
     components[c] =
-        dynamic_cast<const ImageComponent<T>*>(image.GetComponent(c));
+        static_cast<const ImageComponent<T>*>(image.GetComponent(c));
     image_size += components[c]->Length();
   }
 
@@ -69,9 +69,8 @@ Array<T> ImageBufferExporter<T>::ExportToPlanarBuffer(
       image.GetChromaSubsampling() !=
           pixel_format_details->chroma_subsampling ||
       image.NumComponents() != pixel_format_details->num_components ||
-      image.HasAlpha() != pixel_format_details->HasAlpha()) {
+      image.HasAlpha() != pixel_format_details->HasAlpha())
     return Array<T>();
-  }
 
   const ImageComponent<T>* components[image.NumComponents()] = {nullptr};
   size_t image_size = 0;
@@ -80,7 +79,7 @@ Array<T> ImageBufferExporter<T>::ExportToPlanarBuffer(
     uint8_t c = pixel_format_details->components_order[i];
     if (components[c]) continue;
     components[c] =
-        dynamic_cast<const ImageComponent<T>*>(image.GetComponent(c));
+        static_cast<const ImageComponent<T>*>(image.GetComponent(c));
     image_size += components[c]->Length();
   }
 

@@ -23,7 +23,7 @@ add_library(wscommon SHARED
 # Include directories for wscommon library
 target_include_directories(wscommon
     PUBLIC
-        ${WSCOMMON_SOURCE_DIR}/include
+        ${WSCOMMON_SOURCE_DIR}/src
 )
 
 set_target_properties(wscommon PROPERTIES
@@ -44,7 +44,7 @@ install(TARGETS wscommon
 )
 
 # Install public headers
-file(GLOB INCLUDE_BASE_FILES ${WSCOMMON_SOURCE_DIR}/include/*.h)
+file(GLOB INCLUDE_BASE_FILES ${WSCOMMON_SOURCE_DIR}/src/*.h)
 install(FILES
     ${INCLUDE_BASE_FILES}
     DESTINATION include
@@ -52,17 +52,17 @@ install(FILES
 
 install(
     DIRECTORY
-        ${WSCOMMON_SOURCE_DIR}/include/arch
-        ${WSCOMMON_SOURCE_DIR}/include/concurrency
-        ${WSCOMMON_SOURCE_DIR}/include/io
-        ${WSCOMMON_SOURCE_DIR}/include/threading
+        ${WSCOMMON_SOURCE_DIR}/src/arch
+        ${WSCOMMON_SOURCE_DIR}/src/concurrency
+        ${WSCOMMON_SOURCE_DIR}/src/io
+        ${WSCOMMON_SOURCE_DIR}/src/threading
     DESTINATION include
 )
 
 if (WSCOMMON_BUILD_IMAGING)
     install(
         DIRECTORY
-            ${WSCOMMON_SOURCE_DIR}/include/imaging
+            ${WSCOMMON_SOURCE_DIR}/src/imaging
         DESTINATION include
     )
 endif()
@@ -70,7 +70,7 @@ endif()
 if (WSCOMMON_BUILD_LOGGING)
     install(
         DIRECTORY
-            ${WSCOMMON_SOURCE_DIR}/include/logging
+            ${WSCOMMON_SOURCE_DIR}/src/logging
         DESTINATION include
     )
 endif()
@@ -78,7 +78,7 @@ endif()
 if (WSCOMMON_BUILD_POOLING)
     install(
         DIRECTORY
-            ${WSCOMMON_SOURCE_DIR}/include/pooling
+            ${WSCOMMON_SOURCE_DIR}/src/pooling
         DESTINATION include
     )
 endif()

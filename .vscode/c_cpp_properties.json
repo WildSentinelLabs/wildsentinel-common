@@ -1,10 +1,6 @@
 {
   "env": {
-    "myIncludePath": [
-      "${default}",
-      "${workspaceFolder}/src",
-      "${workspaceFolder}/include"
-    ],
+    "myIncludePath": ["${default}", "${workspaceFolder}/src"],
     "myDefines": ["DEBUG", "MY_FEATURE=1"]
   },
   "configurations": [
