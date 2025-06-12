@@ -11,83 +11,50 @@
 #include "imaging/image_buffer_type.h"
 #include "imaging/pixel/pixel_allowed_types.h"
 #include "span.h"
+#include "types.h"
 namespace ws {
 namespace imaging {
 
-class IImageComponent {
+class ImageComponent {
  public:
-  ~IImageComponent() = default;
+  template <ws::imaging::pixel::IsAllowedPixelNumericType T>
+  static ImageComponent Create(uint32_t width, offset_t length,
+                               uint8_t bit_depth, bool is_alpha = false);
 
-  virtual const void* Buffer() const = 0;
-
-  virtual ImageBufferType GetBufferType() const = 0;
-
-  virtual uint32_t Width() const = 0;
-
-  virtual uint32_t Height() const = 0;
-
-  virtual size_t Length() const = 0;
-
-  virtual uint8_t BitDepth() const = 0;
-
-  virtual bool IsAlpha() const = 0;
-
-  virtual bool Empty() const = 0;
-
-  virtual bool IsValid() const = 0;
-
-  virtual std::string ToString() const = 0;
-};
-
-template <ws::imaging::pixel::IsAllowedPixelNumericType T>
-class ImageComponent : public IImageComponent {
- public:
   ImageComponent();
-
-  ImageComponent(Array<T>&& buffer, uint32_t width, uint32_t height,
-                 uint8_t bit_depth, bool is_alpha = false);
-
-  ~ImageComponent() = default;
-
-  ImageComponent(ImageComponent&& other) noexcept;
-
   ImageComponent(const ImageComponent&) = delete;
-
-  const void* Buffer() const override;
-
-  ImageBufferType GetBufferType() const override;
-
-  uint32_t Width() const override;
-
-  uint32_t Height() const override;
-
-  size_t Length() const override;
-
-  uint8_t BitDepth() const override;
-
-  bool IsAlpha() const override;
-
-  bool Empty() const override;
-
-  bool IsValid() const override;
-
-  std::string ToString() const override;
-
+  ImageComponent(ImageComponent&& other) noexcept;
   ImageComponent& operator=(const ImageComponent&) = delete;
-
   ImageComponent& operator=(ImageComponent&& other) noexcept;
 
-  const T& operator[](std::size_t index) const;
+  ~ImageComponent();
 
-  operator const T*() const;
+  uint32_t Width() const;
+  size_t Length() const;
+  uint8_t BitDepth() const;
+  bool IsAlpha() const;
+  bool Empty() const;
+  bool IsValid() const;
+  std::string ToString() const;
+  ImageBufferType GetBufferType() const;
+  template <ws::imaging::pixel::IsAllowedPixelNumericType T>
+  T* Buffer() const;
+  template <ws::imaging::pixel::IsAllowedPixelNumericType T>
+  operator T*() const;
 
  private:
-  Array<T> buffer_;
-  ImageBufferType buffer_type_;
+  ImageComponent(void* buffer, uint32_t width, offset_t length,
+                 uint8_t bit_depth, bool is_alpha, ImageBufferType type);
+
+  void FreeBuffer();
+  void Dispose();
+
+  void* buffer_;
   uint32_t width_;
-  uint32_t height_;
+  offset_t length_;
   uint8_t bit_depth_;
   bool is_alpha_;
+  ImageBufferType buffer_type_;
 };
 }  // namespace imaging
 }  // namespace ws

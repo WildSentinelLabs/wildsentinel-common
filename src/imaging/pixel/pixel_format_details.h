@@ -19,7 +19,7 @@ struct PixelFormatDetails {
   ReadOnlySpan<uint8_t> components_order;
   int8_t alpha_index;
   PixelLayoutFlag layout;
-  bool common_order;
+  bool has_common_order;
 
   bool HasAlpha() const;
 };

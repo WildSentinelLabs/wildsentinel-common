@@ -6,68 +6,76 @@ template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 Image ImageBufferLoader<T>::LoadFromInterleavedBuffer(
     ReadOnlySpan<T> buffer, uint32_t width, uint32_t height, uint8_t bit_depth,
     const ws::imaging::pixel::PixelFormatDetails* pixel_format_details) {
-  if (!pixel_format_details ||
-      (pixel_format_details->layout &
+  if (width == 0) throw std::invalid_argument("Width must be greater than 0");
+  if (height == 0) throw std::invalid_argument("Height must be greater than 0");
+  if (buffer.Empty()) throw std::invalid_argument("Buffer must not be empty");
+  if (DetermineImageBufferType(bit_depth) != ImageBufferTypeOf<T>::value)
+    throw std::invalid_argument("Bit depth does not match buffer type");
+
+  if (!pixel_format_details)
+    throw std::invalid_argument("Pixel format details must not be null");
+
+  if ((pixel_format_details->layout &
        ws::imaging::pixel::PixelLayoutFlag::kInterleaved) ==
-          static_cast<ws::imaging::pixel::PixelLayoutFlag>(0))
-    return Image();
+      static_cast<ws::imaging::pixel::PixelLayoutFlag>(0))
+    throw std::invalid_argument(
+        "Pixel format details must indicate interleaved layout");
 
   Array<Point> dimensions =
       ws::imaging::pixel::PixelFormatConstraints::GetDimensions(
           width, height, pixel_format_details->num_components,
           pixel_format_details->chroma_subsampling,
           pixel_format_details->HasAlpha());
-  if (dimensions.Empty()) return Image();
+  if (dimensions.Empty())
+    throw std::invalid_argument(
+        "Unsupported dimensions for the given pixel format");
 
-  Array<T> comps_buffer[pixel_format_details->num_components];
-  for (uint8_t i = 0; i < pixel_format_details->components_order.Length();
-       ++i) {
-    uint8_t c = pixel_format_details->components_order[i];
-    if (comps_buffer[c]) continue;
-    comps_buffer[c] = std::move(Array<T>(dimensions[c].x * dimensions[c].y));
+  ws::ReadOnlySpan<uint8_t> components_order =
+      pixel_format_details->components_order;
+  if (buffer.Length() % components_order.Length() != 0)
+    throw std::invalid_argument(
+        "Buffer length must be divisible by components order length");
+
+  size_t comps_index[pixel_format_details->num_components] = {0};
+  Array<ImageComponent> components(pixel_format_details->num_components);
+  T* comps_buffer_in_order[components_order.Length()];
+  size_t* comps_buffer_index_in_order[components_order.Length()];
+  for (uint8_t i = 0; i < components_order.Length(); ++i) {
+    uint8_t c = components_order[i];
+    if (components[c].Empty()) {
+      components[c] = std::move(ImageComponent::Create<T>(
+          static_cast<uint32_t>(dimensions[c].x),
+          dimensions[c].x * dimensions[c].y, bit_depth,
+          c == pixel_format_details->alpha_index));
+    }
+
+    comps_buffer_in_order[i] = components[c].Buffer<T>();
+    comps_buffer_index_in_order[i] = &comps_index[c];
   }
 
-  Array<std::unique_ptr<IImageComponent>> components(
-      pixel_format_details->num_components);
-  size_t offset = 0, comps_index[pixel_format_details->num_components];
-  for (size_t i = 0; i < pixel_format_details->num_components; i++) {
-    comps_index[i] = 0;
-  }
-
-  while (offset < buffer.Length()) {
-    for (uint8_t i = 0; i < pixel_format_details->components_order.Length();
-         i++) {
-      uint8_t c = pixel_format_details->components_order[i];
-      comps_buffer[c][comps_index[c]++] = buffer[offset];
-      offset++;
+  for (size_t offset = 0; offset < buffer.Length();
+       offset += components_order.Length()) {
+    for (uint8_t i = 0; i < components_order.Length(); ++i) {
+      comps_buffer_in_order[i][*comps_buffer_index_in_order[i]++] =
+          buffer[offset + i];
     }
   }
 
-  for (size_t i = 0; i < pixel_format_details->num_components; i++) {
-    uint8_t c = pixel_format_details->components_order[i];
-    components[c] = std::make_unique<ImageComponent<T>>(
-        std::move(comps_buffer[c]), dimensions[c].x, dimensions[c].y, bit_depth,
-        c == pixel_format_details->alpha_index);
-  }
-
-  return Image(std::move(components), width, height,
-               pixel_format_details->color_space,
-               pixel_format_details->chroma_subsampling);
+  return Image::Create(std::move(components), width, height,
+                       pixel_format_details->color_space,
+                       pixel_format_details->chroma_subsampling);
 }
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 Image ImageBufferLoader<T>::LoadFromInterleavedBuffer(
     ReadOnlySpan<T> buffer, uint32_t width, uint32_t height, uint8_t bit_depth,
     const ws::imaging::pixel::PixelFormat pixel_format) {
-  if (buffer.Empty() || width == 0 || height == 0) return Image();
-
   const ws::imaging::pixel::PixelFormatDetails* pixel_format_details =
       ws::imaging::pixel::PixelFormatConstraints::GetFormat(pixel_format);
-  if (!pixel_format_details ||
-      (pixel_format_details->layout &
-       ws::imaging::pixel::PixelLayoutFlag::kInterleaved) ==
-          static_cast<ws::imaging::pixel::PixelLayoutFlag>(0))
-    return Image();
+  if (!pixel_format_details)
+    throw std::invalid_argument(
+        "Unsupported pixel format " +
+        ws::imaging::pixel::PixelFormatToString(pixel_format));
 
   return ImageBufferLoader<T>::LoadFromInterleavedBuffer(
       buffer, width, height, bit_depth, pixel_format_details);
@@ -77,53 +85,64 @@ template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 Image ImageBufferLoader<T>::LoadFromPlanarBuffer(
     ReadOnlySpan<T> buffer, uint32_t width, uint32_t height, uint8_t bit_depth,
     const ws::imaging::pixel::PixelFormatDetails* pixel_format_details) {
-  if (!pixel_format_details ||
-      (pixel_format_details->layout &
+  if (width == 0) throw std::invalid_argument("Width must be greater than 0");
+  if (height == 0) throw std::invalid_argument("Height must be greater than 0");
+  if (buffer.Empty()) throw std::invalid_argument("Buffer must not be empty");
+  if (DetermineImageBufferType(bit_depth) != ImageBufferTypeOf<T>::value)
+    throw std::invalid_argument("Bit depth does not match buffer type");
+
+  if (!pixel_format_details)
+    throw std::invalid_argument("Pixel format details must not be null");
+
+  if ((pixel_format_details->layout &
        ws::imaging::pixel::PixelLayoutFlag::kPlanar) ==
-          static_cast<ws::imaging::pixel::PixelLayoutFlag>(0))
-    return Image();
+      static_cast<ws::imaging::pixel::PixelLayoutFlag>(0))
+    throw std::invalid_argument(
+        "Pixel format details must indicate planar layout");
 
   Array<Point> dimensions =
       ws::imaging::pixel::PixelFormatConstraints::GetDimensions(
           width, height, pixel_format_details->num_components,
           pixel_format_details->chroma_subsampling,
           pixel_format_details->HasAlpha());
-  if (dimensions.Empty()) return Image();
+  if (dimensions.Empty())
+    throw std::invalid_argument(
+        "Unsupported dimensions for the given pixel format");
 
-  Array<std::unique_ptr<IImageComponent>> components(
-      pixel_format_details->num_components);
-  size_t offset = 0;
-  for (size_t i = 0; i < pixel_format_details->components_order.Length(); i++) {
-    uint8_t c = pixel_format_details->components_order[i];
-    uint32_t comp_width = dimensions[c].x, comp_height = dimensions[c].y;
-    size_t comp_size = comp_width * comp_height;
-    Array<T> comp_buffer(comp_size);
-    std::memcpy(comp_buffer, static_cast<const T*>(buffer) + offset,
-                comp_size * sizeof(T));
-    components[c] = std::make_unique<ImageComponent<T>>(
-        std::move(comp_buffer), comp_width, comp_height, bit_depth,
-        c == pixel_format_details->alpha_index);
-    offset += comp_size;
+  ws::ReadOnlySpan<uint8_t> components_order =
+      pixel_format_details->components_order;
+  if (buffer.Length() % components_order.Length() != 0)
+    throw std::invalid_argument(
+        "Buffer length must be divisible by components order length");
+
+  Array<ImageComponent> components(pixel_format_details->num_components);
+  const T* buffer_ptr = static_cast<const T*>(buffer);
+  for (size_t i = 0; i < components_order.Length(); i++) {
+    uint8_t c = components_order[i];
+    components[c] =
+        ImageComponent::Create<T>(static_cast<uint32_t>(dimensions[c].x),
+                                  dimensions[c].x * dimensions[c].y, bit_depth,
+                                  c == pixel_format_details->alpha_index);
+    T* comp_buffer(components[c].Buffer<T>());
+    std::memcpy(comp_buffer, buffer_ptr, components[c].Length() * sizeof(T));
+    buffer_ptr += components[c].Length();
   }
 
-  return Image(std::move(components), width, height,
-               pixel_format_details->color_space,
-               pixel_format_details->chroma_subsampling);
+  return Image::Create(std::move(components), width, height,
+                       pixel_format_details->color_space,
+                       pixel_format_details->chroma_subsampling);
 }
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 Image ImageBufferLoader<T>::LoadFromPlanarBuffer(
     ReadOnlySpan<T> buffer, uint32_t width, uint32_t height, uint8_t bit_depth,
     const ws::imaging::pixel::PixelFormat pixel_format) {
-  if (buffer.Empty() || width == 0 || height == 0) return Image();
-
   const ws::imaging::pixel::PixelFormatDetails* pixel_format_details =
       ws::imaging::pixel::PixelFormatConstraints::GetFormat(pixel_format);
-  if (!pixel_format_details ||
-      (pixel_format_details->layout &
-       ws::imaging::pixel::PixelLayoutFlag::kPlanar) ==
-          static_cast<ws::imaging::pixel::PixelLayoutFlag>(0))
-    return Image();
+  if (!pixel_format_details)
+    throw std::invalid_argument(
+        "Unsupported pixel format " +
+        ws::imaging::pixel::PixelFormatToString(pixel_format));
 
   return LoadFromPlanarBuffer(buffer, width, height, bit_depth,
                               pixel_format_details);

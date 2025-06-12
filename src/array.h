@@ -13,33 +13,32 @@ struct Array {
   Array() : data(nullptr), length(0) {}
 
   Array(std::size_t length)
-      : data(length > 0 ? std::make_unique<T[]>(length) : nullptr),
-        length(length) {
+      : data(length > 0 ? new T[length] : nullptr), length(length) {
     assert((length == 0 || data != nullptr) &&
            "Data pointer must not be null if length > 0");
   }
 
   Array(std::initializer_list<T> init)
-      : data(init.size() > 0 ? std::make_unique<T[]>(init.size()) : nullptr),
+      : data(init.size() > 0 ? new T[init.size()] : nullptr),
         length(init.size()) {
     assert((init.size() == 0 || data != nullptr) &&
            "Data pointer must not be null if initializer list is non-empty");
-    std::copy(init.begin(), init.end(), data.get());
+    std::copy(init.begin(), init.end(), data);
   }
 
-  Array(std::unique_ptr<T[]>&& data, std::size_t length)
-      : data(std::move(data)), length(length) {
+  Array(T* data, std::size_t length) : data(data), length(length) {
     assert((length == 0 || this->data != nullptr) &&
-           "Unique_ptr data must not be null if length > 0");
+           "Raw pointer data must not be null if length > 0");
   }
 
-  Array(Array&& other) noexcept
-      : data(std::move(other.data)), length(other.length) {
+  Array(Array&& other) noexcept : data(other.data), length(other.length) {
     other.data = nullptr;
     other.length = 0;
   }
 
   Array(const Array&) = delete;
+
+  ~Array() { delete[] data; }
 
   std::size_t Length() const { return length; }
 
@@ -49,7 +48,9 @@ struct Array {
 
   Array& operator=(Array&& other) noexcept {
     if (this != &other) {
-      data = std::move(other.data);
+      delete[] data;
+
+      data = other.data;
       length = other.length;
 
       other.data = nullptr;
@@ -69,24 +70,24 @@ struct Array {
     return data[index];
   }
 
-  operator T*() { return data.get(); }
+  operator T*() { return data; }
 
-  operator const T*() const { return data.get(); }
+  operator const T*() const { return data; }
 
-  T* begin() { return data.get(); }
+  T* begin() { return data; }
 
-  T* end() { return data.get() + length; }
+  T* end() { return data + length; }
 
-  const T* begin() const { return data.get(); }
+  const T* begin() const { return data; }
 
-  const T* end() const { return data.get() + length; }
+  const T* end() const { return data + length; }
 
-  const T* cbegin() const { return data.get(); }
+  const T* cbegin() const { return data; }
 
-  const T* cend() const { return data.get() + length; }
+  const T* cend() const { return data + length; }
 
  private:
-  std::unique_ptr<T[]> data;
+  T* data;
   std::size_t length;
 
   template <typename TU>

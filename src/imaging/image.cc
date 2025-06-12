@@ -1,29 +1,42 @@
 #include "imaging/image.h"
 namespace ws {
 namespace imaging {
+Image Image::Create(Array<ImageComponent>&& components, uint32_t width,
+                    uint32_t height, ColorSpace color_space,
+                    ChromaSubsampling chroma_subsampling) {
+  if (components.Empty()) {
+    throw std::invalid_argument("Components array cannot be empty");
+  }
+
+  for (auto& component : components) {
+    if (!component.IsValid())
+      throw std::invalid_argument("Invalid image component");
+  }
+
+  if (width == 0) {
+    throw std::invalid_argument("Width must be greater than 0");
+  }
+  if (height == 0) {
+    throw std::invalid_argument("Height must be greater than 0");
+  }
+  if (color_space == ColorSpace::kUnsupported) {
+    throw std::invalid_argument("Color space cannot be unsupported");
+  }
+  if (chroma_subsampling == ChromaSubsampling::kUnsupported) {
+    throw std::invalid_argument("Chroma subsampling cannot be unsupported");
+  }
+
+  return Image(std::move(components), width, height, color_space,
+               chroma_subsampling);
+}
 
 Image::Image()
-    : components_(Array<std::unique_ptr<IImageComponent>>()),
+    : components_(Array<ImageComponent>()),
       context_(ImageContext()),
       width_(0),
       height_(0),
       color_space_(ColorSpace::kUnsupported),
       chroma_subsampling_(ChromaSubsampling::kUnsupported) {}
-
-Image::Image(Array<std::unique_ptr<IImageComponent>>&& components,
-             uint32_t width, uint32_t height, ColorSpace color_space,
-             ChromaSubsampling chroma_subsampling)
-    : components_(std::move(components)),
-      context_(ImageContext()),
-      width_(width),
-      height_(height),
-      color_space_(color_space),
-      chroma_subsampling_(chroma_subsampling) {
-  if (!IsValid())
-    throw std::invalid_argument(
-        "Invalid parameters: buffers, dimensions, and bit depth must be "
-        "non-null and non-zero");
-}
 
 Image::Image(Image&& other) noexcept
     : components_(std::move(other.components_)),
@@ -32,12 +45,32 @@ Image::Image(Image&& other) noexcept
       height_(other.height_),
       color_space_(other.color_space_),
       chroma_subsampling_(other.chroma_subsampling_) {
-  other.components_ = Array<std::unique_ptr<IImageComponent>>();
+  other.components_ = Array<ImageComponent>();
   other.context_ = ImageContext();
   other.width_ = 0;
   other.height_ = 0;
   other.color_space_ = ColorSpace::kUnsupported;
   other.chroma_subsampling_ = ChromaSubsampling::kUnsupported;
+}
+
+Image& Image::operator=(Image&& other) noexcept {
+  if (this != &other) {
+    components_ = std::move(other.components_);
+    context_ = std::move(other.context_);
+    width_ = other.width_;
+    height_ = other.height_;
+    color_space_ = other.color_space_;
+    chroma_subsampling_ = other.chroma_subsampling_;
+
+    other.components_ = Array<ImageComponent>();
+    other.context_ = ImageContext();
+    other.width_ = 0;
+    other.height_ = 0;
+    other.color_space_ = ColorSpace::kUnsupported;
+    other.chroma_subsampling_ = ChromaSubsampling::kUnsupported;
+  }
+
+  return *this;
 }
 
 void Image::LoadContext(const ImageContext& context) {
@@ -51,18 +84,11 @@ ImageContext Image::Context() const { return context_; }
 
 uint8_t Image::NumComponents() const { return components_.Length(); }
 
-const IImageComponent* Image::GetComponent(uint8_t comp_num) const {
-  return components_[comp_num].get();
+const ImageComponent& Image::GetComponent(uint8_t comp_num) const {
+  return components_[comp_num];
 }
 
-Array<const IImageComponent*> Image::Components() const {
-  Array<const IImageComponent*> components_array(components_.Length());
-  for (size_t i = 0; i < components_.Length(); i++) {
-    components_array[i] = components_[i].get();
-  }
-
-  return components_array;
-}
+const Array<ImageComponent>& Image::Components() const { return components_; }
 
 uint32_t Image::Width() const { return width_; }
 
@@ -75,8 +101,8 @@ ChromaSubsampling Image::GetChromaSubsampling() const {
 }
 
 bool Image::HasAlpha() const {
-  for (uint8_t c = 0; c < components_.Length(); c++) {
-    if (components_[c]->IsAlpha()) return true;
+  for (auto& component : components_) {
+    if (component.IsAlpha()) return true;
   }
 
   return false;
@@ -90,10 +116,8 @@ bool Image::IsValid() const {
       chroma_subsampling_ == ChromaSubsampling::kUnsupported)
     return false;
 
-  for (uint8_t c = 0; c < components_.Length(); ++c) {
-    if (!components_[c] || !components_[c]->IsValid()) {
-      return false;
-    }
+  for (auto& component : components_) {
+    if (!component.IsValid()) return false;
   }
 
   return true;
@@ -108,30 +132,20 @@ std::string Image::ToString() const {
 
   for (uint8_t c = 0; c < components_.Length(); ++c) {
     result += std::format(" Component {}: {}\n", static_cast<int>(c),
-                          components_[c]->ToString());
+                          components_[c].ToString());
   }
 
   return result;
 }
 
-Image& Image::operator=(Image&& other) noexcept {
-  if (this != &other) {
-    components_ = std::move(other.components_);
-    context_ = std::move(other.context_);
-    width_ = other.width_;
-    height_ = other.height_;
-    color_space_ = other.color_space_;
-    chroma_subsampling_ = other.chroma_subsampling_;
-
-    other.components_ = Array<std::unique_ptr<IImageComponent>>();
-    other.context_ = ImageContext();
-    other.width_ = 0;
-    other.height_ = 0;
-    other.color_space_ = ColorSpace::kUnsupported;
-    other.chroma_subsampling_ = ChromaSubsampling::kUnsupported;
-  }
-
-  return *this;
-}
+Image::Image(Array<ImageComponent>&& components, uint32_t width,
+             uint32_t height, ColorSpace color_space,
+             ChromaSubsampling chroma_subsampling)
+    : components_(std::move(components)),
+      context_(ImageContext()),
+      width_(width),
+      height_(height),
+      color_space_(color_space),
+      chroma_subsampling_(chroma_subsampling) {}
 }  // namespace imaging
 }  // namespace ws

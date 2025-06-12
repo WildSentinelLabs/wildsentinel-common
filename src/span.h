@@ -24,7 +24,7 @@ struct Span {
     assert(ptr != nullptr && "Pointer must not be null");
   }
 
-  Span(const Array<T>& arr) : data(arr.data.get()), length(arr.Length()) {}
+  Span(const Array<T>& arr) : data(arr.data), length(arr.Length()) {}
 
   Span(const Array<T>& arr, std::size_t start, std::size_t len)
       : data(arr.data.get() + start), length(len) {
