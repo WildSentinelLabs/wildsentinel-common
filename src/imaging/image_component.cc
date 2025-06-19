@@ -87,7 +87,7 @@ bool ImageComponent::IsValid() const {
 }
 
 std::string ImageComponent::ToString() const {
-  return std::format(
+  return Format(
       "ImageComponent<{}>( Length: {} Width: {} Bit Depth: {} Alpha: {} )",
       ImageBufferTypeToString(buffer_type_), length_, width_,
       static_cast<int>(bit_depth_), (is_alpha_ ? "True" : "False"));

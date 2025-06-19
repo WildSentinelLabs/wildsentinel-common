@@ -1,9 +1,9 @@
 #pragma once
 #include <atomic>
 #include <cstring>
-#include <format>
 
 #include "array.h"
+#include "format.h"
 #include "idisposable.h"
 #include "imaging/chroma_subsampling.h"
 #include "imaging/color_space.h"

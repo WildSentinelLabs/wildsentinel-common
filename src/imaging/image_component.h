@@ -4,9 +4,9 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
-#include <format>
 
 #include "array.h"
+#include "format.h"
 #include "idisposable.h"
 #include "imaging/image_buffer_type.h"
 #include "imaging/pixel/pixel_allowed_types.h"

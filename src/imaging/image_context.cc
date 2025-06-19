@@ -53,7 +53,7 @@ ImageContext::map_type::const_iterator ImageContext::end() const {
 std::string ImageContext::ToString() const {
   std::string result;
   for (const auto& [tag, value] : data) {
-    result += std::format("{}: {}\n", tag, value);
+    result += Format("{}: {}\n", tag, value);
   }
 
   return result;

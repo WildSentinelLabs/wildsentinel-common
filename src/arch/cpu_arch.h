@@ -221,10 +221,10 @@ inline void FormatConsoleOutput() {
 }
 
 inline int GetPid() {
-#ifdef _WIN32
-  return GetCurrentProcessId();
+#if defined(_WIN32)
+  return static_cast<int>(::GetCurrentProcessId());
 #else
-  return getpid();
+  return static_cast<int>(::getpid());
 #endif
 }
 

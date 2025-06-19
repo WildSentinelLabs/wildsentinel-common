@@ -111,7 +111,7 @@ std::string MessageRenderer::FormatTimestamp(
                 &localTime);
   std::string timeStr(timeBuffer);
   if (include_ms) {
-    return std::format("{}{:03}", timeStr, ms.count());
+    return Format("{}{:03}", timeStr, ms.count());
   }
 
   return timeStr;

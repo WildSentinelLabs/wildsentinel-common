@@ -1,8 +1,8 @@
 #pragma once
 
-#include <format>
 #include <thread>
 
+#include "format.h"
 #include "logging/events/log_event.h"
 #include "logging/ilog_enricher.h"
 namespace ws {

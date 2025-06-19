@@ -46,7 +46,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Configure force no exception
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -fno-asynchronous-unwind-tables -fno-rtti")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -fno-asynchronous-unwind-tables")
 
 # Configure flags based on build type
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -59,7 +59,6 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--strip-all")
 endif()
 
-# TODO: Remover std::format (use builder or fmt)
 # Global settings
 set(BUILD_THIRDPARTY ON)
 set(CMAKE_CXX_STANDARD 23)
