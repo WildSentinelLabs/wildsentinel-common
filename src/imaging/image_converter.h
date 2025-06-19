@@ -2,9 +2,11 @@
 #include <string>
 
 #include "imaging/image.h"
+#include "imaging/image_traits.h"
 #include "logging/enrichers/thread_id_enricher.h"
 #include "logging/ilogger.h"
 #include "logging/logger_configuration.h"
+
 namespace ws {
 namespace imaging {
 

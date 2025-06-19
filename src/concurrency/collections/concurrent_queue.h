@@ -6,8 +6,6 @@
 
 namespace ws {
 namespace concurrency {
-namespace collections {
-
 template <typename T, typename TAllocator = std::allocator<T>>
 class ConcurrentQueue {
   using allocator_traits_type = std::allocator_traits<TAllocator>;
@@ -37,17 +35,16 @@ class ConcurrentQueue {
         ws::concurrency::detail::CacheAlignedAllocate(
             sizeof(queue_representation_type)));
     queue_allocator_traits::construct(allocator_, queue_rep_ptr);
-    assert(ws::arch::detail::IsAligned(queue_rep_ptr,
-                                       ws::arch::detail::CacheLineSize()) &&
+    assert(ws::detail::IsAligned(queue_rep_ptr, ws::detail::CacheLineSize()) &&
            "alignment error");
-    assert(ws::arch::detail::IsAligned(&queue_rep_ptr->head_counter_,
-                                       ws::arch::detail::CacheLineSize()) &&
+    assert(ws::detail::IsAligned(&queue_rep_ptr->head_counter_,
+                                 ws::detail::CacheLineSize()) &&
            "alignment error");
-    assert(ws::arch::detail::IsAligned(&queue_rep_ptr->tail_counter_,
-                                       ws::arch::detail::CacheLineSize()) &&
+    assert(ws::detail::IsAligned(&queue_rep_ptr->tail_counter_,
+                                 ws::detail::CacheLineSize()) &&
            "alignment error");
-    assert(ws::arch::detail::IsAligned(&queue_rep_ptr->array_,
-                                       ws::arch::detail::CacheLineSize()) &&
+    assert(ws::detail::IsAligned(&queue_rep_ptr->array_,
+                                 ws::detail::CacheLineSize()) &&
            "alignment error");
   }
 
@@ -285,7 +282,5 @@ concurrent_queue(TContainer)
 #endif
 
 }  // namespace stl
-
-}  // namespace collections
 }  // namespace concurrency
 }  // namespace ws

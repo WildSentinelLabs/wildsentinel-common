@@ -7,7 +7,6 @@
 #include "imaging/pixel/pixel_color_converter.h"
 namespace ws {
 namespace imaging {
-namespace pixel {
 template <IsAllowedPixelNumericType T>
 class SRgbToCmykConverter : public PixelColorConverter<T> {
  public:
@@ -17,6 +16,5 @@ class SRgbToCmykConverter : public PixelColorConverter<T> {
 
   void ConvertWithAlpha(const Rgba<T>& rgba, Cmyka<T>& cmyka) const;
 };
-}  // namespace pixel
 }  // namespace imaging
 }  // namespace ws

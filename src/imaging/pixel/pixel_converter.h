@@ -13,7 +13,6 @@
 
 namespace ws {
 namespace imaging {
-namespace pixel {
 
 template <typename T>
 concept IsAllowedColorFormat =
@@ -33,6 +32,6 @@ class PixelConverter {
   template <IsAllowedColorFormat T1, IsAllowedColorFormat T2>
   void Convert(const T1& src, T2& dst) const;
 };
-}  // namespace pixel
+
 }  // namespace imaging
 }  // namespace ws

@@ -200,18 +200,18 @@ class split {};
 template <typename T>
 std::uintptr_t Log2(T in) {
   assert((in > 0) && "The logarithm of a non-positive value is undefined.");
-  return ws::arch::detail::CpuLog2(in);
+  return ws::detail::CpuLog2(in);
 }
 
 template <typename T>
 T ReverseBits(T src) {
-  return ws::arch::detail::CpuReverseBits(src);
+  return ws::detail::CpuReverseBits(src);
 }
 
 template <typename T>
 T ReverseNBits(T src, std::size_t n) {
   assert(n != 0 && "Reverse for 0 bits is undefined behavior.");
-  return ReverseBits(src) >> (ws::arch::detail::NumberOfBits<T>() - n);
+  return ReverseBits(src) >> (ws::detail::NumberOfBits<T>() - n);
 }
 
 }  // namespace detail

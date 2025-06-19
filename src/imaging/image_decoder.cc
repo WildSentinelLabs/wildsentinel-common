@@ -45,7 +45,7 @@ ImageDecoder& ImageDecoder::operator=(ImageDecoder&& other) noexcept {
 ws::logging::LoggerConfiguration ImageDecoder::logger_configuration_ =
     ws::logging::LoggerConfiguration()
         .SetMinimumLogLevel(ws::logging::LogLevel::kInformation)
-        .AddEnricher<ws::logging::enrichers::ThreadIdEnricher>()
+        .AddEnricher<ws::logging::ThreadIdEnricher>()
         .AddConsoleSink(
             ws::logging::LogLevel::kVerbose,
             "{Timestamp:%Y-%m-%d %X.%f} [{Level:u3}] - [ThreadId: {ThreadId}] "

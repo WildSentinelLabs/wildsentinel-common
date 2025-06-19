@@ -12,7 +12,6 @@
 
 namespace ws {
 namespace imaging {
-namespace pixel {
 
 // Component orders for each PixelFormat
 // Rgb and Rgba formats
@@ -247,6 +246,6 @@ class PixelFormatConstraints {
 };
 
 // TODO: Enhace pixel_format management and structures if needed
-}  // namespace pixel
+
 }  // namespace imaging
 }  // namespace ws

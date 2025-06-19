@@ -1,6 +1,4 @@
 #include "imaging/image_converter.h"
-
-#include "imaging/image_traits.h"
 namespace ws {
 namespace imaging {
 
@@ -76,7 +74,7 @@ ImageConverter& ImageConverter::operator=(ImageConverter&& other) noexcept {
 ws::logging::LoggerConfiguration ImageConverter::logger_configuration_ =
     ws::logging::LoggerConfiguration()
         .SetMinimumLogLevel(ws::logging::LogLevel::kInformation)
-        .AddEnricher<ws::logging::enrichers::ThreadIdEnricher>()
+        .AddEnricher<ws::logging::ThreadIdEnricher>()
         .AddConsoleSink(ws::logging::LogLevel::kVerbose,
                         "{Timestamp:%Y-%m-%d %X} [{Level:u3}] - "
                         "[ThreadId: {ThreadId}] "

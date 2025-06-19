@@ -42,8 +42,8 @@ LoggerConfiguration&& LoggerConfiguration::AddConsoleSink(
     LogLevel min_log_level, const std::string& template_format,
     bool enable_async) {
   std::unique_ptr<ILogSink> console_sink =
-      std::make_unique<ws::logging::sinks::ConsoleLogSink>(min_log_level,
-                                                           template_format);
+      std::make_unique<ws::logging::ConsoleLogSink>(min_log_level,
+                                                    template_format);
   AddSink(std::move(console_sink), enable_async);
   return std::move(*this);
 }

@@ -27,8 +27,7 @@ Logger::Logger(const std::string& source_context, LogLevel min_log_level,
 void Logger::Log(LogLevel level, const std::string& message) const {
   if (level < min_log_level_) return;
   std::unordered_map<std::string, std::string> properties = properties_;
-  ws::logging::events::LogEvent event(source_context_, message, level,
-                                      properties);
+  ws::logging::LogEvent event(source_context_, message, level, properties);
   for (auto& enricher : *enrichers_) {
     enricher->Enrich(event);
   }

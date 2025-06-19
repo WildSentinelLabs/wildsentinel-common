@@ -3,7 +3,6 @@
 
 namespace ws {
 namespace imaging {
-namespace pixel {
 template <typename T>
 struct Ya {
   static_assert(IsAllowedPixelComponentType<T>,
@@ -17,6 +16,5 @@ struct IsYaType : std::false_type {};
 
 template <IsAllowedPixelComponentType T>
 struct IsYaType<Ya<T>> : std::true_type {};
-}  // namespace pixel
 }  // namespace imaging
 }  // namespace ws

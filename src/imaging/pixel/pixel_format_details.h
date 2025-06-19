@@ -9,7 +9,6 @@
 
 namespace ws {
 namespace imaging {
-namespace pixel {
 
 struct PixelFormatDetails {
   PixelFormat pixel_format;
@@ -23,6 +22,6 @@ struct PixelFormatDetails {
 
   bool HasAlpha() const;
 };
-}  // namespace pixel
+
 }  // namespace imaging
 }  // namespace ws

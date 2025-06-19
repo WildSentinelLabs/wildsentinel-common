@@ -2,7 +2,6 @@
 
 namespace ws {
 namespace imaging {
-namespace pixel {
 template <IsAllowedPixelNumericType T>
 SRgbToSYccConverter<T>::SRgbToSYccConverter(uint8_t bit_depth)
     : PixelColorConverter<T>(bit_depth),
@@ -30,6 +29,5 @@ template class SRgbToSYccConverter<uint16_t>;
 template class SRgbToSYccConverter<int16_t>;
 template class SRgbToSYccConverter<uint32_t>;
 template class SRgbToSYccConverter<int32_t>;
-}  // namespace pixel
 }  // namespace imaging
 }  // namespace ws

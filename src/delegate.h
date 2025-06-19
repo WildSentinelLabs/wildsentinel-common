@@ -121,7 +121,7 @@ class Delegate<R(Args...)> {
  private:
   static constexpr std::size_t kSboSize = 64;
 
-  alignas(ws::arch::detail::CacheLineSize()) std::uint8_t storage_[kSboSize];
+  alignas(ws::detail::CacheLineSize()) std::uint8_t storage_[kSboSize];
 
   using CallFn = R (*)(const void*, Args&&...);
 

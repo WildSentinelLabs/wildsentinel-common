@@ -16,7 +16,7 @@ class ImageTraits {
 
   static bool IsSigned(uint8_t bit_depth);
 
-  template <ws::imaging::pixel::IsAllowedPixelNumericType T>
+  template <ws::imaging::IsAllowedPixelNumericType T>
   static constexpr T Clamp(T value, T min_value, T max_value) {
     return value < min_value ? min_value
                              : (value > max_value ? max_value : value);

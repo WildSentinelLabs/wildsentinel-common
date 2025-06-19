@@ -1,7 +1,7 @@
 #include "logging/dispatchers/async_log_dispatcher.h"
 namespace ws {
 namespace logging {
-namespace dispatchers {
+
 AsyncLogDispatcher::AsyncLogDispatcher()
     : running_(true), log_thread_(&AsyncLogDispatcher::ProcessQueue, this) {}
 
@@ -44,6 +44,6 @@ void AsyncLogDispatcher::Await() {
   std::unique_lock<std::mutex> lock(mutex_);
   cv_.wait(lock, [this] { return log_queue_.Empty(); });
 }
-}  // namespace dispatchers
+
 }  // namespace logging
 }  // namespace ws

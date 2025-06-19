@@ -73,7 +73,7 @@ class BlockingObjectPool : public IObjectPool<T> {
 
  private:
   const std::size_t capacity_;
-  ws::concurrency::collections::BlockingQueue<T> queue_;
+  ws::concurrency::BlockingQueue<T> queue_;
   ws::Delegate<T()> object_generator_;
   std::atomic<std::size_t> current_count_;
   std::atomic<bool> disposed_;

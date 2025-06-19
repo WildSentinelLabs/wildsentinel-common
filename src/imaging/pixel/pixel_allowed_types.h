@@ -5,7 +5,6 @@
 
 namespace ws {
 namespace imaging {
-namespace pixel {
 
 template <typename T>
 concept IsAllowedPixelNumericType =
@@ -16,6 +15,5 @@ concept IsAllowedPixelComponentType =
     IsAllowedPixelNumericType<T> || std::floating_point<T> ||
     std::is_same_v<T, double>;
 
-}  // namespace pixel
 }  // namespace imaging
 }  // namespace ws

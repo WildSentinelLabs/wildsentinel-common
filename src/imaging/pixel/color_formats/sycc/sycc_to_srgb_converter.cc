@@ -1,7 +1,7 @@
 #include "imaging/pixel/color_formats/sycc/sycc_to_srgb_converter.h"
 namespace ws {
 namespace imaging {
-namespace pixel {
+
 template <IsAllowedPixelNumericType T>
 SYccToRgbConverter<T>::SYccToRgbConverter(uint8_t bit_depth)
     : PixelColorConverter<T>(bit_depth) {
@@ -31,6 +31,5 @@ template class SYccToRgbConverter<int16_t>;
 template class SYccToRgbConverter<uint32_t>;
 template class SYccToRgbConverter<int32_t>;
 
-}  // namespace pixel
 }  // namespace imaging
 }  // namespace ws

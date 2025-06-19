@@ -1,7 +1,6 @@
 #include "logging/events/log_event.h"
 namespace ws {
 namespace logging {
-namespace events {
 LogEvent::LogEvent(
     const std::string& source_context, const std::string& message,
     LogLevel level,
@@ -36,6 +35,5 @@ std::optional<std::string> LogEvent::GetProperty(const std::string& key) const {
 void LogEvent::AddProperty(const std::string& key, const std::string& value) {
   properties_[key] = value;
 }
-}  // namespace events
 }  // namespace logging
 }  // namespace ws

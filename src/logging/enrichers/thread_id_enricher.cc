@@ -2,10 +2,10 @@
 
 namespace ws {
 namespace logging {
-namespace enrichers {
+
 std::string GetCachedThreadId();
 
-void ThreadIdEnricher::Enrich(ws::logging::events::LogEvent& event) const {
+void ThreadIdEnricher::Enrich(ws::logging::LogEvent& event) const {
   event.AddProperty(kKey, GetCachedThreadId());
 }
 
@@ -15,6 +15,5 @@ std::string GetCachedThreadId() {
   return Format("{}", std::this_thread::get_id());
 }
 
-}  // namespace enrichers
 }  // namespace logging
 }  // namespace ws

@@ -3,7 +3,6 @@
 #include <string>
 namespace ws {
 namespace imaging {
-namespace pixel {
 
 enum class PixelFormat : int8_t {
   kGray,
@@ -30,6 +29,6 @@ enum class PixelFormat : int8_t {
 };
 
 const std::string PixelFormatToString(const PixelFormat& pixel_format);
-}  // namespace pixel
+
 }  // namespace imaging
 }  // namespace ws

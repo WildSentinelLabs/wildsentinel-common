@@ -2,7 +2,6 @@
 
 namespace ws {
 namespace imaging {
-namespace pixel {
 template <IsAllowedPixelNumericType T>
 SRgbToGrayConverter<T>::SRgbToGrayConverter(uint8_t bit_depth)
     : PixelColorConverter<T>(bit_depth),
@@ -29,6 +28,5 @@ template class SRgbToGrayConverter<uint16_t>;
 template class SRgbToGrayConverter<int16_t>;
 template class SRgbToGrayConverter<uint32_t>;
 template class SRgbToGrayConverter<int32_t>;
-}  // namespace pixel
 }  // namespace imaging
 }  // namespace ws

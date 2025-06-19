@@ -7,7 +7,6 @@
 
 namespace ws {
 namespace concurrency {
-namespace collections {
 template <typename TKey, typename T, typename THash, typename TKeyEqual,
           typename TAllocator, bool AllowMultimapping>
 struct ConcurrentUnorderedMapTraits {
@@ -718,10 +717,6 @@ concurrent_unordered_map(std::initializer_list<std::pair<TKey, T>>, std::size_t,
                                 Alloc>;
 
 #endif
-
 }  // namespace stl
-
-}  // namespace collections
 }  // namespace concurrency
-
 }  // namespace ws

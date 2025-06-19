@@ -4,7 +4,6 @@
 
 namespace ws {
 namespace imaging {
-namespace pixel {
 template <typename T>
 struct Rgba {
   static_assert(IsAllowedPixelComponentType<T>,
@@ -20,7 +19,5 @@ struct IsRgbaType : std::false_type {};
 
 template <IsAllowedPixelComponentType T>
 struct IsRgbaType<Rgba<T>> : std::true_type {};
-
-}  // namespace pixel
 }  // namespace imaging
 }  // namespace ws

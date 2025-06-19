@@ -9,7 +9,6 @@
 
 namespace ws {
 namespace concurrency {
-namespace collections {
 
 template <typename T, typename Allocator = std::allocator<T>>
 class BlockingQueue {
@@ -56,17 +55,16 @@ class BlockingQueue {
                                        ? queue_representation_type::kItemSize
                                        : 2);
 
-    assert(ws::arch::detail::IsAligned(queue_rep_ptr_,
-                                       ws::arch::detail::CacheLineSize()) &&
+    assert(ws::detail::IsAligned(queue_rep_ptr_, ws::detail::CacheLineSize()) &&
            "alignment error");
-    assert(ws::arch::detail::IsAligned(&queue_rep_ptr_->head_counter_,
-                                       ws::arch::detail::CacheLineSize()) &&
+    assert(ws::detail::IsAligned(&queue_rep_ptr_->head_counter_,
+                                 ws::detail::CacheLineSize()) &&
            "alignment error");
-    assert(ws::arch::detail::IsAligned(&queue_rep_ptr_->tail_counter_,
-                                       ws::arch::detail::CacheLineSize()) &&
+    assert(ws::detail::IsAligned(&queue_rep_ptr_->tail_counter_,
+                                 ws::detail::CacheLineSize()) &&
            "alignment error");
-    assert(ws::arch::detail::IsAligned(&queue_rep_ptr_->array_,
-                                       ws::arch::detail::CacheLineSize()) &&
+    assert(ws::detail::IsAligned(&queue_rep_ptr_->array_,
+                                 ws::detail::CacheLineSize()) &&
            "alignment error");
   }
 
@@ -429,7 +427,5 @@ blocking_queue(TContainer)
 #endif
 
 }  // namespace stl
-
-}  // namespace collections
 }  // namespace concurrency
 }  // namespace ws

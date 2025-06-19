@@ -13,7 +13,6 @@
 #include "logging/rendering/message_renderer.h"
 namespace ws {
 namespace logging {
-namespace sinks {
 
 class ConsoleLogSink : public ILogSink {
  public:
@@ -28,15 +27,15 @@ class ConsoleLogSink : public ILogSink {
 
   void EnableAsync() override;
 
-  void Display(ws::logging::events::LogEvent event) override;
+  void Display(ws::logging::LogEvent event) override;
 
   void Display(const std::string& message) const override;
 
  private:
   LogLevel min_log_level_;
   std::unique_ptr<ILogDispatcher> dispatcher_;
-  ws::logging::rendering::MessageRenderer renderer_;
+  ws::logging::MessageRenderer renderer_;
 };
-}  // namespace sinks
+
 }  // namespace logging
 }  // namespace ws

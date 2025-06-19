@@ -1,13 +1,11 @@
 #include "logging/rendering/message_renderer.h"
 namespace ws {
 namespace logging {
-namespace rendering {
 MessageRenderer::MessageRenderer(const std::string& template_format) {
   ParseTemplate(template_format);
 }
 
-std::string MessageRenderer::Render(
-    const ws::logging::events::LogEvent& event) const {
+std::string MessageRenderer::Render(const ws::logging::LogEvent& event) const {
   std::string result;
   for (const auto& part : template_parts_) {
     if (part.type == TemplatePart::Type::Text) {
@@ -57,7 +55,7 @@ void MessageRenderer::ParseTemplate(const std::string& format) {
 }
 
 std::string MessageRenderer::RenderPlaceholder(
-    const TemplatePart& part, const ws::logging::events::LogEvent& event) {
+    const TemplatePart& part, const ws::logging::LogEvent& event) {
   if (part.key == kSourceContextKey) {
     return event.SourceContext();
   } else if (part.key == kMessageKey) {
@@ -116,6 +114,5 @@ std::string MessageRenderer::FormatTimestamp(
 
   return timeStr;
 }
-}  // namespace rendering
 }  // namespace logging
 }  // namespace ws

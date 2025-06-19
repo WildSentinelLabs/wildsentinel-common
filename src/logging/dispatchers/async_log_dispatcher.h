@@ -9,7 +9,6 @@
 #include "logging/log_level.h"
 namespace ws {
 namespace logging {
-namespace dispatchers {
 
 class AsyncLogDispatcher : public ILogDispatcher {
  public:
@@ -30,11 +29,11 @@ class AsyncLogDispatcher : public ILogDispatcher {
   void ProcessQueue();
 
   std::atomic<bool> running_;
-  ws::concurrency::collections::ConcurrentQueue<DispatchEvent> log_queue_;
+  ws::concurrency::ConcurrentQueue<DispatchEvent> log_queue_;
   std::thread log_thread_;
   std::mutex mutex_;
   std::condition_variable cv_;
 };
-}  // namespace dispatchers
+
 }  // namespace logging
 }  // namespace ws

@@ -14,7 +14,7 @@ class ILogSink {
 
   virtual void EnableAsync() = 0;
 
-  virtual void Display(ws::logging::events::LogEvent event) = 0;
+  virtual void Display(ws::logging::LogEvent event) = 0;
 
   virtual void Display(const std::string& message) const = 0;
 

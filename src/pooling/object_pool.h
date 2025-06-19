@@ -9,7 +9,6 @@
 
 namespace ws {
 namespace pooling {
-
 template <ws::IsDisposable T>
 class ObjectPool : public IObjectPool<T> {
  public:
@@ -51,7 +50,7 @@ class ObjectPool : public IObjectPool<T> {
   }
 
  private:
-  ws::concurrency::collections::ConcurrentQueue<T> objects_;
+  ws::concurrency::ConcurrentQueue<T> objects_;
   ws::Delegate<T()> object_generator_;
   std::atomic<bool> disposed_;
 };

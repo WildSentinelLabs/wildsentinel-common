@@ -12,5 +12,4 @@ class IDisposable {
 
 template <typename T>
 concept IsDisposable = std::is_base_of_v<IDisposable, T>;
-
 }  // namespace ws

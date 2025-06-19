@@ -2,14 +2,13 @@
 
 namespace ws {
 namespace logging {
-namespace sinks {
 
 ConsoleLogSink::ConsoleLogSink(LogLevel min_log_level,
                                const std::string& template_format)
     : min_log_level_(min_log_level),
       renderer_(template_format),
       dispatcher_(nullptr) {
-  ws::arch::FormatConsoleOutput();
+  FormatConsoleOutput();
 }
 
 ConsoleLogSink::~ConsoleLogSink() {
@@ -17,23 +16,22 @@ ConsoleLogSink::~ConsoleLogSink() {
 }
 
 void ConsoleLogSink::Enable() {
-  dispatcher_ = std::make_unique<ws::logging::dispatchers::SyncLogDispatcher>();
+  dispatcher_ = std::make_unique<ws::logging::SyncLogDispatcher>();
 }
 
 void ConsoleLogSink::EnableAsync() {
-  dispatcher_ =
-      std::make_unique<ws::logging::dispatchers::AsyncLogDispatcher>();
+  dispatcher_ = std::make_unique<ws::logging::AsyncLogDispatcher>();
 }
 
-void ConsoleLogSink::Display(ws::logging::events::LogEvent event) {
+void ConsoleLogSink::Display(ws::logging::LogEvent event) {
   if (event.Level() < min_log_level_) return;
   std::string formatted_message = renderer_.Render(event);
   if (dispatcher_) dispatcher_->Dispatch(*this, formatted_message);
 }
 
 void ConsoleLogSink::Display(const std::string& message) const {
-  ws::arch::ConsoleWrite(message);
+  ConsoleWrite(message);
 }
-}  // namespace sinks
+
 }  // namespace logging
 }  // namespace ws

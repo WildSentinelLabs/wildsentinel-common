@@ -5,7 +5,7 @@
 #include "imaging/pixel/pixel_color_converter.h"
 namespace ws {
 namespace imaging {
-namespace pixel {
+
 template <IsAllowedPixelNumericType T>
 class SYccToRgbConverter : public PixelColorConverter<T> {
  public:
@@ -16,6 +16,6 @@ class SYccToRgbConverter : public PixelColorConverter<T> {
  private:
   Rgb<double> coeffs_;
 };
-}  // namespace pixel
+
 }  // namespace imaging
 }  // namespace ws

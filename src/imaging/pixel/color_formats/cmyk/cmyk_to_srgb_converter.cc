@@ -1,7 +1,6 @@
 #include "imaging/pixel/color_formats/cmyk/cmyk_to_srgb_converter.h"
 namespace ws {
 namespace imaging {
-namespace pixel {
 template <IsAllowedPixelNumericType T>
 CmykToSRgbConverter<T>::CmykToSRgbConverter(uint8_t bit_depth)
     : PixelColorConverter<T>(bit_depth) {}
@@ -38,6 +37,5 @@ template class CmykToSRgbConverter<uint16_t>;
 template class CmykToSRgbConverter<int16_t>;
 template class CmykToSRgbConverter<uint32_t>;
 template class CmykToSRgbConverter<int32_t>;
-}  // namespace pixel
 }  // namespace imaging
 }  // namespace ws

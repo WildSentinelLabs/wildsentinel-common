@@ -7,7 +7,6 @@
 #include "logging/log_level.h"
 namespace ws {
 namespace logging {
-namespace dispatchers {
 
 class SyncLogDispatcher : public ILogDispatcher {
  public:
@@ -17,6 +16,6 @@ class SyncLogDispatcher : public ILogDispatcher {
 
   void Await() override;
 };
-}  // namespace dispatchers
+
 }  // namespace logging
 }  // namespace ws

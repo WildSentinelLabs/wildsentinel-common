@@ -5,7 +5,6 @@
 #include <queue>
 namespace ws {
 namespace concurrency {
-namespace collections {
 template <typename T>
 class SynchronizedQueue {
  public:
@@ -204,9 +203,6 @@ template <typename T>
 void swap(synchronized_queue<T>& lhs, synchronized_queue<T>& rhs) noexcept {
   lhs.swap(rhs);
 }
-
 }  // namespace stl
-
-}  // namespace collections
 }  // namespace concurrency
 }  // namespace ws

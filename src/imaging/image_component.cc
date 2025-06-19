@@ -1,7 +1,7 @@
 #include "imaging/image_component.h"
 namespace ws {
 namespace imaging {
-template <ws::imaging::pixel::IsAllowedPixelNumericType T>
+template <ws::imaging::IsAllowedPixelNumericType T>
 StatusOr<ImageComponent> ImageComponent::Create(uint32_t width, offset_t length,
                                                 uint8_t bit_depth,
                                                 bool is_alpha) {
@@ -95,7 +95,7 @@ std::string ImageComponent::ToString() const {
 
 ImageBufferType ImageComponent::GetBufferType() const { return buffer_type_; }
 
-template <ws::imaging::pixel::IsAllowedPixelNumericType T>
+template <ws::imaging::IsAllowedPixelNumericType T>
 T* ImageComponent::Buffer() const {
   assert(buffer_ != nullptr && "Buffer is null");
   assert(ImageBufferTypeOf<T>::value != buffer_type_ &&
@@ -103,7 +103,7 @@ T* ImageComponent::Buffer() const {
   return static_cast<T*>(buffer_);
 }
 
-template <ws::imaging::pixel::IsAllowedPixelNumericType T>
+template <ws::imaging::IsAllowedPixelNumericType T>
 ImageComponent::operator T*() const {
   return Buffer<T>();
 }

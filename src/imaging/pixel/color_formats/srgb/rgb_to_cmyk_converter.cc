@@ -2,7 +2,6 @@
 
 namespace ws {
 namespace imaging {
-namespace pixel {
 template <IsAllowedPixelNumericType T>
 SRgbToCmykConverter<T>::SRgbToCmykConverter(uint8_t bit_depth)
     : PixelColorConverter<T>(bit_depth){};
@@ -44,6 +43,5 @@ template class SRgbToCmykConverter<uint16_t>;
 template class SRgbToCmykConverter<int16_t>;
 template class SRgbToCmykConverter<uint32_t>;
 template class SRgbToCmykConverter<int32_t>;
-}  // namespace pixel
 }  // namespace imaging
 }  // namespace ws

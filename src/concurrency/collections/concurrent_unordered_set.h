@@ -5,8 +5,6 @@
 
 namespace ws {
 namespace concurrency {
-namespace collections {
-
 template <typename TKey, typename THash, typename TKeyEqual,
           typename TAllocator, bool AllowMultimapping>
 struct ConcurrentUnorderedSetTraits {
@@ -552,9 +550,6 @@ concurrent_unordered_set(std::initializer_list<T>, std::size_t, Hash, TAlloc)
     -> concurrent_unordered_set<T, Hash, std::equal_to<T>, TAlloc>;
 
 #endif
-
 }  // namespace stl
-
-}  // namespace collections
 }  // namespace concurrency
 }  // namespace ws

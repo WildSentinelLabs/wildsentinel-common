@@ -2,9 +2,9 @@
 namespace ws {
 namespace imaging {
 
-template <ws::imaging::pixel::IsAllowedPixelNumericType T>
+template <ws::imaging::IsAllowedPixelNumericType T>
 StatusOr<Array<T>> ImageBufferExporter<T>::ExportToInterleavedBuffer(
-    const Image& image, ws::imaging::pixel::PixelFormat pixel_format) {
+    const Image& image, ws::imaging::PixelFormat pixel_format) {
   size_t image_size = 0;
   if (!image.IsValid()) return Status(StatusCode::kBadRequest, "Invalid image");
   for (auto& comp : image.Components()) {
@@ -14,16 +14,16 @@ StatusOr<Array<T>> ImageBufferExporter<T>::ExportToInterleavedBuffer(
     image_size += comp.Length();
   }
 
-  const ws::imaging::pixel::PixelFormatDetails* pixel_format_details =
-      ws::imaging::pixel::PixelFormatConstraints::GetFormat(pixel_format);
+  const ws::imaging::PixelFormatDetails* pixel_format_details =
+      ws::imaging::PixelFormatConstraints::GetFormat(pixel_format);
   if (!pixel_format_details)
     return Status(StatusCode::kBadRequest,
                   "Unsupported pixel format " +
-                      ws::imaging::pixel::PixelFormatToString(pixel_format));
+                      ws::imaging::PixelFormatToString(pixel_format));
 
   if ((pixel_format_details->layout &
-       ws::imaging::pixel::PixelLayoutFlag::kInterleaved) ==
-      static_cast<ws::imaging::pixel::PixelLayoutFlag>(0))
+       ws::imaging::PixelLayoutFlag::kInterleaved) ==
+      static_cast<ws::imaging::PixelLayoutFlag>(0))
     return Status(StatusCode::kBadRequest,
                   "Pixel format details must indicate interleaved layout");
 
@@ -63,9 +63,9 @@ StatusOr<Array<T>> ImageBufferExporter<T>::ExportToInterleavedBuffer(
   return StatusOr(std::move(buffer));
 }
 
-template <ws::imaging::pixel::IsAllowedPixelNumericType T>
+template <ws::imaging::IsAllowedPixelNumericType T>
 StatusOr<Array<T>> ImageBufferExporter<T>::ExportToPlanarBuffer(
-    const Image& image, ws::imaging::pixel::PixelFormat pixel_format) {
+    const Image& image, ws::imaging::PixelFormat pixel_format) {
   size_t image_size = 0;
   if (!image.IsValid()) return Status(StatusCode::kBadRequest, "Invalid image");
   for (auto& comp : image.Components()) {
@@ -75,16 +75,15 @@ StatusOr<Array<T>> ImageBufferExporter<T>::ExportToPlanarBuffer(
     image_size += comp.Length();
   }
 
-  const ws::imaging::pixel::PixelFormatDetails* pixel_format_details =
-      ws::imaging::pixel::PixelFormatConstraints::GetFormat(pixel_format);
+  const ws::imaging::PixelFormatDetails* pixel_format_details =
+      ws::imaging::PixelFormatConstraints::GetFormat(pixel_format);
   if (!pixel_format_details)
     return Status(StatusCode::kBadRequest,
                   "Unsupported pixel format " +
-                      ws::imaging::pixel::PixelFormatToString(pixel_format));
+                      ws::imaging::PixelFormatToString(pixel_format));
 
-  if ((pixel_format_details->layout &
-       ws::imaging::pixel::PixelLayoutFlag::kPlanar) ==
-      static_cast<ws::imaging::pixel::PixelLayoutFlag>(0))
+  if ((pixel_format_details->layout & ws::imaging::PixelLayoutFlag::kPlanar) ==
+      static_cast<ws::imaging::PixelLayoutFlag>(0))
     return Status(StatusCode::kBadRequest,
                   "Pixel format details must indicate planar layout");
 

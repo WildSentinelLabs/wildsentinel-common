@@ -19,7 +19,7 @@ class AtomicBackoff {
 
   void Wait() {
     if (count_ <= kLoopsBeforeYield) {
-      ws::arch::detail::CpuWait(count_);
+      ws::detail::CpuWait(count_);
       count_ *= 2;
     } else {
       std::this_thread::yield();
@@ -27,7 +27,7 @@ class AtomicBackoff {
   }
 
   bool BoundedWait() {
-    ws::arch::detail::CpuWait(count_);
+    ws::detail::CpuWait(count_);
     if (count_ < kLoopsBeforeYield) {
       count_ *= 2;
       return true;

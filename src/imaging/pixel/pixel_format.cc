@@ -1,7 +1,6 @@
 #include "imaging/pixel/pixel_format.h"
 namespace ws {
 namespace imaging {
-namespace pixel {
 
 const std::string PixelFormatToString(const PixelFormat& pixel_format) {
   switch (pixel_format) {
@@ -47,6 +46,6 @@ const std::string PixelFormatToString(const PixelFormat& pixel_format) {
       return "Unsupported";
   }
 }
-}  // namespace pixel
+
 }  // namespace imaging
 }  // namespace ws

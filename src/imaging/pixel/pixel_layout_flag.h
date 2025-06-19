@@ -5,7 +5,7 @@
 
 namespace ws {
 namespace imaging {
-namespace pixel {
+
 enum class PixelLayoutFlag : uint8_t {
   kInterleaved = 1 << 0,  // 0x01
   kPlanar = 1 << 1        // 0x02
@@ -20,6 +20,6 @@ constexpr PixelLayoutFlag operator&(PixelLayoutFlag a, PixelLayoutFlag b) {
   using T = std::underlying_type_t<PixelLayoutFlag>;
   return static_cast<PixelLayoutFlag>(static_cast<T>(a) & static_cast<T>(b));
 }
-}  // namespace pixel
+
 }  // namespace imaging
 }  // namespace ws

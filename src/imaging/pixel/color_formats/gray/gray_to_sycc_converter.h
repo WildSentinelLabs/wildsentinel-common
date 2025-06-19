@@ -5,7 +5,6 @@
 #include "imaging/pixel/pixel_color_converter.h"
 namespace ws {
 namespace imaging {
-namespace pixel {
 template <IsAllowedPixelNumericType T>
 class GrayToSYccConverter : public PixelColorConverter<T> {
  public:
@@ -13,6 +12,5 @@ class GrayToSYccConverter : public PixelColorConverter<T> {
 
   void Convert(const Gray<T>& gray, Ycc<T>& ycc) const;
 };
-}  // namespace pixel
 }  // namespace imaging
 }  // namespace ws

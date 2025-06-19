@@ -18,7 +18,7 @@ namespace imaging {
 
 class ImageComponent {
  public:
-  template <ws::imaging::pixel::IsAllowedPixelNumericType T>
+  template <ws::imaging::IsAllowedPixelNumericType T>
   static StatusOr<ImageComponent> Create(uint32_t width, offset_t length,
                                          uint8_t bit_depth,
                                          bool is_alpha = false);
@@ -39,9 +39,9 @@ class ImageComponent {
   bool IsValid() const;
   std::string ToString() const;
   ImageBufferType GetBufferType() const;
-  template <ws::imaging::pixel::IsAllowedPixelNumericType T>
+  template <ws::imaging::IsAllowedPixelNumericType T>
   T* Buffer() const;
-  template <ws::imaging::pixel::IsAllowedPixelNumericType T>
+  template <ws::imaging::IsAllowedPixelNumericType T>
   operator T*() const;
 
  private:

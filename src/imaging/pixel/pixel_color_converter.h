@@ -13,7 +13,6 @@
 
 namespace ws {
 namespace imaging {
-namespace pixel {
 
 template <IsAllowedPixelNumericType T>
 class PixelColorConverter {
@@ -46,6 +45,6 @@ class PixelColorConverter {
     return {0.2627, 0.6780, 0.0593};
   }
 };
-}  // namespace pixel
+
 }  // namespace imaging
 }  // namespace ws

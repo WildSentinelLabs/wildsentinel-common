@@ -1,7 +1,6 @@
 #include "imaging/pixel/pixel_format_constraints.h"
 namespace ws {
 namespace imaging {
-namespace pixel {
 
 std::vector<const PixelFormatDetails*> PixelFormatConstraints::formats = {
     &kI411,  // YUV 4:1:1 (Planar)
@@ -122,6 +121,6 @@ Array<Point> PixelFormatConstraints::GetDimensions(
 
   return Array<Point>();
 }
-}  // namespace pixel
+
 }  // namespace imaging
 }  // namespace ws

@@ -19,14 +19,13 @@ extern "C" {
 #include <emmintrin.h>
 #elif defined(__ARM_ARCH_7A__) || defined(__aarch64__) || defined(_M_ARM) || \
     defined(_M_ARM64)
-
 #endif
+
 #include <cassert>
 #include <mutex>
 #include <thread>
 
 namespace ws {
-namespace arch {
 namespace detail {
 inline constexpr size_t kMaxNfsSize = 128;
 
@@ -264,5 +263,4 @@ inline void ConsoleError(const std::string& message) {
 #endif
 }
 
-}  // namespace arch
 }  // namespace ws

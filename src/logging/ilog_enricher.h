@@ -7,7 +7,7 @@ namespace logging {
 
 class ILogEnricher {
  public:
-  virtual void Enrich(ws::logging::events::LogEvent& event) const = 0;
+  virtual void Enrich(ws::logging::LogEvent& event) const = 0;
 
   virtual ~ILogEnricher() = default;
 };

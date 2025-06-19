@@ -10,20 +10,19 @@ namespace concurrency {
 namespace detail {
 
 inline void* CacheAlignedAllocate(std::size_t size) {
-  const std::size_t kCacheLineSize = ws::arch::detail::CacheLineSize();
-  assert(ws::arch::detail::IsPowerOfTwo(kCacheLineSize) &&
-         "must be power of two");
+  const std::size_t kCacheLineSize = ws::detail::CacheLineSize();
+  assert(ws::detail::IsPowerOfTwo(kCacheLineSize) && "must be power of two");
   if (size + kCacheLineSize < size) WsException::BadAlloc().Throw();
   if (size == 0) size = 1;
-  void* result = ws::arch::detail::AlignedAllocate(size, kCacheLineSize);
+  void* result = ws::detail::AlignedAllocate(size, kCacheLineSize);
   if (!result) WsException::BadAlloc().Throw();
-  assert(ws::arch::detail::IsAligned(result, kCacheLineSize) &&
+  assert(ws::detail::IsAligned(result, kCacheLineSize) &&
          "The returned address isn't aligned");
   return result;
 }
 
 inline void CacheAlignedDeallocate(void* p) {
-  ws::arch::detail::AlignedDeallocate(p);
+  ws::detail::AlignedDeallocate(p);
 }
 
 template <typename TAllocator>

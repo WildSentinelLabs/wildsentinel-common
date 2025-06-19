@@ -1,7 +1,6 @@
 #include "imaging/pixel/color_formats/gray/gray_to_sycc_converter.h"
 namespace ws {
 namespace imaging {
-namespace pixel {
 template <IsAllowedPixelNumericType T>
 GrayToSYccConverter<T>::GrayToSYccConverter(uint8_t bit_depth)
     : PixelColorConverter<T>(bit_depth) {}
@@ -19,6 +18,5 @@ template class GrayToSYccConverter<uint16_t>;
 template class GrayToSYccConverter<int16_t>;
 template class GrayToSYccConverter<uint32_t>;
 template class GrayToSYccConverter<int32_t>;
-}  // namespace pixel
 }  // namespace imaging
 }  // namespace ws

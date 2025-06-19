@@ -14,7 +14,7 @@ template <typename TCondition>
 bool TimedSpinWaitUntil(TCondition condition) {
   bool finish = condition();
   for (int i = 1; !finish && i < 32; finish = condition(), i *= 2) {
-    ws::arch::detail::CpuWait(i);
+    ws::detail::CpuWait(i);
   }
   for (int i = 32; !finish && i < 64; finish = condition(), ++i) {
     std::this_thread::yield();
