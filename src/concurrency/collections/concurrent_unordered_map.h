@@ -1,7 +1,5 @@
 #pragma once
 
-#include <functional>
-
 #include "concurrency/detail/concurrent_unordered_base.h"
 #include "concurrency/detail/helpers.h"
 

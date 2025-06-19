@@ -47,7 +47,7 @@ inline std::string ToString(T* ptr) {
 
 // Custom objects with ToString method
 template <typename T>
-auto ToString(const T& obj) -> decltype(obj.ToString(), std::string()) {
+inline auto ToString(const T& obj) -> decltype(obj.ToString(), std::string()) {
   return obj.ToString();
 }
 
@@ -56,13 +56,14 @@ inline std::string ToString(T value) {
   return std::to_string(value);
 }
 
+namespace detail {
 // Base case: no arguments
 inline void FormatToImpl(std::string& out, std::string_view fmt) { out += fmt; }
 
 // Recursive formatter
 template <typename Arg, typename... Args>
-void FormatToImpl(std::string& out, std::string_view fmt, Arg&& arg,
-                  Args&&... args) {
+inline void FormatToImpl(std::string& out, std::string_view fmt, Arg&& arg,
+                         Args&&... args) {
   size_t pos = fmt.find("{}");
   if (pos == std::string_view::npos) {
     out += fmt;
@@ -73,13 +74,14 @@ void FormatToImpl(std::string& out, std::string_view fmt, Arg&& arg,
   out += ToString(std::forward<Arg>(arg));
   FormatToImpl(out, fmt.substr(pos + 2), std::forward<Args>(args)...);
 }
+}  // namespace detail
 
 // Entry point
 template <typename... Args>
-std::string Format(std::string_view fmt, Args&&... args) {
+inline std::string Format(std::string_view fmt, Args&&... args) {
   std::string out;
   out.reserve(fmt.size() + sizeof...(args) * 8);  // heuristic
-  FormatToImpl(out, fmt, std::forward<Args>(args)...);
+  ws::detail::FormatToImpl(out, fmt, std::forward<Args>(args)...);
   return out;
 }
 }  // namespace ws

@@ -3,8 +3,8 @@
 #include <mutex>
 #include <semaphore>
 
-#include "arch/cpu_arch.h"
 #include "concurrency/detail/aligned_space.h"
+#include "machine.h"
 
 namespace ws {
 namespace concurrency {

@@ -3,7 +3,6 @@
 #include <memory>
 #include <mutex>
 
-#include "arch/cpu_arch.h"
 #include "logging/dispatchers/async_log_dispatcher.h"
 #include "logging/dispatchers/sync_log_dispatcher.h"
 #include "logging/ilog_dispatcher.h"
@@ -11,6 +10,7 @@
 #include "logging/ilog_sink.h"
 #include "logging/log_level.h"
 #include "logging/rendering/message_renderer.h"
+#include "machine.h"
 namespace ws {
 namespace logging {
 

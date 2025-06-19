@@ -1,8 +1,7 @@
 #pragma once
-#include <functional>
 
-#include "arch/config.h"
 #include "concurrency/detail/helpers.h"
+#include "config.h"
 
 namespace ws {
 namespace concurrency {

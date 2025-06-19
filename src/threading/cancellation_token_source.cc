@@ -1,18 +1,10 @@
 #include "threading/cancellation_token_source.h"
 namespace ws {
 namespace threading {
-
-CancellationTokenSource::CancellationTokenSource()
-    : state_(std::make_shared<CancellationState>()) {}
-
-CancellationToken CancellationTokenSource::Token() const {
-  return CancellationToken(state_);
-}
-
 void CancellationTokenSource::Cancel() {
   if (!state_) return;
 
-  std::unordered_map<size_t, std::function<void()>> callbacks_copy;
+  std::unordered_map<size_t, ws::Delegate<void()>> callbacks_copy;
   {
     std::lock_guard<std::mutex> lock(state_->mtx);
     if (state_->cancelled.load()) return;

@@ -1,8 +1,8 @@
 #pragma once
 #include <type_traits>
 
-#include "arch/config.h"
-#include "arch/cpu_arch.h"
+#include "config.h"
+#include "machine.h"
 #include "wsexception.h"
 
 namespace ws {

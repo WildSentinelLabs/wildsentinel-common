@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cassert>
-#include <functional>
 
 #include "concurrency/collections/blocking_queue.h"
 #include "delegate.h"

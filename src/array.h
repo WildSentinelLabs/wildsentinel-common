@@ -10,87 +10,156 @@ struct Span;
 
 template <typename T>
 struct Array {
-  Array() : data(nullptr), length(0) {}
+  constexpr Array();
+  Array(std::size_t length);
+  Array(std::initializer_list<T> init);
+  Array(T* data, std::size_t length);
+  Array(Array&& other) noexcept;
+  Array(const Array&) = delete;
 
-  Array(std::size_t length)
-      : data(length > 0 ? new T[length] : nullptr), length(length) {
-    assert((length == 0 || data != nullptr) &&
-           "Data pointer must not be null if length > 0");
-  }
+  Array& operator=(const Array&) = delete;
+  Array& operator=(Array&& other) noexcept;
+  T& operator[](std::size_t index);
+  const T& operator[](std::size_t index) const;
+  operator T*();
+  operator const T*() const;
 
-  Array(std::initializer_list<T> init)
-      : data(init.size() > 0 ? new T[init.size()] : nullptr),
-        length(init.size()) {
-    assert((init.size() == 0 || data != nullptr) &&
-           "Data pointer must not be null if initializer list is non-empty");
-    std::copy(init.begin(), init.end(), data);
-  }
+  ~Array();
 
-  Array(T* data, std::size_t length) : data(data), length(length) {
-    assert((length == 0 || this->data != nullptr) &&
-           "Raw pointer data must not be null if length > 0");
-  }
+  std::size_t Length() const;
+  bool Empty() const;
 
-  Array(Array&& other) noexcept : data(other.data), length(other.length) {
+  T* begin();
+  T* end();
+  const T* begin() const;
+  const T* end() const;
+  const T* cbegin() const;
+  const T* cend() const;
+
+ private:
+  template <typename TU>
+  friend struct Span;
+
+  T* data;
+  std::size_t length;
+};
+
+// ============================================================================
+// Implementation details for ReadOnlySpan<T>
+// ============================================================================
+
+template <typename T>
+inline constexpr Array<T>::Array() : data(nullptr), length(0) {}
+
+template <typename T>
+inline Array<T>::Array(std::size_t length)
+    : data(length > 0 ? new T[length] : nullptr), length(length) {
+  assert((length == 0 || data != nullptr) &&
+         "Data pointer must not be null if length > 0");
+}
+
+template <typename T>
+inline Array<T>::Array(std::initializer_list<T> init)
+    : data(init.size() > 0 ? new T[init.size()] : nullptr),
+      length(init.size()) {
+  assert((init.size() == 0 || data != nullptr) &&
+         "Data pointer must not be null if initializer list is non-empty");
+  std::copy(init.begin(), init.end(), data);
+}
+
+template <typename T>
+inline Array<T>::Array(T* data, std::size_t length)
+    : data(data), length(length) {
+  assert((length == 0 || this->data != nullptr) &&
+         "Raw pointer data must not be null if length > 0");
+}
+
+template <typename T>
+inline Array<T>::Array(Array&& other) noexcept
+    : data(other.data), length(other.length) {
+  other.data = nullptr;
+  other.length = 0;
+}
+
+template <typename T>
+inline Array<T>::~Array() {
+  delete[] data;
+}
+
+template <typename T>
+inline std::size_t Array<T>::Length() const {
+  return length;
+}
+
+template <typename T>
+inline bool Array<T>::Empty() const {
+  return length == 0;
+}
+
+template <typename T>
+inline Array<T>& Array<T>::operator=(Array<T>&& other) noexcept {
+  if (this != &other) {
+    delete[] data;
+
+    data = other.data;
+    length = other.length;
+
     other.data = nullptr;
     other.length = 0;
   }
 
-  Array(const Array&) = delete;
+  return *this;
+}
 
-  ~Array() { delete[] data; }
+template <typename T>
+inline T& Array<T>::operator[](std::size_t index) {
+  assert(index < length && "Array index out of range");
+  return data[index];
+}
 
-  std::size_t Length() const { return length; }
+template <typename T>
+inline const T& Array<T>::operator[](std::size_t index) const {
+  assert(index < length && "Array index out of range");
+  return data[index];
+}
 
-  bool Empty() const { return length == 0; }
+template <typename T>
+inline Array<T>::operator T*() {
+  return data;
+}
 
-  Array& operator=(const Array&) = delete;
+template <typename T>
+inline Array<T>::operator const T*() const {
+  return data;
+}
 
-  Array& operator=(Array&& other) noexcept {
-    if (this != &other) {
-      delete[] data;
+template <typename T>
+inline T* Array<T>::begin() {
+  return data;
+}
 
-      data = other.data;
-      length = other.length;
+template <typename T>
+inline T* Array<T>::end() {
+  return data + length;
+}
 
-      other.data = nullptr;
-      other.length = 0;
-    }
+template <typename T>
+inline const T* Array<T>::begin() const {
+  return data;
+}
 
-    return *this;
-  }
+template <typename T>
+inline const T* Array<T>::end() const {
+  return data + length;
+}
 
-  T& operator[](std::size_t index) {
-    assert(index < length && "Array index out of range");
-    return data[index];
-  }
+template <typename T>
+inline const T* Array<T>::cbegin() const {
+  return data;
+}
 
-  const T& operator[](std::size_t index) const {
-    assert(index < length && "Array index out of range");
-    return data[index];
-  }
-
-  operator T*() { return data; }
-
-  operator const T*() const { return data; }
-
-  T* begin() { return data; }
-
-  T* end() { return data + length; }
-
-  const T* begin() const { return data; }
-
-  const T* end() const { return data + length; }
-
-  const T* cbegin() const { return data; }
-
-  const T* cend() const { return data + length; }
-
- private:
-  T* data;
-  std::size_t length;
-
-  template <typename TU>
-  friend struct Span;
-};
+template <typename T>
+inline const T* Array<T>::cend() const {
+  return data + length;
+}
 }  // namespace ws

@@ -122,7 +122,8 @@
     "xutility": "cpp",
     "iostream": "cpp",
     "istream": "cpp",
-    "sstream": "cpp"
+    "sstream": "cpp",
+    "xtree": "cpp"
   },
   "C_Cpp.errorSquiggles": "enabled",
   "C_Cpp.clang_format_style": "Google",

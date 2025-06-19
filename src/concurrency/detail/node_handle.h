@@ -1,7 +1,7 @@
 #pragma once
 
-#include "arch/config.h"
 #include "concurrency/detail/allocator_traits.h"
+#include "config.h"
 
 namespace ws {
 namespace concurrency {

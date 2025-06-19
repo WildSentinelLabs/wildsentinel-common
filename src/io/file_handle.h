@@ -4,12 +4,12 @@
 #include <filesystem>
 #include <string>
 
-#include "arch/cpu_arch.h"
 #include "idisposable.h"
 #include "io/file_access.h"
 #include "io/file_mode.h"
 #include "io/file_share.h"
 #include "io/seek_origin.h"
+#include "machine.h"
 #include "span.h"
 #include "types.h"
 #include "wsexception.h"

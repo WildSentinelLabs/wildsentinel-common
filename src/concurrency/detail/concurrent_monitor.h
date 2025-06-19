@@ -3,11 +3,11 @@
 #include <atomic>
 #include <semaphore>
 
-#include "arch/cpu_arch.h"
 #include "concurrency/detail/aligned_space.h"
 #include "concurrency/detail/concurrent_monitor_mutex.h"
 #include "concurrency/detail/helpers.h"
 #include "concurrency/spin_mutex.h"
+#include "machine.h"
 #include "wsexception.h"
 
 namespace ws {

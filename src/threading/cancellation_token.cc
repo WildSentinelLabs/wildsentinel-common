@@ -2,18 +2,8 @@
 
 namespace ws {
 namespace threading {
-
-CancellationToken CancellationToken::None() { return CancellationToken(); }
-
-CancellationToken::CancellationToken(std::shared_ptr<CancellationState> state)
-    : state_(state) {}
-
-bool CancellationToken::IsCancellationRequested() const {
-  return state_ && state_->cancelled.load();
-}
-
 CancellationTokenRegistration CancellationToken::RegisterCallback(
-    const std::function<void()>& callback) {
+    const ws::Delegate<void()>& callback) {
   if (!state_) {
     WsException::InvalidArgument("Cancellation token not initialized.").Throw();
   }
@@ -34,10 +24,6 @@ CancellationTokenRegistration CancellationToken::RegisterCallback(
     state_->callbacks[id] = callback;
     return CancellationTokenRegistration(state_, id);
   }
-}
-
-void CancellationToken::ThrowIfCancellationRequested() const {
-  if (IsCancellationRequested()) WsException::OperationCanceled().Throw();
 }
 }  // namespace threading
 }  // namespace ws

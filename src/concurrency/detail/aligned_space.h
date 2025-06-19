@@ -1,8 +1,8 @@
 #pragma once
 #include <cstddef>
 
-#include "arch/cpu_arch.h"
 #include "concurrency/detail/helpers.h"
+#include "machine.h"
 
 namespace ws {
 namespace concurrency {

@@ -2,19 +2,18 @@
 
 #include <algorithm>
 #include <atomic>
-#include <functional>
 #include <initializer_list>
 #include <iterator>
 #include <memory>
 #include <type_traits>
 #include <utility>
 
-#include "arch/config.h"
 #include "concurrency/detail/allocator_traits.h"
 #include "concurrency/detail/hash_compare.h"
 #include "concurrency/detail/helpers.h"
 #include "concurrency/detail/node_handle.h"
 #include "concurrency/detail/segment_table.h"
+#include "config.h"
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 #pragma warning(push)

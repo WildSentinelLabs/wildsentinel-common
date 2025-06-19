@@ -54,7 +54,6 @@ install(FILES
 
 install(
     DIRECTORY
-        ${WSCOMMON_SOURCE_DIR}/src/arch
         ${WSCOMMON_SOURCE_DIR}/src/concurrency
         ${WSCOMMON_SOURCE_DIR}/src/io
         ${WSCOMMON_SOURCE_DIR}/src/threading

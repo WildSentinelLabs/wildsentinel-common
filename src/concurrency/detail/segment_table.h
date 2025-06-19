@@ -6,10 +6,10 @@
 #include <memory>
 #include <type_traits>
 
-#include "arch/config.h"
 #include "concurrency/detail/allocator_traits.h"
 #include "concurrency/detail/atomic_backoff.h"
 #include "concurrency/detail/helpers.h"
+#include "config.h"
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 #pragma warning(push)

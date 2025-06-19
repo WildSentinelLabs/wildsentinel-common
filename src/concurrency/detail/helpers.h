@@ -1,7 +1,7 @@
 #pragma once
 
-#include "arch/config.h"
-#include "arch/cpu_arch.h"
+#include "config.h"
+#include "machine.h"
 
 namespace ws {
 namespace concurrency {

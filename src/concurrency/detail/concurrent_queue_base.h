@@ -1,11 +1,11 @@
 #pragma once
 
-#include "arch/config.h"
 #include "concurrency/detail/allocator_traits.h"
 #include "concurrency/detail/atomic_backoff.h"
 #include "concurrency/detail/concurrent_monitor.h"
 #include "concurrency/detail/helpers.h"
 #include "concurrency/spin_mutex.h"
+#include "config.h"
 #include "delegate.h"
 #include "wsexception.h"
 
