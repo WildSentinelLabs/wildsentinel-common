@@ -1,8 +1,9 @@
 # Set necessary files
 file(GLOB WSCOMMON_IO_FILES io/*/*.cc io/*.cc)
+file(GLOB WSCOMMON_THREADING_FILES threading/*.cc)
+file(GLOB WSCOMMON_STATUS_FILES status/*.cc)
 file(GLOB WSCOMMON_IMAGING_FILES "")
 file(GLOB WSCOMMON_LOGGING_FILES "")
-file(GLOB WSCOMMON_THREADING_FILES threading/*.cc)
 
 if (WSCOMMON_BUILD_IMAGING)
     file(GLOB WSCOMMON_IMAGING_FILES imaging/*.cc imaging/pixel/*.cc imaging/pixel/color_formats/*.cc imaging/pixel/color_formats/*/*.cc )
@@ -18,6 +19,7 @@ add_library(wscommon SHARED
     ${WSCOMMON_IMAGING_FILES}
     ${WSCOMMON_LOGGING_FILES}
     ${WSCOMMON_THREADING_FILES}
+    ${WSCOMMON_STATUS_FILES}
 )
 
 # Include directories for wscommon library
@@ -56,6 +58,7 @@ install(
         ${WSCOMMON_SOURCE_DIR}/src/concurrency
         ${WSCOMMON_SOURCE_DIR}/src/io
         ${WSCOMMON_SOURCE_DIR}/src/threading
+        ${WSCOMMON_SOURCE_DIR}/src/status
     DESTINATION include
 )
 

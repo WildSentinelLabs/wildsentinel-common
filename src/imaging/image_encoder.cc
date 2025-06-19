@@ -8,11 +8,7 @@ ImageEncoder::ImageEncoder(const ImageContext& context, int quality,
       source_context_(source_context),
       encoding_type_(ImageEncodingType::kLossy),
       quality_(quality),
-      logger_(logger_configuration_.CreateLogger(source_context)) {
-  if (quality < 10 || quality > 100) {
-    throw std::invalid_argument("Quality must be between 10 and 100.");
-  }
-}
+      logger_(logger_configuration_.CreateLogger(source_context)) {}
 
 ImageEncoder::ImageEncoder(const ImageContext& context,
                            const std::string& source_context)

@@ -1,15 +1,9 @@
 #pragma once
-#include <stdexcept>
 #include <type_traits>
 
+#include "wsexception.h"
+
 namespace ws {
-
-struct disposed_object_exception : public std::exception {
-  const char* what() const noexcept override {
-    return "Object has already been disposed";
-  }
-};
-
 class IDisposable {
  public:
   virtual void Dispose() = 0;

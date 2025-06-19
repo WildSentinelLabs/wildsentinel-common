@@ -11,6 +11,7 @@
 #include "imaging/image_buffer_type.h"
 #include "imaging/pixel/pixel_allowed_types.h"
 #include "span.h"
+#include "status/status_or.h"
 #include "types.h"
 namespace ws {
 namespace imaging {
@@ -18,8 +19,9 @@ namespace imaging {
 class ImageComponent {
  public:
   template <ws::imaging::pixel::IsAllowedPixelNumericType T>
-  static ImageComponent Create(uint32_t width, offset_t length,
-                               uint8_t bit_depth, bool is_alpha = false);
+  static StatusOr<ImageComponent> Create(uint32_t width, offset_t length,
+                                         uint8_t bit_depth,
+                                         bool is_alpha = false);
 
   ImageComponent();
   ImageComponent(const ImageComponent&) = delete;

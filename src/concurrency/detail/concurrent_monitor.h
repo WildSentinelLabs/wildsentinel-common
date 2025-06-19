@@ -5,9 +5,10 @@
 
 #include "arch/cpu_arch.h"
 #include "concurrency/detail/aligned_space.h"
+#include "concurrency/detail/concurrent_monitor_mutex.h"
 #include "concurrency/detail/helpers.h"
 #include "concurrency/spin_mutex.h"
-#include "concurrent_monitor_mutex.h"
+#include "wsexception.h"
 
 namespace ws {
 namespace concurrency {
@@ -160,7 +161,7 @@ class SleepNode : public WaitNode<TContext> {
     Semaphore().acquire();
     assert(!this->is_in_list_.load(std::memory_order_relaxed) &&
            "Still in the queue?");
-    if (this->aborted_) throw std::runtime_error("user_abort");
+    if (this->aborted_) WsException::RuntimeError("user_abort").Throw();
   }
 
   void Reset() override {

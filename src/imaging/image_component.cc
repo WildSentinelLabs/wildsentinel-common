@@ -2,20 +2,24 @@
 namespace ws {
 namespace imaging {
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
-ImageComponent ImageComponent::Create(uint32_t width, offset_t length,
-                                      uint8_t bit_depth, bool is_alpha) {
+StatusOr<ImageComponent> ImageComponent::Create(uint32_t width, offset_t length,
+                                                uint8_t bit_depth,
+                                                bool is_alpha) {
   static_assert(
       std::is_same_v<
           T, typename ImageBufferTType<ImageBufferTypeOf<T>::value>::type>,
       "Unsupported buffer type");
 
-  if (length <= 0) throw std::invalid_argument("Length must be greater than 0");
-  if (width <= 0) throw std::invalid_argument("Width must be greater than 0");
+  if (length <= 0)
+    return Status(StatusCode::kBadRequest, "Length must be greater than 0");
+  if (width <= 0)
+    return Status(StatusCode::kBadRequest, "Width must be greater than 0");
   if (bit_depth <= 0)
-    throw std::invalid_argument("Bit depth must be greater than 0");
+    return Status(StatusCode::kBadRequest, "Bit depth must be greater than 0");
 
   if (DetermineImageBufferType(bit_depth) != ImageBufferTypeOf<T>::value)
-    throw std::invalid_argument("Bit depth does not match buffer type");
+    return Status(StatusCode::kBadRequest,
+                  "Bit depth does not match buffer type");
 
   void* buf = static_cast<void*>(new T[length]);
   return ImageComponent(buf, length, width, bit_depth, is_alpha,
@@ -148,18 +152,29 @@ void ImageComponent::Dispose() {
   buffer_type_ = ImageBufferType::kUnknown;
 }
 
-template ImageComponent ImageComponent::Create<int8_t>(uint32_t, offset_t,
-                                                       uint8_t, bool);
-template ImageComponent ImageComponent::Create<uint8_t>(uint32_t, offset_t,
-                                                        uint8_t, bool);
-template ImageComponent ImageComponent::Create<int16_t>(uint32_t, offset_t,
-                                                        uint8_t, bool);
-template ImageComponent ImageComponent::Create<uint16_t>(uint32_t, offset_t,
-                                                         uint8_t, bool);
-template ImageComponent ImageComponent::Create<int32_t>(uint32_t, offset_t,
-                                                        uint8_t, bool);
-template ImageComponent ImageComponent::Create<uint32_t>(uint32_t, offset_t,
-                                                         uint8_t, bool);
+template StatusOr<ImageComponent> ImageComponent::Create<int8_t>(uint32_t,
+                                                                 offset_t,
+                                                                 uint8_t, bool);
+template StatusOr<ImageComponent> ImageComponent::Create<uint8_t>(uint32_t,
+                                                                  offset_t,
+                                                                  uint8_t,
+                                                                  bool);
+template StatusOr<ImageComponent> ImageComponent::Create<int16_t>(uint32_t,
+                                                                  offset_t,
+                                                                  uint8_t,
+                                                                  bool);
+template StatusOr<ImageComponent> ImageComponent::Create<uint16_t>(uint32_t,
+                                                                   offset_t,
+                                                                   uint8_t,
+                                                                   bool);
+template StatusOr<ImageComponent> ImageComponent::Create<int32_t>(uint32_t,
+                                                                  offset_t,
+                                                                  uint8_t,
+                                                                  bool);
+template StatusOr<ImageComponent> ImageComponent::Create<uint32_t>(uint32_t,
+                                                                   offset_t,
+                                                                   uint8_t,
+                                                                   bool);
 
 template int8_t* ImageComponent::Buffer<int8_t>() const;
 template uint8_t* ImageComponent::Buffer<uint8_t>() const;

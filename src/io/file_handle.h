@@ -2,7 +2,6 @@
 #include <cerrno>
 #include <cstring>
 #include <filesystem>
-#include <stdexcept>
 #include <string>
 
 #include "arch/cpu_arch.h"
@@ -13,6 +12,7 @@
 #include "io/seek_origin.h"
 #include "span.h"
 #include "types.h"
+#include "wsexception.h"
 
 namespace ws {
 namespace io {

@@ -3,13 +3,13 @@ namespace ws {
 namespace imaging {
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
-Array<T> ImageBufferExporter<T>::ExportToInterleavedBuffer(
+StatusOr<Array<T>> ImageBufferExporter<T>::ExportToInterleavedBuffer(
     const Image& image, ws::imaging::pixel::PixelFormat pixel_format) {
   size_t image_size = 0;
-  if (!image.IsValid()) throw std::invalid_argument("Invalid image");
+  if (!image.IsValid()) return Status(StatusCode::kBadRequest, "Invalid image");
   for (auto& comp : image.Components()) {
     if (comp.GetBufferType() != ImageBufferTypeOf<T>::value)
-      throw std::invalid_argument("Buffer type mismatch");
+      return Status(StatusCode::kBadRequest, "Buffer type mismatch");
 
     image_size += comp.Length();
   }
@@ -17,30 +17,30 @@ Array<T> ImageBufferExporter<T>::ExportToInterleavedBuffer(
   const ws::imaging::pixel::PixelFormatDetails* pixel_format_details =
       ws::imaging::pixel::PixelFormatConstraints::GetFormat(pixel_format);
   if (!pixel_format_details)
-    throw std::invalid_argument(
-        "Unsupported pixel format " +
-        ws::imaging::pixel::PixelFormatToString(pixel_format));
+    return Status(StatusCode::kBadRequest,
+                  "Unsupported pixel format " +
+                      ws::imaging::pixel::PixelFormatToString(pixel_format));
 
   if ((pixel_format_details->layout &
        ws::imaging::pixel::PixelLayoutFlag::kInterleaved) ==
       static_cast<ws::imaging::pixel::PixelLayoutFlag>(0))
-    throw std::invalid_argument(
-        "Pixel format details must indicate interleaved layout");
+    return Status(StatusCode::kBadRequest,
+                  "Pixel format details must indicate interleaved layout");
 
   if (image.GetColorSpace() != pixel_format_details->color_space ||
       image.GetChromaSubsampling() !=
           pixel_format_details->chroma_subsampling ||
       image.NumComponents() != pixel_format_details->num_components ||
       image.HasAlpha() != pixel_format_details->HasAlpha()) {
-    throw std::invalid_argument(
-        "Image properties do not match pixel format details");
+    return Status(StatusCode::kBadRequest,
+                  "Image properties do not match pixel format details");
   }
 
   ws::ReadOnlySpan<uint8_t> components_order =
       pixel_format_details->components_order;
   if (image_size % components_order.Length() != 0)
-    throw std::invalid_argument(
-        "Image Size must be divisible by components order length");
+    return Status(StatusCode::kBadRequest,
+                  "Image Size must be divisible by components order length");
 
   size_t comps_index[pixel_format_details->num_components] = {0};
   T* comps_buffer_in_order[components_order.Length()];
@@ -60,17 +60,17 @@ Array<T> ImageBufferExporter<T>::ExportToInterleavedBuffer(
     }
   }
 
-  return buffer;
+  return StatusOr(std::move(buffer));
 }
 
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
-Array<T> ImageBufferExporter<T>::ExportToPlanarBuffer(
+StatusOr<Array<T>> ImageBufferExporter<T>::ExportToPlanarBuffer(
     const Image& image, ws::imaging::pixel::PixelFormat pixel_format) {
   size_t image_size = 0;
-  if (!image.IsValid()) throw std::invalid_argument("Invalid image");
+  if (!image.IsValid()) return Status(StatusCode::kBadRequest, "Invalid image");
   for (auto& comp : image.Components()) {
     if (comp.GetBufferType() != ImageBufferTypeOf<T>::value)
-      throw std::invalid_argument("Buffer type mismatch");
+      return Status(StatusCode::kBadRequest, "Buffer type mismatch");
 
     image_size += comp.Length();
   }
@@ -78,30 +78,30 @@ Array<T> ImageBufferExporter<T>::ExportToPlanarBuffer(
   const ws::imaging::pixel::PixelFormatDetails* pixel_format_details =
       ws::imaging::pixel::PixelFormatConstraints::GetFormat(pixel_format);
   if (!pixel_format_details)
-    throw std::invalid_argument(
-        "Unsupported pixel format " +
-        ws::imaging::pixel::PixelFormatToString(pixel_format));
+    return Status(StatusCode::kBadRequest,
+                  "Unsupported pixel format " +
+                      ws::imaging::pixel::PixelFormatToString(pixel_format));
 
   if ((pixel_format_details->layout &
        ws::imaging::pixel::PixelLayoutFlag::kPlanar) ==
       static_cast<ws::imaging::pixel::PixelLayoutFlag>(0))
-    throw std::invalid_argument(
-        "Pixel format details must indicate planar layout");
+    return Status(StatusCode::kBadRequest,
+                  "Pixel format details must indicate planar layout");
 
   if (image.GetColorSpace() != pixel_format_details->color_space ||
       image.GetChromaSubsampling() !=
           pixel_format_details->chroma_subsampling ||
       image.NumComponents() != pixel_format_details->num_components ||
       image.HasAlpha() != pixel_format_details->HasAlpha()) {
-    throw std::invalid_argument(
-        "Image properties do not match pixel format details");
+    return Status(StatusCode::kBadRequest,
+                  "Image properties do not match pixel format details");
   }
 
   ws::ReadOnlySpan<uint8_t> components_order =
       pixel_format_details->components_order;
   if (image_size % components_order.Length() != 0)
-    throw std::invalid_argument(
-        "Image Size must be divisible by components order length");
+    return Status(StatusCode::kBadRequest,
+                  "Image Size must be divisible by components order length");
 
   Array<T> buffer(image_size);
   T* buffer_ptr = static_cast<T*>(buffer);
@@ -112,7 +112,7 @@ Array<T> ImageBufferExporter<T>::ExportToPlanarBuffer(
     buffer_ptr += image.GetComponent(c).Length();
   }
 
-  return buffer;
+  return StatusOr(std::move(buffer));
 }
 
 template class ImageBufferExporter<uint8_t>;

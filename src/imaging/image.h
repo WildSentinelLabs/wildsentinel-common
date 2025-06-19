@@ -9,15 +9,17 @@
 #include "imaging/color_space.h"
 #include "imaging/image_component.h"
 #include "imaging/image_context.h"
+#include "status/status_or.h"
 
 namespace ws {
 namespace imaging {
 
 class Image {
  public:
-  static Image Create(Array<ImageComponent>&& components, uint32_t width,
-                      uint32_t height, ColorSpace color_space,
-                      ChromaSubsampling chroma_subsampling);
+  static StatusOr<Image> Create(Array<ImageComponent>&& components,
+                                uint32_t width, uint32_t height,
+                                ColorSpace color_space,
+                                ChromaSubsampling chroma_subsampling);
 
   Image();
   Image(Image&& other) noexcept;

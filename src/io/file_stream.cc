@@ -47,7 +47,8 @@ FileStream::FileStream(const std::string& path, FileMode mode,
     }
   } catch (const std::exception& e) {
     file_handle_.Dispose();
-    throw std::runtime_error("Failed to open file: " + std::string(e.what()));
+    WsException::IOError("Failed to open file: " + std::string(e.what()))
+        .Throw();
   }
 }
 
@@ -85,10 +86,11 @@ void FileStream::SetPosition(offset_t value) {
 }
 
 void FileStream::SetLength(offset_t value) {
-  if (value < 0) throw std::underflow_error("Negative length not allowed");
-  if (value > kMaxLength) throw stream_too_long_exception();
+  if (value < 0)
+    WsException::UnderflowError("Negative length not allowed").Throw();
+  if (value > kMaxLength) ThrowStreamTooLong();
   if (append_start_ != -1 && value < append_start_)
-    throw std::runtime_error("IO SetLengthAppendTruncate");
+    WsException::IOError("IO SetLengthAppendTruncate").Throw();
 
   FileHandle::SetFileLength(file_handle_, value);
   offset_t cached_length;
@@ -107,9 +109,9 @@ offset_t FileStream::Read(Span<unsigned char> buffer, offset_t offset,
 
 offset_t FileStream::Read(Span<unsigned char> buffer) {
   if (file_handle_.IsClosed())
-    throw disposed_object_exception();
+    WsException::DisposedObject("FileStream is closed").Throw();
   else if ((access_ & FileAccess::kRead) == static_cast<FileAccess>(0))
-    throw unreadable_stream_exception();
+    ThrowUnreadableStream();
 
   offset_t r = FileHandle::ReadAtOffset(file_handle_, buffer, position_);
   assert(r >= 0 && "ReadAtOffset failed");
@@ -144,12 +146,13 @@ offset_t FileStream::Seek(offset_t offset, SeekOrigin origin) {
   if (pos >= 0) {
     position_ = pos;
   } else {
-    throw std::invalid_argument("Offset => Negative position not allowed");
+    WsException::InvalidArgument("Offset => Negative position not allowed")
+        .Throw();
   }
 
   if (append_start_ != -1 && pos < append_start_) {
     position_ = old_pos;
-    throw std::runtime_error("IO SeekAppendOverwrite");
+    WsException::IOError("IO SeekAppendOverwrite").Throw();
   }
 
   return pos;
@@ -164,9 +167,9 @@ void FileStream::Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
 
 void FileStream::Write(ReadOnlySpan<unsigned char> buffer) {
   if (file_handle_.IsClosed())
-    throw disposed_object_exception();
+    WsException::DisposedObject("FileStream is closed").Throw();
   else if ((access_ & FileAccess::kWrite) == static_cast<FileAccess>(0))
-    throw unwritable_stream_exception();
+    ThrowUnwritableStream();
 
   FileHandle::WriteAtOffset(file_handle_, buffer, position_);
   position_ += buffer.Length();

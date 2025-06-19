@@ -94,6 +94,7 @@ class ConcurrentUnorderedMap
                         std::forward_as_tuple(std::move(key)), std::tuple<>())
               .first;
     }
+
     return where->second;
   }
 
@@ -101,7 +102,7 @@ class ConcurrentUnorderedMap
     iterator where = this->Find(key);
 
     if (where == this->end()) {
-      throw std::invalid_argument("ConcurrentUnorderedMap::at");
+      WsException::InvalidArgument("ConcurrentUnorderedMap::at").Throw();
     }
     return where->second;
   }
@@ -110,8 +111,9 @@ class ConcurrentUnorderedMap
     const_iterator where = this->Find(key);
 
     if (where == this->end()) {
-      throw std::out_of_range("ConcurrentUnorderedMap::at");
+      WsException::OutOfRange("ConcurrentUnorderedMap::at").Throw();
     }
+
     return where->second;
   }
 

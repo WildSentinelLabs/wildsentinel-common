@@ -45,8 +45,9 @@ FileHandle FileHandle::Open(const std::filesystem::path& full_path,
   HANDLE h = CreateFileW(full_path.c_str(), desired_access, share_mode, nullptr,
                          creation_disposition, flags_and_attributes, nullptr);
   if (h == nullptr || h == INVALID_HANDLE_VALUE) {
-    throw std::runtime_error(
-        "Failed to open file: CreateFileW returned INVALID_HANDLE_VALUE.");
+    WsException::IOError(
+        "Failed to open file: CreateFileW returned INVALID_HANDLE_VALUE.")
+        .Throw();
   }
 
   FileHandle handle(h);
@@ -64,9 +65,9 @@ FileHandle FileHandle::Open(const std::filesystem::path& full_path,
         DWORD err = GetLastError();
         CloseHandle(h);
         DeleteFileW(full_path.c_str());
-        throw std::runtime_error(
-            "Failed to preallocate file space. Error code: " +
-            std::to_string(err));
+        WsException::IOError("Failed to preallocate file space. Error code: " +
+                             std::to_string(err))
+            .Throw();
       }
     }
   }
@@ -81,10 +82,11 @@ void FileHandle::SetFileLength(FileHandle& handle, offset_t length) {
                                   sizeof(eof_info))) {
     DWORD error_code = GetLastError();
     if (error_code == ERROR_INVALID_PARAMETER) {
-      throw std::out_of_range("File length is too big.");
+      WsException::OutOfRange("File length is too big.").Throw();
     } else {
-      throw std::runtime_error("Error setting file length. Error code: " +
-                               std::to_string(error_code));
+      WsException::IOError("Error setting file length. Error code: " +
+                           std::to_string(error_code))
+          .Throw();
     }
   }
 }
@@ -98,16 +100,17 @@ offset_t FileHandle::ReadAtOffset(FileHandle& handle,
           static_cast<HANDLE>(handle.fd_), static_cast<unsigned char*>(buffer),
           static_cast<DWORD>(buffer.Length()), &num_bytes_read, &overlapped)) {
     return static_cast<offset_t>(num_bytes_read);
-  } else {
-    DWORD error_code = GetLastError();
-
-    if (error_code == ERROR_HANDLE_EOF)
-      return static_cast<offset_t>(num_bytes_read);
-
-    if (IsEndOfFile(error_code, handle, file_offset)) return 0;
-    throw std::runtime_error("ReadFile failed with error " +
-                             std::to_string(error_code));
   }
+
+  DWORD error_code = GetLastError();
+
+  if (error_code == ERROR_HANDLE_EOF)
+    return static_cast<offset_t>(num_bytes_read);
+
+  if (IsEndOfFile(error_code, handle, file_offset)) return 0;
+  WsException::IOError("ReadFile failed with error " +
+                       std::to_string(error_code))
+      .Throw();
 }
 
 offset_t FileHandle::Seek(FileHandle& handle, offset_t offset,
@@ -122,8 +125,9 @@ offset_t FileHandle::Seek(FileHandle& handle, offset_t offset,
       handle.Dispose();
     }
 
-    throw std::runtime_error("SetFilePointerEx failed with error " +
-                             std::to_string(error_code));
+    WsException::IOError("SetFilePointerEx failed with error " +
+                         std::to_string(error_code))
+        .Throw();
   }
 
   return li_new_file_pointer.QuadPart;
@@ -141,12 +145,14 @@ void FileHandle::WriteAtOffset(FileHandle& handle,
                 static_cast<DWORD>(buffer.Length()), &num_bytes_written,
                 &overlapped)) {
     if (num_bytes_written != buffer.Length())
-      throw std::runtime_error("WriteFile wrote fewer bytes than expected.");
+      WsException::IOError("WriteFile wrote fewer bytes than expected.")
+          .Throw();
     return;
   } else {
     DWORD error_code = GetLastError();
-    throw std::runtime_error("WriteFile failed with error " +
-                             std::to_string(error_code));
+    WsException::IOError("WriteFile failed with error " +
+                         std::to_string(error_code))
+        .Throw();
   }
 }
 
@@ -191,8 +197,9 @@ offset_t FileHandle::FileLength() {
   LARGE_INTEGER file_size = {};
   if (!GetFileSizeEx(fd_, &file_size)) {
     DWORD err = GetLastError();
-    throw std::runtime_error("Error obtaining file size. Error code: " +
-                             std::to_string(err));
+    WsException::IOError("Error obtaining file size. Error code: " +
+                         std::to_string(err))
+        .Throw();
   }
 
   length_ = file_size.QuadPart;
@@ -211,14 +218,16 @@ void FileHandle::Dispose() {
 DWORD ParseCreationDisposition(FileMode mode, bool exists) {
   switch (mode) {
     case FileMode::kCreateNew:
-      if (exists) throw std::runtime_error("File already exists (CreateNew)");
+      if (exists)
+        WsException::InvalidArgument("File already exists (CreateNew)").Throw();
       return CREATE_NEW;
       break;
     case FileMode::kCreate:
       return CREATE_ALWAYS;
       break;
     case FileMode::kOpen:
-      if (!exists) throw std::runtime_error("File does not exist (Open)");
+      if (!exists)
+        WsException::InvalidArgument("File does not exist (Open)").Throw();
       return OPEN_EXISTING;
       break;
     case FileMode::kOpenOrCreate:
@@ -228,7 +237,7 @@ DWORD ParseCreationDisposition(FileMode mode, bool exists) {
       return OPEN_ALWAYS;
       break;
     default:
-      throw std::runtime_error("Unsupported file mode");
+      WsException::InvalidArgument("Unsupported file mode").Throw();
   }
 }
 
@@ -304,8 +313,9 @@ FileHandle FileHandle::Open(const std::filesystem::path& full_path,
               ParseDesiredAccess(access) | ParseShareMode(share);
   int fd = ::open(full_path.c_str(), flags, 0666);
   if (fd == -1)
-    throw std::runtime_error("Error opening file: " +
-                             std::string(std::strerror(errno)));
+    WsException::IOError("Error opening file: " +
+                         std::string(std::strerror(errno)))
+        .Throw();
 
   if (preallocation_size > 0) {
 #ifdef __APPLE__
@@ -323,15 +333,17 @@ FileHandle FileHandle::Open(const std::filesystem::path& full_path,
 
     if (ret == -1) {
       ::close(fd);
-      throw std::runtime_error("Error preallocating space (F_PREALLOCATE): " +
-                               std::string(std::strerror(errno)));
+      WsException::IOError("Error preallocating space (F_PREALLOCATE): " +
+                           std::string(std::strerror(errno)))
+          .Throw();
     }
 #else
     int ret = posix_fallocate(fd, 0, preallocation_size);
     if (ret != 0) {
       ::close(fd);
-      throw std::runtime_error("Error preallocating space: " +
-                               std::string(std::strerror(ret)));
+      WsException::IOError("Error preallocating space: " +
+                           std::string(std::strerror(ret)))
+          .Throw();
     }
 #endif
   }
@@ -345,10 +357,11 @@ FileHandle FileHandle::Open(const std::filesystem::path& full_path,
 void FileHandle::SetFileLength(FileHandle& handle, offset_t length) {
   if (::ftruncate(handle.fd_, length) == -1) {
     if (errno == EFBIG || errno == EINVAL)
-      throw std::out_of_range("File size is too large.");
+      WsException::OutOfRange("File size is too large.").Throw();
     else
-      throw std::runtime_error("Error setting file length: " +
-                               std::string(std::strerror(errno)));
+      WsException::IOError("Error setting file length: " +
+                           std::string(std::strerror(errno)))
+          .Throw();
   }
 
   handle.length_ = length;
@@ -361,8 +374,9 @@ offset_t FileHandle::ReadAtOffset(FileHandle& handle,
   ssize_t bytes_read = pread(handle.fd_, static_cast<unsigned char*>(buffer),
                              buffer.Length(), file_offset);
   if (bytes_read == -1)
-    throw std::runtime_error("Error reading file: " +
-                             std::string(std::strerror(errno)));
+    WsException::IOError("Error reading file: " +
+                         std::string(std::strerror(errno)))
+        .Throw();
 
   return static_cast<offset_t>(bytes_read);
 }
@@ -372,8 +386,9 @@ offset_t FileHandle::Seek(FileHandle& handle, offset_t offset,
   off_t new_offset = lseek(handle.fd_, offset, static_cast<int>(origin));
   if (new_offset == (off_t)-1) {
     if (close_invalid_handle) handle.Dispose();
-    throw std::runtime_error("Error seeking file: " +
-                             std::string(std::strerror(errno)));
+    WsException::IOError("Error seeking file: " +
+                         std::string(std::strerror(errno)))
+        .Throw();
   }
 
   return new_offset;
@@ -387,11 +402,12 @@ void FileHandle::WriteAtOffset(FileHandle& handle,
       pwrite(handle.fd_, static_cast<const unsigned char*>(buffer),
              buffer.Length(), file_offset);
   if (bytes_written == -1)
-    throw std::runtime_error("Error writing file: " +
-                             std::string(std::strerror(errno)));
+    WsException::IOError("Error writing file: " +
+                         std::string(std::strerror(errno)))
+        .Throw();
 
   if (static_cast<size_t>(bytes_written) != buffer.Length())
-    throw std::runtime_error("Wrote fewer bytes than expected.");
+    WsException::IOError("Wrote fewer bytes than expected.").Throw();
 }
 
 bool FileHandle::IsEndOfFile(offset_t error_code, FileHandle& handle,
@@ -418,8 +434,9 @@ offset_t FileHandle::FileType() {
   if (file_type_ == -1) {
     struct stat st;
     if (fstat(fd_, &st) == -1)
-      throw std::runtime_error("Error obtaining file type: " +
-                               std::string(std::strerror(errno)));
+      WsException::IOError("Error obtaining file type: " +
+                           std::string(std::strerror(errno)))
+          .Throw();
 
     file_type_ = st.st_mode;
   }
@@ -430,8 +447,9 @@ offset_t FileHandle::FileLength() {
   if (length_can_be_cached_ && length_ >= 0) return length_;
   struct stat st;
   if (fstat(fd_, &st) == -1)
-    throw std::runtime_error("Error obtaining file size: " +
-                             std::string(std::strerror(errno)));
+    WsException::IOError("Error obtaining file size: " +
+                         std::string(std::strerror(errno)))
+        .Throw();
 
   length_ = st.st_size;
   length_can_be_cached_ = true;
@@ -450,19 +468,21 @@ void FileHandle::Dispose() {
 int ParseCreationDisposition(FileMode mode, bool exists) {
   switch (mode) {
     case FileMode::kCreateNew:
-      if (exists) throw std::runtime_error("File already exists (CreateNew)");
+      if (exists)
+        WsException::InvalidArgument("File already exists (CreateNew)").Throw();
       return O_CREAT | O_EXCL;
     case FileMode::kCreate:
       return O_CREAT | O_TRUNC;
     case FileMode::kOpen:
-      if (!exists) throw std::runtime_error("File does not exist (Open)");
+      if (!exists)
+        WsException::InvalidArgument("File does not exist (Open)").Throw();
       return 0;
     case FileMode::kOpenOrCreate:
       return exists ? 0 : O_CREAT;
     case FileMode::kAppend:
       return O_CREAT | O_APPEND;
     default:
-      throw std::runtime_error("Unsupported file mode");
+      WsException::InvalidArgument("Unsupported file mode").Throw();
   }
 }
 
@@ -478,7 +498,7 @@ int ParseDesiredAccess(FileAccess access) {
   else if (canWrite)
     return O_WRONLY;
   else
-    throw std::runtime_error("Unsupported file access mode");
+    WsException::InvalidArgument("Unsupported file access mode").Throw();
 }
 
 int ParseShareMode(FileShare /*share*/) { return 0; }

@@ -8,24 +8,9 @@
 #include "io/seek_origin.h"
 #include "span.h"
 #include "types.h"
+#include "wsexception.h"
 namespace ws {
 namespace io {
-struct stream_closed_exception : public disposed_object_exception {
-  const char* what() const noexcept override;
-};
-
-struct unwritable_stream_exception : public std::exception {
-  const char* what() const noexcept override;
-};
-
-struct unreadable_stream_exception : public std::exception {
-  const char* what() const noexcept override;
-};
-
-struct stream_too_long_exception : public std::exception {
-  const char* what() const noexcept override;
-};
-
 class Stream : public IDisposable {
  public:
   virtual ~Stream() = default;
@@ -93,6 +78,14 @@ class Stream : public IDisposable {
   static void ValidateSeekArguments(offset_t offset, SeekOrigin origin);
 
   static void ValidateCopyToArguments(Stream& stream, offset_t buffer_size);
+
+  static void ThrowUnreadableStream();
+
+  static void ThrowUnwritableStream();
+
+  static void ThrowStreamClosed();
+
+  static void ThrowStreamTooLong();
 
   virtual void CopyTo(Stream& stream, offset_t buffer_size);
 

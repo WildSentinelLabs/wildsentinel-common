@@ -1,6 +1,5 @@
 #include "threading/cancellation_token.h"
 
-#include <memory>
 namespace ws {
 namespace threading {
 
@@ -16,7 +15,7 @@ bool CancellationToken::IsCancellationRequested() const {
 CancellationTokenRegistration CancellationToken::RegisterCallback(
     const std::function<void()>& callback) {
   if (!state_) {
-    throw std::runtime_error("Cancellation token not initialized.");
+    WsException::InvalidArgument("Cancellation token not initialized.").Throw();
   }
 
   if (state_->cancelled.load()) {
@@ -38,7 +37,7 @@ CancellationTokenRegistration CancellationToken::RegisterCallback(
 }
 
 void CancellationToken::ThrowIfCancellationRequested() const {
-  if (IsCancellationRequested()) throw std::runtime_error("Operation canceled");
+  if (IsCancellationRequested()) WsException::OperationCanceled().Throw();
 }
 }  // namespace threading
 }  // namespace ws

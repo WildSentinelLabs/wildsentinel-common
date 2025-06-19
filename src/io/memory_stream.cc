@@ -78,15 +78,17 @@ bool MemoryStream::TryGetBuffer(Span<unsigned char>& buffer) const {
 }
 
 void MemoryStream::SetPosition(offset_t value) {
-  if (value < 0) throw std::underflow_error("Negative position not allowed");
+  if (value < 0)
+    WsException::UnderflowError("Negative position not allowed").Throw();
   EnsureNotClosed();
-  if (value > kMaxLength) throw stream_too_long_exception();
+  if (value > kMaxLength) ThrowStreamTooLong();
   position_ = value;
 }
 
 void MemoryStream::SetLength(offset_t value) {
-  if (value < 0) throw std::underflow_error("Negative length not allowed");
-  if (value > kMaxLength) throw stream_too_long_exception();
+  if (value < 0)
+    WsException::UnderflowError("Negative length not allowed").Throw();
+  if (value > kMaxLength) ThrowStreamTooLong();
   EnsureWriteable();
   if (!EnsureCapacity(value) && value > length_)
     std::memset(buffer_ + value - length_, 0, length_);
@@ -95,10 +97,12 @@ void MemoryStream::SetLength(offset_t value) {
 }
 
 void MemoryStream::SetCapacity(offset_t value) {
-  if (value < length_) throw std::runtime_error("Small capacity out of range");
+  if (value < length_)
+    WsException::UnderflowError("Small capacity out of range").Throw();
+
   EnsureNotClosed();
   if (!expandable_ && (value != Capacity()))
-    throw std::runtime_error("Stream not expandable");
+    WsException::IOError("Stream not expandable").Throw();
   else if (expandable_ && value != capacity_) {
     if (value > 0) {
       Array<unsigned char> new_buffer(value);
@@ -146,18 +150,18 @@ offset_t MemoryStream::Seek(offset_t offset, SeekOrigin origin) {
   switch (origin) {
     case SeekOrigin::kBegin:
       if (offset < 0 || offset > kMaxLength)
-        throw std::runtime_error("IO SeekBeforeBegin");
+        WsException::IOError("IO SeekBeforeBegin OutOfRange").Throw();
       position_ = offset;
       break;
     case SeekOrigin::kEnd:
       if (offset > kMaxLength - length_ || offset > -length_)
-        throw std::runtime_error("IO SeekBeforeBegin");
+        WsException::IOError("IO SeekBeforeBegin OutOfRange").Throw();
       position_ = length_ + offset;
       break;
     case SeekOrigin::kCurrent:
     default:
       if (offset > kMaxLength - position_ || offset > -position_)
-        throw std::runtime_error("IO SeekBeforeBegin");
+        WsException::IOError("IO SeekBeforeBegin OutOfRange").Throw();
       position_ = position_ + offset;
       break;
   }
@@ -171,7 +175,7 @@ void MemoryStream::Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
   ValidateBufferArguments(buffer, offset, count);
   EnsureNotClosed();
   EnsureWriteable();
-  if (count > kMaxLength - position_) throw stream_too_long_exception();
+  if (count > kMaxLength - position_) ThrowStreamTooLong();
   offset_t i = position_ + count;
   if (i > length_) {
     bool must_zero = position_ > length_;
@@ -191,8 +195,7 @@ void MemoryStream::Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
 void MemoryStream::Write(ReadOnlySpan<unsigned char> buffer) {
   EnsureNotClosed();
   EnsureWriteable();
-  if (buffer.Length() > kMaxLength - position_)
-    throw stream_too_long_exception();
+  if (buffer.Length() > kMaxLength - position_) ThrowStreamTooLong();
   offset_t i = position_ + buffer.Length();
   if (i > length_) {
     bool must_zero = position_ > length_;
@@ -252,11 +255,11 @@ void MemoryStream::CopyTo(Stream& stream, offset_t buffer_size) {
 }
 
 void MemoryStream::EnsureNotClosed() const {
-  if (!is_open_) throw stream_closed_exception();
+  if (!is_open_) ThrowStreamClosed();
 }
 
 void MemoryStream::EnsureWriteable() const {
-  if (!CanWrite()) throw unwritable_stream_exception();
+  if (!CanWrite()) ThrowUnwritableStream();
 }
 
 bool MemoryStream::EnsureCapacity(offset_t value) {

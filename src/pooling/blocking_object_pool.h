@@ -2,12 +2,12 @@
 
 #include <cassert>
 #include <functional>
-#include <stdexcept>
 
 #include "concurrency/collections/blocking_queue.h"
 #include "delegate.h"
 #include "idisposable.h"
 #include "pooling/iobject_pool.h"
+#include "wsexception.h"
 
 namespace ws {
 namespace pooling {
@@ -22,7 +22,7 @@ class BlockingObjectPool : public IObjectPool<T> {
         disposed_(false) {
     assert(capacity_ > 0 && "Pool capacity must not be 0 or less");
     if (!object_generator_) {
-      throw std::invalid_argument("object_generator is null");
+      WsException::InvalidArgument("object_generator is null").Throw();
     }
 
     queue_.SetCapacity(capacity_);
@@ -30,7 +30,7 @@ class BlockingObjectPool : public IObjectPool<T> {
 
   T Get() override {
     if (disposed_.load(std::memory_order_acquire))
-      throw disposed_object_exception();
+      WsException::DisposedObject().Throw();
 
     T item;
     if (queue_.TryPop(item)) {
@@ -50,14 +50,14 @@ class BlockingObjectPool : public IObjectPool<T> {
 
   void Return(const T& item) override {
     if (disposed_.load(std::memory_order_acquire))
-      throw disposed_object_exception();
+      WsException::DisposedObject().Throw();
 
     queue_.Push(item);
   }
 
   void Return(T&& item) override {
     if (disposed_.load(std::memory_order_acquire))
-      throw disposed_object_exception();
+      WsException::DisposedObject().Throw();
 
     queue_.Push(std::move(item));
   }

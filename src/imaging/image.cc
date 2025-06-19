@@ -1,29 +1,31 @@
 #include "imaging/image.h"
 namespace ws {
 namespace imaging {
-Image Image::Create(Array<ImageComponent>&& components, uint32_t width,
-                    uint32_t height, ColorSpace color_space,
-                    ChromaSubsampling chroma_subsampling) {
+StatusOr<Image> Image::Create(Array<ImageComponent>&& components,
+                              uint32_t width, uint32_t height,
+                              ColorSpace color_space,
+                              ChromaSubsampling chroma_subsampling) {
   if (components.Empty()) {
-    throw std::invalid_argument("Components array cannot be empty");
+    return Status(StatusCode::kBadRequest, "Components array cannot be empty");
   }
 
   for (auto& component : components) {
     if (!component.IsValid())
-      throw std::invalid_argument("Invalid image component");
+      return Status(StatusCode::kBadRequest, "Invalid image component");
   }
 
   if (width == 0) {
-    throw std::invalid_argument("Width must be greater than 0");
+    return Status(StatusCode::kBadRequest, "Width must be greater than 0");
   }
   if (height == 0) {
-    throw std::invalid_argument("Height must be greater than 0");
+    return Status(StatusCode::kBadRequest, "Height must be greater than 0");
   }
   if (color_space == ColorSpace::kUnsupported) {
-    throw std::invalid_argument("Color space cannot be unsupported");
+    return Status(StatusCode::kBadRequest, "Color space cannot be unsupported");
   }
   if (chroma_subsampling == ChromaSubsampling::kUnsupported) {
-    throw std::invalid_argument("Chroma subsampling cannot be unsupported");
+    return Status(StatusCode::kBadRequest,
+                  "Chroma subsampling cannot be unsupported");
   }
 
   return Image(std::move(components), width, height, color_space,

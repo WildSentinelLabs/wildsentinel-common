@@ -1,20 +1,14 @@
 #pragma once
-
 #include <cstddef>
 #include <cstring>
 #include <new>
-#include <stdexcept>
 #include <type_traits>
 #include <utility>
 
 #include "arch/cpu_arch.h"
+#include "wsexception.h"
 
 namespace ws {
-
-struct bad_delegate_call_exception : public std::exception {
-  const char* what() const noexcept override { return "Bad delegate call"; }
-};
-
 template <typename Signature>
 class Delegate;
 
@@ -117,7 +111,7 @@ class Delegate<R(Args...)> {
   }
 
   R operator()(Args... args) const {
-    if (!call_fn_) throw bad_delegate_call_exception();
+    if (!call_fn_) WsException::InvalidFunctionCall().Throw();
     return call_fn_(static_cast<const void*>(storage_),
                     std::forward<Args>(args)...);
   }

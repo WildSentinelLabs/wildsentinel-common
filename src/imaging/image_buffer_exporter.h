@@ -4,6 +4,9 @@
 #include "imaging/image_traits.h"
 #include "imaging/pixel/pixel_format.h"
 #include "imaging/pixel/pixel_format_constraints.h"
+#include "status/status.h"
+#include "status/status_code.h"
+#include "status/status_or.h"
 
 namespace ws {
 namespace imaging {
@@ -11,10 +14,10 @@ namespace imaging {
 template <ws::imaging::pixel::IsAllowedPixelNumericType T>
 class ImageBufferExporter {
  public:
-  static Array<T> ExportToInterleavedBuffer(
+  static StatusOr<Array<T>> ExportToInterleavedBuffer(
       const Image& image, ws::imaging::pixel::PixelFormat pixel_format);
 
-  static Array<T> ExportToPlanarBuffer(
+  static StatusOr<Array<T>> ExportToPlanarBuffer(
       const Image& image, ws::imaging::pixel::PixelFormat pixel_format);
 };
 }  // namespace imaging

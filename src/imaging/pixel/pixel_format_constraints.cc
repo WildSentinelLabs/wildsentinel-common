@@ -117,7 +117,7 @@ Array<Point> PixelFormatConstraints::GetDimensions(
       break;
 
     default:
-      throw std::invalid_argument("Unsupported chroma subsampling.");
+      return Array<Point>();
   }
 
   return Array<Point>();

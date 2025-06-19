@@ -3,37 +3,22 @@
 namespace ws {
 namespace io {
 
-const char* unreadable_stream_exception::what() const noexcept {
-  return "Unreadable Stream";
-}
-
-const char* unwritable_stream_exception::what() const noexcept {
-  return "Unwritable Stream";
-}
-
-const char* stream_closed_exception::what() const noexcept {
-  return "Stream Closed";
-}
-
-const char* stream_too_long_exception::what() const noexcept {
-  return "Stream Too Long";
-}
-
 void Stream::CopyTo(Stream& stream) { CopyTo(stream, kDefaultCopyBufferSize); }
 
 void Stream::ValidateBufferArguments(ReadOnlySpan<unsigned char> buffer,
                                      offset_t offset, offset_t count) {
   if (offset < 0 || offset > buffer.Length())
-    throw std::runtime_error("Offset out of range");
+    WsException::OutOfRange("Offset out of range").Throw();
   if (count > buffer.Length() - offset)
-    throw std::runtime_error("Count out of range");
+    WsException::OutOfRange("Count out of range").Throw();
 }
 
 void Stream::ValidateCopyToArguments(Stream& stream, offset_t buffer_size) {
-  if (buffer_size <= 0) throw std::runtime_error("Size Negative or Zero");
+  if (buffer_size <= 0)
+    WsException::UnderflowError("Size Negative or Zero").Throw();
   if (!stream.CanWrite()) {
-    if (stream.CanRead()) throw unwritable_stream_exception();
-    throw stream_closed_exception();
+    if (stream.CanRead()) ThrowUnwritableStream();
+    ThrowStreamClosed();
   }
 }
 
@@ -41,10 +26,10 @@ void Stream::CopyTo(Stream& stream, offset_t buffer_size) {
   ValidateCopyToArguments(stream, buffer_size);
   if (!CanRead()) {
     if (CanWrite()) {
-      throw unreadable_stream_exception();
+      ThrowUnreadableStream();
     }
 
-    throw stream_closed_exception();
+    ThrowStreamClosed();
   }
 
   int bytesRead;
@@ -53,6 +38,22 @@ void Stream::CopyTo(Stream& stream, offset_t buffer_size) {
   while ((bytesRead = Read(buffer, 0, buffer.Length())) != 0) {
     stream.Write(buffer, 0, bytesRead);
   }
+}
+
+void Stream::ThrowUnreadableStream() {
+  WsException::IOError("Unreadable Stream").Throw();
+}
+
+void Stream::ThrowUnwritableStream() {
+  WsException::IOError("Unwritable Stream").Throw();
+}
+
+void Stream::ThrowStreamClosed() {
+  WsException::IOError("Stream Closed").Throw();
+}
+
+void Stream::ThrowStreamTooLong() {
+  WsException::IOError("Stream Too Long").Throw();
 }
 
 }  // namespace io

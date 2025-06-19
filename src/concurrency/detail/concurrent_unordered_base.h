@@ -667,7 +667,8 @@ class ConcurrentUnorderedBase {
   float MaxLoadFactor() const { return max_load_factor_; }
 
   void MaxLoadFactor(float mlf) {
-    if (mlf != mlf || mlf < 0) throw std::invalid_argument();
+    if (mlf != mlf || mlf < 0)
+      WsException::InvalidArgument("Invalid max load factor").Throw();
     max_load_factor_ = mlf;
   }
 

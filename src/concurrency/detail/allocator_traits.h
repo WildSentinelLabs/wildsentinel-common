@@ -3,6 +3,7 @@
 
 #include "arch/config.h"
 #include "arch/cpu_arch.h"
+#include "wsexception.h"
 
 namespace ws {
 namespace concurrency {
@@ -12,10 +13,10 @@ inline void* CacheAlignedAllocate(std::size_t size) {
   const std::size_t kCacheLineSize = ws::arch::detail::CacheLineSize();
   assert(ws::arch::detail::IsPowerOfTwo(kCacheLineSize) &&
          "must be power of two");
-  if (size + kCacheLineSize < size) throw std::bad_alloc();
+  if (size + kCacheLineSize < size) WsException::BadAlloc().Throw();
   if (size == 0) size = 1;
   void* result = ws::arch::detail::AlignedAllocate(size, kCacheLineSize);
-  if (!result) throw std::bad_alloc();
+  if (!result) WsException::BadAlloc().Throw();
   assert(ws::arch::detail::IsAligned(result, kCacheLineSize) &&
          "The returned address isn't aligned");
   return result;

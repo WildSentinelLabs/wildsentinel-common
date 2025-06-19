@@ -3,6 +3,7 @@
 
 #include "threading/cancellation_state.h"
 #include "threading/cancellation_token_registration.h"
+#include "wsexception.h"
 namespace ws {
 namespace threading {
 

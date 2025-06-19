@@ -47,8 +47,9 @@ bool BufferStream::TryGetBuffer(Span<unsigned char>& buffer) const {
 
 void BufferStream::SetPosition(offset_t value) {
   EnsureNotClosed();
-  if (value < 0) throw std::underflow_error("Negative position not allowed");
-  if (value > length_ - origin_) throw stream_too_long_exception();
+  if (value < 0)
+    WsException::UnderflowError("Negative position not allowed").Throw();
+  if (value > length_ - origin_) ThrowStreamTooLong();
   position_ = origin_ + value;
 }
 
@@ -86,18 +87,18 @@ offset_t BufferStream::Seek(offset_t offset, SeekOrigin origin) {
   switch (origin) {
     case SeekOrigin::kBegin:
       if (offset < 0 || offset > length_ - origin_)
-        throw std::runtime_error("IO SeekBeforeBegin");
+        WsException::IOError("IO SeekBeforeBegin OutOfRange").Throw();
       position_ = offset;
       break;
     case SeekOrigin::kEnd:
       if (offset > 0 || offset < origin_ - length_)
-        throw std::runtime_error("IO SeekBeforeBegin");
+        WsException::IOError("IO SeekBeforeEnd OutOfRange").Throw();
       position_ = length_ + offset;
       break;
     case SeekOrigin::kCurrent:
     default:
       if (offset > length_ - position_ || offset < origin_ - position_)
-        throw std::runtime_error("IO SeekBeforeBegin");
+        WsException::IOError("IO SeekBeforeCurrent OutOfRange").Throw();
       position_ = position_ + offset;
       break;
   }
@@ -111,7 +112,7 @@ void BufferStream::Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
   ValidateBufferArguments(buffer, offset, count);
   EnsureNotClosed();
   EnsureWriteable();
-  if (count > length_ - position_) throw stream_too_long_exception();
+  if (count > length_ - position_) ThrowStreamTooLong();
   std::memcpy(buffer_ + position_, buffer + offset, count);
   position_ += count;
 }
@@ -119,7 +120,7 @@ void BufferStream::Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
 void BufferStream::Write(ReadOnlySpan<unsigned char> buffer) {
   EnsureNotClosed();
   EnsureWriteable();
-  if (buffer.Length() > length_ - position_) throw stream_too_long_exception();
+  if (buffer.Length() > length_ - position_) ThrowStreamTooLong();
   std::memcpy(buffer_ + position_, buffer, buffer.Length());
   position_ += buffer.Length();
 }
@@ -127,7 +128,7 @@ void BufferStream::Write(ReadOnlySpan<unsigned char> buffer) {
 void BufferStream::WriteByte(unsigned char value) {
   EnsureNotClosed();
   EnsureWriteable();
-  if (position_ >= length_) throw stream_too_long_exception();
+  if (position_ >= length_) ThrowStreamTooLong();
   buffer_[static_cast<size_t>(position_++)] = value;
 }
 
@@ -162,11 +163,11 @@ void BufferStream::CopyTo(Stream& stream, offset_t buffer_size) {
 }
 
 void BufferStream::EnsureNotClosed() const {
-  if (!is_open_) throw stream_closed_exception();
+  if (!is_open_) ThrowStreamClosed;
 }
 
 void BufferStream::EnsureWriteable() const {
-  if (!CanWrite()) throw unwritable_stream_exception();
+  if (!CanWrite()) ThrowUnwritableStream();
 }
 
 offset_t BufferStream::Skip(offset_t count) {
