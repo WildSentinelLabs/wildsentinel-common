@@ -59,6 +59,7 @@ elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--strip-all")
 endif()
 
+# TODO: Remover std::format (use builder or fmt)
 # Global settings
 set(BUILD_THIRDPARTY ON)
 set(CMAKE_CXX_STANDARD 23)
