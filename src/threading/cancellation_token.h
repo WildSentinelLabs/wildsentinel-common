@@ -23,6 +23,7 @@ struct CancellationToken {
 
  private:
   friend class CancellationTokenSource;
+
   std::shared_ptr<CancellationState> state_;
 };
 

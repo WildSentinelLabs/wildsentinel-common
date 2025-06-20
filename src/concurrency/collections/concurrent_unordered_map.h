@@ -130,59 +130,6 @@ class ConcurrentUnorderedMap
     return this->EmplaceHint(hint, std::forward<TP>(value));
   }
 
-  template <typename TP>
-  std::enable_if_t<std::is_constructible_v<value_type, TP&&>,
-                   std::pair<iterator, bool>>
-  InsertOrAssign(const key_type& key, TP&& value) {
-    auto result =
-        this->Emplace(std::piecewise_construct, std::forward_as_tuple(key),
-                      std::forward_as_tuple(std::forward<TP>(value)));
-    if (!result.second) {
-      result.first->second = std::forward<TP>(value);
-    }
-
-    return result;
-  }
-
-  template <typename TP>
-  std::enable_if_t<std::is_constructible_v<value_type, TP&&>,
-                   std::pair<iterator, bool>>
-  InsertOrAssign(key_type&& key, TP&& value) {
-    auto result = this->Emplace(std::piecewise_construct,
-                                std::forward_as_tuple(std::move(key)),
-                                std::forward_as_tuple(std::forward<TP>(value)));
-    if (!result.second) {
-      result.first->second = std::forward<TP>(value);
-    }
-
-    return result;
-  }
-
-  template <typename TP>
-  iterator InsertOrAssign(const_iterator hint, const key_type& key,
-                          TP&& value) {
-    auto result =
-        this->Emplace(std::piecewise_construct, std::forward_as_tuple(key),
-                      std::forward_as_tuple(std::forward<TP>(value)));
-    if (!result.second) {
-      result.first->second = std::forward<TP>(value);
-    }
-
-    return result.first;
-  }
-
-  template <typename TP>
-  iterator InsertOrAssign(const_iterator hint, key_type&& key, TP&& value) {
-    auto result = this->Emplace(std::piecewise_construct,
-                                std::forward_as_tuple(std::move(key)),
-                                std::forward_as_tuple(std::forward<TP>(value)));
-    if (!result.second) {
-      result.first->second = std::forward<TP>(value);
-    }
-
-    return result.first;
-  }
-
   template <typename TOtherHash, typename TOtherKeyEqual>
   void Merge(ConcurrentUnorderedMap<key_type, mapped_type, TOtherHash,
                                     TOtherKeyEqual, allocator_type>& source) {
@@ -451,32 +398,6 @@ class concurrent_unordered_map {
     internal_instance_.Insert(__l);
   }
 
-  template <typename TObj>
-  std::pair<iterator, bool> insert_or_assign(const key_type& __k,
-                                             TObj&& __obj) {
-    return internal_instance_.InsertOrAssign(__k, std::forward<TObj>(__obj));
-  }
-
-  template <typename TObj>
-  std::pair<iterator, bool> insert_or_assign(key_type&& __k, TObj&& __obj) {
-    return internal_instance_.InsertOrAssign(std::move(__k),
-                                             std::forward<TObj>(__obj));
-  }
-
-  template <typename TObj>
-  iterator insert_or_assign(const_iterator __hint, const key_type& __k,
-                            TObj&& __obj) {
-    return internal_instance_.InsertOrAssign(__hint, __k,
-                                             std::forward<TObj>(__obj));
-  }
-
-  template <typename TObj>
-  iterator insert_or_assign(const_iterator __hint, key_type&& __k,
-                            TObj&& __obj) {
-    return internal_instance_.InsertOrAssign(__hint, std::move(__k),
-                                             std::forward<TObj>(__obj));
-  }
-
   iterator erase(const_iterator __position) {
     return internal_instance_.UnsafeErase(__position);
   }
@@ -606,14 +527,21 @@ class concurrent_unordered_map {
       const concurrent_unordered_map<TKey1, T1, THash1, TPred1, TAllocator1>&
           lhs,
       const concurrent_unordered_map<TKey1, T1, THash1, TPred1, TAllocator1>&
-          rhs) {
-    if (&lhs == &rhs) {
-      return true;
-    }
-
-    return lhs.internal_instance_ == rhs.internal_instance_;
-  }
+          rhs);
 };
+
+template <typename TKey1, typename T1, typename THash1, typename TPred1,
+          typename TAllocator1>
+inline bool operator==(
+    const concurrent_unordered_map<TKey1, T1, THash1, TPred1, TAllocator1>& lhs,
+    const concurrent_unordered_map<TKey1, T1, THash1, TPred1, TAllocator1>&
+        rhs) {
+  if (&lhs == &rhs) {
+    return true;
+  }
+
+  return lhs.internal_instance_ == rhs.internal_instance_;
+}
 
 #if _CPP17_DEDUCTION_GUIDES_PRESENT
 template <

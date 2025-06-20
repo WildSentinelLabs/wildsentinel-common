@@ -5,7 +5,6 @@
 #include <thread>
 #include <vector>
 
-#include "concurrency/collections/concurrent_unordered_map.h"
 #include "logging/events/log_event.h"
 #include "logging/ilog_enricher.h"
 #include "logging/ilog_sink.h"

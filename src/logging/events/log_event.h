@@ -7,26 +7,28 @@ namespace ws {
 namespace logging {
 class LogEvent {
  public:
-  LogEvent(
-      const std::string& source_context, const std::string& message,
-      LogLevel level = LogLevel::kInformation,
-      const ws::concurrency::ConcurrentUnorderedMap<std::string,
-                                                    std::string>& properties =
-          ws::concurrency::ConcurrentUnorderedMap<std::string, std::string>());
+  using key_type = std::string;
+  using mapped_type = std::string;
+  using map_type =
+      ws::concurrency::stl::concurrent_unordered_map<key_type, mapped_type>;
+
+  LogEvent(const std::string& source_context, const std::string& message,
+           LogLevel level = LogLevel::kInformation,
+           const map_type& properties = map_type());
 
   std::string SourceContext() const;
   LogLevel Level() const;
   std::string Message() const;
   std::chrono::system_clock::time_point Timestamp() const;
-  std::optional<std::string> GetProperty(const std::string& key) const;
-  void AddProperty(const std::string& key, const std::string& value);
+  std::optional<mapped_type> GetProperty(const key_type& key) const;
+  void AddProperty(const key_type& key, const mapped_type& value);
 
  private:
   std::string source_context_;
   LogLevel level_;
   std::string message_;
   std::chrono::system_clock::time_point timestamp_;
-  ws::concurrency::ConcurrentUnorderedMap<std::string, std::string> properties_;
+  map_type properties_;
 };
 
 // ============================================================================

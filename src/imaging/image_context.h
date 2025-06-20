@@ -2,8 +2,8 @@
 #include <cstdint>
 #include <optional>
 #include <string>
-#include <unordered_map>
 
+#include "concurrency/collections/concurrent_unordered_map.h"
 #include "format.h"
 
 namespace ws {
@@ -11,10 +11,11 @@ namespace imaging {
 
 struct ImageContext {
  public:
+  using size_type = std::size_t;
   using key_type = std::string;
   using mapped_type = std::int32_t;
-  using size_type = std::size_t;
-  using map_type = std::unordered_map<key_type, mapped_type>;
+  using map_type =
+      ws::concurrency::stl::concurrent_unordered_map<key_type, mapped_type>;
 
   ImageContext();
 
@@ -34,7 +35,7 @@ struct ImageContext {
 
   std::optional<mapped_type> Get(const key_type& key) const;
 
-  void Add(const key_type& key, const mapped_type& value);
+  void Add(const key_type& key, mapped_type value);
 
   map_type::iterator begin();
 

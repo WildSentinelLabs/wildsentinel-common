@@ -3,10 +3,8 @@ namespace ws {
 namespace threading {
 void CancellationTokenSource::Cancel() {
   if (state_->cancelled.exchange(true)) return;
-
   auto callbacks_copy = state_->callbacks;
-  state_->callbacks.Clear();
-
+  state_->callbacks.clear();
   for (const auto& [id, callback] : callbacks_copy) {
     try {
       callback();

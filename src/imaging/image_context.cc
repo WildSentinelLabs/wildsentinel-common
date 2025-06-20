@@ -34,8 +34,13 @@ std::optional<ImageContext::mapped_type> ImageContext::Get(
 }
 
 void ImageContext::Add(const ImageContext::key_type& key,
-                       const ImageContext::mapped_type& value) {
-  data.insert_or_assign(key, value);
+                       ImageContext::mapped_type value) {
+  auto it = data.find(key);
+  if (it != data.end()) {
+    it->second = value;
+  } else {
+    data.insert({key, value});
+  }
 }
 
 ImageContext::map_type::iterator ImageContext::begin() { return data.begin(); }
