@@ -1,10 +1,9 @@
 #pragma once
-#include <atomic>
+
 #include <cstring>
 
 #include "array.h"
 #include "format.h"
-#include "idisposable.h"
 #include "imaging/chroma_subsampling.h"
 #include "imaging/color_space.h"
 #include "imaging/image_component.h"
@@ -54,6 +53,34 @@ class Image {
   ColorSpace color_space_;
   ChromaSubsampling chroma_subsampling_;
 };
+
+// ============================================================================
+// Implementation details for Image
+// ============================================================================
+
+inline ImageContext Image::Context() const { return context_; }
+
+inline uint8_t Image::NumComponents() const { return components_.Length(); }
+
+inline const ImageComponent& Image::GetComponent(uint8_t comp_num) const {
+  return components_[comp_num];
+}
+
+inline const Array<ImageComponent>& Image::Components() const {
+  return components_;
+}
+
+inline uint32_t Image::Width() const { return width_; }
+
+inline uint32_t Image::Height() const { return height_; }
+
+inline ColorSpace Image::GetColorSpace() const { return color_space_; }
+
+inline ChromaSubsampling Image::GetChromaSubsampling() const {
+  return chroma_subsampling_;
+}
+
+inline bool Image::Empty() const { return components_.Empty(); }
 
 }  // namespace imaging
 }  // namespace ws

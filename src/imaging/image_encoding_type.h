@@ -1,9 +1,9 @@
 #pragma once
+
 #include <cstdint>
 #include <string>
 namespace ws {
 namespace imaging {
-
 enum class ImageEncodingType : int8_t {
   kLossy = 0,
   kLossless = 1,

@@ -1,13 +1,12 @@
 #pragma once
-#include <string>
+
+#include <string_view>
 namespace ws {
 namespace imaging {
-
-class ImageTags {
- public:
-  static const std::string kXDensity;
-  static const std::string kYDensity;
-  static const std::string kDensityUnits;
+struct ImageTags {
+  static constexpr std::string_view kXDensity = "X_DENSITY";
+  static constexpr std::string_view kYDensity = "Y_DENSITY";
+  static constexpr std::string_view kDensityUnits = "DENSITY_UNITS";
 };
 }  // namespace imaging
 }  // namespace ws

@@ -71,41 +71,11 @@ ImageComponent& ImageComponent::operator=(ImageComponent&& other) noexcept {
 
 ImageComponent::~ImageComponent() { Dispose(); }
 
-uint32_t ImageComponent::Width() const { return width_; }
-
-size_t ImageComponent::Length() const { return length_; }
-
-uint8_t ImageComponent::BitDepth() const { return bit_depth_; }
-
-bool ImageComponent::IsAlpha() const { return is_alpha_; }
-
-bool ImageComponent::Empty() const { return buffer_ == nullptr; }
-
-bool ImageComponent::IsValid() const {
-  return !Empty() && length_ != 0 && width_ != 0 && bit_depth_ != 0 &&
-         buffer_type_ != ImageBufferType::kUnknown;
-}
-
 std::string ImageComponent::ToString() const {
   return Format(
       "ImageComponent<{}>( Length: {} Width: {} Bit Depth: {} Alpha: {} )",
       ImageBufferTypeToString(buffer_type_), length_, width_,
       static_cast<int>(bit_depth_), (is_alpha_ ? "True" : "False"));
-}
-
-ImageBufferType ImageComponent::GetBufferType() const { return buffer_type_; }
-
-template <ws::imaging::IsAllowedPixelNumericType T>
-T* ImageComponent::Buffer() const {
-  assert(buffer_ != nullptr && "Buffer is null");
-  assert(ImageBufferTypeOf<T>::value != buffer_type_ &&
-         "Incorrect buffer type");
-  return static_cast<T*>(buffer_);
-}
-
-template <ws::imaging::IsAllowedPixelNumericType T>
-ImageComponent::operator T*() const {
-  return Buffer<T>();
 }
 
 ImageComponent::ImageComponent(void* buffer, uint32_t width, offset_t length,
@@ -175,20 +145,5 @@ template StatusOr<ImageComponent> ImageComponent::Create<uint32_t>(uint32_t,
                                                                    offset_t,
                                                                    uint8_t,
                                                                    bool);
-
-template int8_t* ImageComponent::Buffer<int8_t>() const;
-template uint8_t* ImageComponent::Buffer<uint8_t>() const;
-template int16_t* ImageComponent::Buffer<int16_t>() const;
-template uint16_t* ImageComponent::Buffer<uint16_t>() const;
-template int32_t* ImageComponent::Buffer<int32_t>() const;
-template uint32_t* ImageComponent::Buffer<uint32_t>() const;
-
-template ImageComponent::operator int8_t*() const;
-template ImageComponent::operator uint8_t*() const;
-template ImageComponent::operator int16_t*() const;
-template ImageComponent::operator uint16_t*() const;
-template ImageComponent::operator int32_t*() const;
-template ImageComponent::operator uint32_t*() const;
-
 }  // namespace imaging
 }  // namespace ws

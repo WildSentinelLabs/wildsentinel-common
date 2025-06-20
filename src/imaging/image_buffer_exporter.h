@@ -1,4 +1,5 @@
 #pragma once
+
 #include "array.h"
 #include "imaging/image.h"
 #include "imaging/image_traits.h"
@@ -10,10 +11,8 @@
 
 namespace ws {
 namespace imaging {
-
 template <ws::imaging::IsAllowedPixelNumericType T>
-class ImageBufferExporter {
- public:
+struct ImageBufferExporter {
   static StatusOr<Array<T>> ExportToInterleavedBuffer(
       const Image& image, ws::imaging::PixelFormat pixel_format);
 

@@ -22,29 +22,38 @@ class PixelColorConverter {
  protected:
   explicit PixelColorConverter(uint8_t bit_depth);
 
+  // BT.601 (SD)
+  static constexpr Rgb<double> BT601Coefficients();
+  // BT.709 (HD)
+  static constexpr Rgb<double> BT709Coefficients();
+  // BT.2020 (UHD)
+  static constexpr Rgb<double> BT2020Coefficients();
+  // BT.2100 (HDR)
+  static constexpr Rgb<double> BT2100Coefficients();
+
   T min_value_;
   T max_value_;
-
-  // BT.601 (SD)
-  static constexpr Rgb<double> BT601Coefficients() {
-    return {0.299, 0.587, 0.114};
-  }
-
-  // BT.709 (HD)
-  static constexpr Rgb<double> BT709Coefficients() {
-    return {0.2126, 0.7152, 0.0722};
-  }
-
-  // BT.2020 (UHD)
-  static constexpr Rgb<double> BT2020Coefficients() {
-    return {0.2627, 0.6780, 0.0593};
-  }
-
-  // BT.2100 (HDR)
-  static constexpr Rgb<double> BT2100Coefficients() {
-    return {0.2627, 0.6780, 0.0593};
-  }
 };
+
+template <IsAllowedPixelNumericType T>
+inline constexpr Rgb<double> PixelColorConverter<T>::BT601Coefficients() {
+  return {0.299, 0.587, 0.114};
+}
+
+template <IsAllowedPixelNumericType T>
+inline constexpr Rgb<double> PixelColorConverter<T>::BT709Coefficients() {
+  return {0.2126, 0.7152, 0.0722};
+}
+
+template <IsAllowedPixelNumericType T>
+inline constexpr Rgb<double> PixelColorConverter<T>::BT2020Coefficients() {
+  return {0.2627, 0.6780, 0.0593};
+}
+
+template <IsAllowedPixelNumericType T>
+inline constexpr Rgb<double> PixelColorConverter<T>::BT2100Coefficients() {
+  return {0.2627, 0.6780, 0.0593};
+}
 
 }  // namespace imaging
 }  // namespace ws

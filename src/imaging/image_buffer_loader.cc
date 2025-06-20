@@ -157,12 +157,12 @@ StatusOr<Image> ImageBufferLoader<T>::LoadFromPlanarBuffer(
                               pixel_format_details);
 }
 
-template class ImageBufferLoader<uint8_t>;
-template class ImageBufferLoader<int8_t>;
-template class ImageBufferLoader<uint16_t>;
-template class ImageBufferLoader<int16_t>;
-template class ImageBufferLoader<uint32_t>;
-template class ImageBufferLoader<int32_t>;
+template struct ImageBufferLoader<uint8_t>;
+template struct ImageBufferLoader<int8_t>;
+template struct ImageBufferLoader<uint16_t>;
+template struct ImageBufferLoader<int16_t>;
+template struct ImageBufferLoader<uint32_t>;
+template struct ImageBufferLoader<int32_t>;
 
 }  // namespace imaging
 }  // namespace ws

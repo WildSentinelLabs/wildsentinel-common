@@ -12,7 +12,6 @@
 #include "logging/log_level.h"
 namespace ws {
 namespace logging {
-
 class MessageRenderer {
  public:
   MessageRenderer(const std::string& template_format =
@@ -33,10 +32,10 @@ class MessageRenderer {
                  const std::string& format = "");
   };
 
-  static const std::string kSourceContextKey;
-  static const std::string kTimeStampKey;
-  static const std::string kLevelKey;
-  static const std::string kMessageKey;
+  static constexpr std::string_view kSourceContextKey = "SourceContext";
+  static constexpr std::string_view kTimeStampKey = "Timestamp";
+  static constexpr std::string_view kLevelKey = "Level";
+  static constexpr std::string_view kMessageKey = "Message";
   std::vector<TemplatePart> template_parts_;
 
   static std::string RenderPlaceholder(const TemplatePart& part,
@@ -50,7 +49,6 @@ class MessageRenderer {
 
   void ParseTemplate(const std::string& format);
 };
-
 // TODO: Enhance template rendering and formating
 }  // namespace logging
 }  // namespace ws

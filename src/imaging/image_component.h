@@ -15,7 +15,6 @@
 #include "types.h"
 namespace ws {
 namespace imaging {
-
 class ImageComponent {
  public:
   template <ws::imaging::IsAllowedPixelNumericType T>
@@ -58,5 +57,42 @@ class ImageComponent {
   bool is_alpha_;
   ImageBufferType buffer_type_;
 };
+
+// ============================================================================
+// Implementation details for ImageComponent
+// ============================================================================
+
+inline uint32_t ImageComponent::Width() const { return width_; }
+
+inline size_t ImageComponent::Length() const { return length_; }
+
+inline uint8_t ImageComponent::BitDepth() const { return bit_depth_; }
+
+inline bool ImageComponent::IsAlpha() const { return is_alpha_; }
+
+inline bool ImageComponent::Empty() const { return buffer_ == nullptr; }
+
+inline bool ImageComponent::IsValid() const {
+  return !Empty() && length_ != 0 && width_ != 0 && bit_depth_ != 0 &&
+         buffer_type_ != ImageBufferType::kUnknown;
+}
+
+inline ImageBufferType ImageComponent::GetBufferType() const {
+  return buffer_type_;
+}
+
+template <ws::imaging::IsAllowedPixelNumericType T>
+inline T* ImageComponent::Buffer() const {
+  assert(buffer_ != nullptr && "Buffer is null");
+  assert(ImageBufferTypeOf<T>::value != buffer_type_ &&
+         "Incorrect buffer type");
+  return static_cast<T*>(buffer_);
+}
+
+template <ws::imaging::IsAllowedPixelNumericType T>
+inline ImageComponent::operator T*() const {
+  return Buffer<T>();
+}
+
 }  // namespace imaging
 }  // namespace ws

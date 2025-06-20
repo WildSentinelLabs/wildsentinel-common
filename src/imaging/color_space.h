@@ -3,7 +3,6 @@
 #include <string>
 namespace ws {
 namespace imaging {
-
 enum class ColorSpace {
   kGray,
   kSRgb,

@@ -1,4 +1,5 @@
 #pragma once
+
 #include "imaging/image.h"
 #include "imaging/image_traits.h"
 #include "imaging/pixel/pixel_format.h"
@@ -7,8 +8,7 @@
 namespace ws {
 namespace imaging {
 template <ws::imaging::IsAllowedPixelNumericType T>
-class ImageBufferLoader {
- public:
+struct ImageBufferLoader {
   static StatusOr<Image> LoadFromInterleavedBuffer(
       ReadOnlySpan<T> buffer, uint32_t width, uint32_t height,
       uint8_t bit_depth,

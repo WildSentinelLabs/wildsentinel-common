@@ -4,7 +4,6 @@
 #include "io/file_format_detector.h"
 namespace ws {
 namespace imaging {
-
 class ImageFormatDetector : public ws::io::FileFormatDetector {
  public:
   ~ImageFormatDetector() override = default;

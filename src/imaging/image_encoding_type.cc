@@ -1,7 +1,6 @@
 #include "imaging/image_encoding_type.h"
 namespace ws {
 namespace imaging {
-
 const std::string ImageEncodingTypeToString(
     const ImageEncodingType& encoding_type) {
   switch (encoding_type) {

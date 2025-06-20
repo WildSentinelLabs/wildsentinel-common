@@ -23,5 +23,10 @@ struct PixelFormatDetails {
   bool HasAlpha() const;
 };
 
+// ============================================================================
+// Implementation details for PixelFormatDetails
+// ============================================================================
+
+inline bool PixelFormatDetails::HasAlpha() const { return alpha_index != -1; }
 }  // namespace imaging
 }  // namespace ws

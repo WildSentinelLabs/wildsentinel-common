@@ -4,7 +4,6 @@
 #include <string>
 namespace ws {
 namespace imaging {
-
 enum class ChromaSubsampling : int8_t {
   kSamp444 = 0,  // None
   kSamp422 = 1,  // Horizontal

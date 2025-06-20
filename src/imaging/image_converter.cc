@@ -34,12 +34,6 @@ ImageConverter::ImageConverter(ImageConverter&& other) noexcept
   other.alignment_ = 0;
 }
 
-ColorSpace ImageConverter::GetColorSpace() const { return color_space_; }
-
-ChromaSubsampling ImageConverter::GetChromaSubsampling() const {
-  return chroma_subsampling_;
-}
-
 ImageConverter& ImageConverter::operator=(const ImageConverter& other) {
   if (this != &other) {
     color_space_ = other.color_space_;

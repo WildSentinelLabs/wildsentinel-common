@@ -15,31 +15,37 @@ class ImageConverter {
   static ws::logging::LoggerConfiguration logger_configuration_;
 
   ImageConverter(const ImageConverter& other);
-
   ImageConverter(ImageConverter&& other) noexcept;
+
+  ImageConverter& operator=(const ImageConverter& other);
+  ImageConverter& operator=(ImageConverter&& other) noexcept;
 
   virtual ~ImageConverter() = default;
 
+  ColorSpace GetColorSpace() const;
+  ChromaSubsampling GetChromaSubsampling() const;
   virtual Image Convert(const Image& source) const = 0;
 
-  ColorSpace GetColorSpace() const;
-
-  ChromaSubsampling GetChromaSubsampling() const;
-
-  ImageConverter& operator=(const ImageConverter& other);
-
-  ImageConverter& operator=(ImageConverter&& other) noexcept;
-
  protected:
+  ImageConverter(ColorSpace color_space, ChromaSubsampling chroma_subsampling,
+                 uint8_t num_components, const std::string& source_context);
+
   std::unique_ptr<ws::logging::ILogger> logger_;
   std::string source_context_;
   ColorSpace color_space_;
   ChromaSubsampling chroma_subsampling_;
   uint8_t num_components_;
   uint8_t alignment_;
-
-  ImageConverter(ColorSpace color_space, ChromaSubsampling chroma_subsampling,
-                 uint8_t num_components, const std::string& source_context);
 };
+
+// ============================================================================
+// Implementation details for ImageConverter
+// ============================================================================
+
+inline ColorSpace ImageConverter::GetColorSpace() const { return color_space_; }
+
+inline ChromaSubsampling ImageConverter::GetChromaSubsampling() const {
+  return chroma_subsampling_;
+}
 }  // namespace imaging
 }  // namespace ws

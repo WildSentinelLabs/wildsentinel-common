@@ -82,26 +82,6 @@ void Image::LoadContext(const ImageContext& context) {
   }
 }
 
-ImageContext Image::Context() const { return context_; }
-
-uint8_t Image::NumComponents() const { return components_.Length(); }
-
-const ImageComponent& Image::GetComponent(uint8_t comp_num) const {
-  return components_[comp_num];
-}
-
-const Array<ImageComponent>& Image::Components() const { return components_; }
-
-uint32_t Image::Width() const { return width_; }
-
-uint32_t Image::Height() const { return height_; }
-
-ColorSpace Image::GetColorSpace() const { return color_space_; }
-
-ChromaSubsampling Image::GetChromaSubsampling() const {
-  return chroma_subsampling_;
-}
-
 bool Image::HasAlpha() const {
   for (auto& component : components_) {
     if (component.IsAlpha()) return true;
@@ -109,8 +89,6 @@ bool Image::HasAlpha() const {
 
   return false;
 }
-
-bool Image::Empty() const { return components_.Empty(); }
 
 bool Image::IsValid() const {
   if (components_.Empty() || width_ == 0 || height_ == 0 ||
