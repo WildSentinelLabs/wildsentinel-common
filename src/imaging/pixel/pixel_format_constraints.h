@@ -13,35 +13,36 @@
 namespace ws {
 namespace imaging {
 
-// Component orders for each PixelFormat
-// Rgb and Rgba formats
-static constexpr uint8_t kRgbOrder[3] = {0, 1, 2};      // R, G, B
-static constexpr uint8_t kRgbaOrder[4] = {0, 1, 2, 3};  // R, G, B, A (Alpha)
-static constexpr uint8_t kBgrOrder[3] = {2, 1, 0};      // B, G, R
-static constexpr uint8_t kBgrAOrder[4] = {2, 1, 0, 3};  // B, G, R, A (Alpha)
-static constexpr uint8_t kABgrOrder[4] = {3, 2, 1, 0};  // A, B, G, R
-static constexpr uint8_t kCmykOrder[4] = {0, 1, 2, 3};  // C, M, Y, K
-static constexpr uint8_t kCmykaOrder[5] = {0, 1, 2, 3, 4};  // C, M, Y, K, Alpha
-
-// Grayscale and Ya formats
-static constexpr uint8_t kGrayOrder[1] = {0};   // Grayscale (only Y)
-static constexpr uint8_t kYaOrder[2] = {0, 1};  // Y, A (Alpha)
-
-// YUV and YCbCr formats, standard orders for these
-static constexpr uint8_t kUyvyOrder[4] = {1, 0, 0, 2};  // Y, U, Y, V
-static constexpr uint8_t kYuy2Order[4] = {0, 1, 0, 2};  // Y, U, Y, V
-static constexpr uint8_t kNv12Order[3] = {0, 1, 2};     // Y, Cb, Cr
-static constexpr uint8_t kNv21Order[3] = {0, 2, 1};     // Y, Cr, Cb
-static constexpr uint8_t kI420Order[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
-static constexpr uint8_t kI422Order[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
-static constexpr uint8_t kI444Order[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
-static constexpr uint8_t kI400Order[1] = {0};           // Y, Cb, Cr (planar)
-static constexpr uint8_t kI411Order[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
-static constexpr uint8_t kI441Order[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
-static constexpr uint8_t kI440Order[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
-
-class PixelFormatConstraints {
+struct PixelFormatConstraints {
  private:
+  // Component orders for each PixelFormat
+  // Rgb and Rgba formats
+  static constexpr uint8_t kRgbOrder[3] = {0, 1, 2};      // R, G, B
+  static constexpr uint8_t kRgbaOrder[4] = {0, 1, 2, 3};  // R, G, B, A (Alpha)
+  static constexpr uint8_t kBgrOrder[3] = {2, 1, 0};      // B, G, R
+  static constexpr uint8_t kBgrAOrder[4] = {2, 1, 0, 3};  // B, G, R, A (Alpha)
+  static constexpr uint8_t kABgrOrder[4] = {3, 2, 1, 0};  // A, B, G, R
+  static constexpr uint8_t kCmykOrder[4] = {0, 1, 2, 3};  // C, M, Y, K
+  static constexpr uint8_t kCmykaOrder[5] = {0, 1, 2, 3,
+                                             4};  // C, M, Y, K, Alpha
+
+  // Grayscale and Ya formats
+  static constexpr uint8_t kGrayOrder[1] = {0};   // Grayscale (only Y)
+  static constexpr uint8_t kYaOrder[2] = {0, 1};  // Y, A (Alpha)
+
+  // YUV and YCbCr formats, standard orders for these
+  static constexpr uint8_t kUyvyOrder[4] = {1, 0, 0, 2};  // Y, U, Y, V
+  static constexpr uint8_t kYuy2Order[4] = {0, 1, 0, 2};  // Y, U, Y, V
+  static constexpr uint8_t kNv12Order[3] = {0, 1, 2};     // Y, Cb, Cr
+  static constexpr uint8_t kNv21Order[3] = {0, 2, 1};     // Y, Cr, Cb
+  static constexpr uint8_t kI420Order[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
+  static constexpr uint8_t kI422Order[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
+  static constexpr uint8_t kI444Order[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
+  static constexpr uint8_t kI400Order[1] = {0};           // Y, Cb, Cr (planar)
+  static constexpr uint8_t kI411Order[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
+  static constexpr uint8_t kI441Order[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
+  static constexpr uint8_t kI440Order[3] = {0, 1, 2};     // Y, Cb, Cr (Planar)
+
   // Pixel format details
   static constexpr PixelFormatDetails kRgb = {
       PixelFormat::kRgb,
@@ -234,18 +235,14 @@ class PixelFormatConstraints {
                                                true};
 
  public:
-  // Formats
-  static std::vector<const PixelFormatDetails*> formats;
-
   static const PixelFormatDetails* GetFormat(PixelFormat pixel_format);
-
   static Array<Point> GetDimensions(uint32_t width, uint32_t height,
                                     uint8_t num_components,
                                     ChromaSubsampling chroma_subsampling,
                                     bool has_alpha);
+
+  static std::vector<const PixelFormatDetails*> formats;
 };
-
 // TODO: Enhace pixel_format management and structures if needed
-
 }  // namespace imaging
 }  // namespace ws

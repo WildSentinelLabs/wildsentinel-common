@@ -5,7 +5,7 @@ namespace imaging {
 template <IsAllowedPixelNumericType T>
 SRgbToGrayConverter<T>::SRgbToGrayConverter(uint8_t bit_depth)
     : PixelColorConverter<T>(bit_depth),
-      coeffs_(PixelColorConverter<T>::BT2020Coefficients()) {}
+      coeffs_(PixelColorConverter<T>::BT2020Coefficients) {}
 
 template <IsAllowedPixelNumericType T>
 void SRgbToGrayConverter<T>::Convert(const Rgb<T>& rgb, Gray<T>& gray) const {
