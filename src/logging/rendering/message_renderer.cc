@@ -8,10 +8,13 @@ MessageRenderer::MessageRenderer(const std::string& template_format) {
 std::string MessageRenderer::Render(const ws::logging::LogEvent& event) const {
   std::string result;
   for (const auto& part : template_parts_) {
-    if (part.type == TemplatePart::Type::Text) {
-      result += part.key;
-    } else {
-      result += RenderPlaceholder(part, event);
+    switch (part.type) {
+      case TemplatePart::Type::Text:
+        result += part.key;
+        break;
+      default:
+        result += RenderPlaceholder(part, event);
+        break;
     }
   }
 
@@ -37,7 +40,6 @@ void MessageRenderer::ParseTemplate(const std::string& format) {
 
     size_t end_pos = format.find('}', pos);
     if (end_pos == std::string::npos) break;
-
     std::string key_format = format.substr(pos + 1, end_pos - pos - 1);
     size_t colon_pos = key_format.find(':');
     std::string key = key_format.substr(0, colon_pos);
@@ -74,9 +76,8 @@ std::string MessageRenderer::RenderPlaceholder(
 std::string MessageRenderer::FormatLogLevel(LogLevel level,
                                             const std::string& format) {
   std::string levelStr = LogLevelToString(level);
-  if (format == "u3") {
-    return levelStr.substr(0, 3);
-  }
+  if (format == "u3") return levelStr.substr(0, 3);
+  if (format == "u4") return levelStr.substr(0, 4);
   return levelStr;
 }
 
@@ -84,7 +85,6 @@ std::string MessageRenderer::FormatTimestamp(
     std::chrono::system_clock::time_point timestamp,
     const std::string& format) {
   auto in_time_t = std::chrono::system_clock::to_time_t(timestamp);
-
   auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                 timestamp.time_since_epoch()) %
             1000;
@@ -108,10 +108,7 @@ std::string MessageRenderer::FormatTimestamp(
   std::strftime(timeBuffer, sizeof(timeBuffer), adjusted_format.c_str(),
                 &localTime);
   std::string timeStr(timeBuffer);
-  if (include_ms) {
-    return Format("{}{:03}", timeStr, ms.count());
-  }
-
+  if (include_ms) return Format("{}{:03}", timeStr, ms.count());
   return timeStr;
 }
 }  // namespace logging

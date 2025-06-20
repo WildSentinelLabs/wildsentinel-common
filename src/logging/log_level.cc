@@ -1,7 +1,6 @@
 #include "logging/log_level.h"
 namespace ws {
 namespace logging {
-
 const std::string LogLevelToString(const LogLevel& log_level) {
   switch (log_level) {
     case LogLevel::kVerbose:

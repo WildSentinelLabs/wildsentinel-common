@@ -4,7 +4,8 @@ namespace logging {
 LogEvent::LogEvent(
     const std::string& source_context, const std::string& message,
     LogLevel level,
-    const std::unordered_map<std::string, std::string>& properties)
+    const ws::concurrency::ConcurrentUnorderedMap<std::string, std::string>&
+        properties)
     : source_context_(source_context),
       level_(level),
       message_(message),
@@ -12,23 +13,9 @@ LogEvent::LogEvent(
   timestamp_ = std::chrono::system_clock::now();
 }
 
-std::string LogEvent::SourceContext() const { return source_context_; }
-
-LogLevel LogEvent::Level() const { return level_; }
-
-std::string LogEvent::Message() const { return message_; }
-
-std::chrono::system_clock::time_point LogEvent::Timestamp() const {
-  return timestamp_;
-}
-
 std::optional<std::string> LogEvent::GetProperty(const std::string& key) const {
-  auto it = properties_.find(key);
-  if (it != properties_.end()) {
-    std::string value = it->second;
-    return value;
-  }
-
+  auto it = properties_.Find(key);
+  if (it != properties_.end()) return it->second;
   return std::nullopt;
 }
 

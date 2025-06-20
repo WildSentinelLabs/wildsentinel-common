@@ -1,20 +1,6 @@
 #include "logging/logger.h"
 namespace ws {
 namespace logging {
-
-std::unordered_map<std::string, std::string> Logger::properties_;
-std::mutex Logger::properties_mutex_;
-
-void Logger::AddProperty(const std::string& key, const std::string& value) {
-  std::lock_guard<std::mutex> lock(properties_mutex_);
-  properties_[key] = value;
-}
-
-void Logger::RemoveProperty(const std::string& key) {
-  std::lock_guard<std::mutex> lock(properties_mutex_);
-  properties_.erase(key);
-}
-
 Logger::Logger(const std::string& source_context, LogLevel min_log_level,
                std::vector<std::unique_ptr<ILogSink>>* sinks,
                std::vector<std::unique_ptr<ILogEnricher>>* enrichers)
@@ -26,7 +12,7 @@ Logger::Logger(const std::string& source_context, LogLevel min_log_level,
 
 void Logger::Log(LogLevel level, const std::string& message) const {
   if (level < min_log_level_) return;
-  std::unordered_map<std::string, std::string> properties = properties_;
+  ws::concurrency::ConcurrentUnorderedMap<std::string, std::string> properties;
   ws::logging::LogEvent event(source_context_, message, level, properties);
   for (auto& enricher : *enrichers_) {
     enricher->Enrich(event);
@@ -42,7 +28,5 @@ void Logger::Log(LogLevel level, const std::string& message) const {
     sink_thread.join();
   }
 }
-
-void Logger::SetMinimumLogLevel(LogLevel level) { min_log_level_ = level; }
 }  // namespace logging
 }  // namespace ws

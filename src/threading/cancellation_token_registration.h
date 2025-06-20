@@ -1,5 +1,6 @@
 #pragma once
 
+#include "concurrency/collections/concurrent_unordered_map.h"
 #include "threading/cancellation_state.h"
 namespace ws {
 namespace threading {
@@ -26,8 +27,7 @@ inline CancellationTokenRegistration::CancellationTokenRegistration(
 
 inline void CancellationTokenRegistration::Unregister() {
   if (auto st = state_.lock()) {
-    std::lock_guard<std::mutex> lock(st->mtx);
-    st->callbacks.erase(id_);
+    st->callbacks.UnsafeErase(id_);
   }
 }
 

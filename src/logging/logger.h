@@ -2,12 +2,10 @@
 
 #include <atomic>
 #include <future>
-#include <memory>
-#include <mutex>
 #include <thread>
-#include <unordered_map>
 #include <vector>
 
+#include "concurrency/collections/concurrent_unordered_map.h"
 #include "logging/events/log_event.h"
 #include "logging/ilog_enricher.h"
 #include "logging/ilog_sink.h"
@@ -18,12 +16,9 @@ namespace logging {
 class LoggerConfiguration;
 class Logger : public ILogger {
  public:
-  static void AddProperty(const std::string& key, const std::string& value);
-
-  static void RemoveProperty(const std::string& key);
+  ~Logger() override = default;
 
   void Log(LogLevel level, const std::string& message) const override;
-
   void SetMinimumLogLevel(LogLevel level) override;
 
  private:
@@ -38,8 +33,15 @@ class Logger : public ILogger {
   std::vector<std::unique_ptr<ILogSink>>* sinks_;
   std::vector<std::unique_ptr<ILogEnricher>>* enrichers_;
   std::atomic<LogLevel> min_log_level_;
-  static std::unordered_map<std::string, std::string> properties_;
-  static std::mutex properties_mutex_;
 };
+
+// ============================================================================
+// Implementation details for Logger
+// ============================================================================
+
+inline void Logger::SetMinimumLogLevel(LogLevel level) {
+  min_log_level_.exchange(level);
+}
+
 }  // namespace logging
 }  // namespace ws

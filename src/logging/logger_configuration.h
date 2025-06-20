@@ -9,21 +9,16 @@
 #include "logging/sinks/console_log_sink.h"
 namespace ws {
 namespace logging {
-
 class LoggerConfiguration {
  public:
   LoggerConfiguration();
-
   LoggerConfiguration(const LoggerConfiguration&) = delete;
-
   LoggerConfiguration(LoggerConfiguration&& other) noexcept;
 
   LoggerConfiguration& operator=(const LoggerConfiguration&) = delete;
-
   LoggerConfiguration& operator=(LoggerConfiguration&& other) noexcept;
 
   LoggerConfiguration&& SetMinimumLogLevel(LogLevel level);
-
   LoggerConfiguration&& AddSink(std::unique_ptr<ILogSink>&& sink,
                                 bool enable_async = false);
 

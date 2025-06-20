@@ -13,17 +13,9 @@ CancellationTokenRegistration CancellationToken::RegisterCallback(
     return CancellationTokenRegistration();
   }
 
-  {
-    std::lock_guard<std::mutex> lock(state_->mtx);
-    if (state_->cancelled.load()) {
-      callback();
-      return CancellationTokenRegistration();
-    }
-
-    long id = state_->next_id++;
-    state_->callbacks[id] = callback;
-    return CancellationTokenRegistration(state_, id);
-  }
+  long id = state_->next_id++;
+  state_->callbacks[id] = callback;
+  return CancellationTokenRegistration(state_, id);
 }
 }  // namespace threading
 }  // namespace ws

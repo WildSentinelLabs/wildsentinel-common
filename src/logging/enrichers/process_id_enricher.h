@@ -19,5 +19,14 @@ class ProcessIdEnricher : public ILogEnricher {
   static const std::string kKey;
 };
 
+// ============================================================================
+// Implementation details for ProcessIdEnricher
+// ============================================================================
+
+inline void ProcessIdEnricher::Enrich(ws::logging::LogEvent& event) const {
+  event.AddProperty(kKey, Format("{}", GetPid()));
+}
+
+inline const std::string ProcessIdEnricher::kKey = "ProcessId";
 }  // namespace logging
 }  // namespace ws

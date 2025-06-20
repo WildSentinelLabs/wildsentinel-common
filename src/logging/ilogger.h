@@ -5,11 +5,11 @@
 #include "logging/log_level.h"
 namespace ws {
 namespace logging {
-
 class ILogger {
  public:
-  virtual void Log(LogLevel level, const std::string& message) const = 0;
+  virtual ~ILogger() = default;
 
+  virtual void Log(LogLevel level, const std::string& message) const = 0;
   virtual void SetMinimumLogLevel(LogLevel level) = 0;
 
   virtual void LogVerbose(const std::string& message) const {
@@ -27,8 +27,6 @@ class ILogger {
   virtual void LogError(const std::string& message) const {
     Log(LogLevel::kError, message);
   }
-
-  virtual ~ILogger() = default;
 };
 }  // namespace logging
 }  // namespace ws

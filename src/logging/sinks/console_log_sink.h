@@ -1,8 +1,5 @@
 #pragma once
 
-#include <memory>
-#include <mutex>
-
 #include "logging/dispatchers/async_log_dispatcher.h"
 #include "logging/dispatchers/sync_log_dispatcher.h"
 #include "logging/ilog_dispatcher.h"
@@ -13,7 +10,6 @@
 #include "machine.h"
 namespace ws {
 namespace logging {
-
 class ConsoleLogSink : public ILogSink {
  public:
   ConsoleLogSink(LogLevel min_log_level = LogLevel::kInformation,
@@ -24,11 +20,8 @@ class ConsoleLogSink : public ILogSink {
   ~ConsoleLogSink() override;
 
   void Enable() override;
-
   void EnableAsync() override;
-
   void Display(ws::logging::LogEvent event) override;
-
   void Display(const std::string& message) const override;
 
  private:

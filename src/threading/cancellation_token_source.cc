@@ -2,21 +2,16 @@
 namespace ws {
 namespace threading {
 void CancellationTokenSource::Cancel() {
-  if (!state_) return;
+  if (state_->cancelled.exchange(true)) return;
 
-  std::unordered_map<size_t, ws::Delegate<void()>> callbacks_copy;
-  {
-    std::lock_guard<std::mutex> lock(state_->mtx);
-    if (state_->cancelled.load()) return;
-    state_->cancelled.store(true);
-    callbacks_copy = state_->callbacks;
-    state_->callbacks.clear();
-  }
+  auto callbacks_copy = state_->callbacks;
+  state_->callbacks.Clear();
 
-  for (const auto& pair : callbacks_copy) {
+  for (const auto& [id, callback] : callbacks_copy) {
     try {
-      pair.second();
+      callback();
     } catch (...) {
+      // Handle exceptions
     }
   }
 }

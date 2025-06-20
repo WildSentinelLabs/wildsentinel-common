@@ -3,7 +3,6 @@
 #include <string>
 namespace ws {
 namespace logging {
-
 enum class LogLevel : int8_t {
   kVerbose = 0,
   kInformation = 1,

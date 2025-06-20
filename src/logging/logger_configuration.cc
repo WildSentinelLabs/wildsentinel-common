@@ -1,7 +1,6 @@
 #include "logging/logger_configuration.h"
 namespace ws {
 namespace logging {
-
 LoggerConfiguration::LoggerConfiguration()
     : min_log_level_(LogLevel::kInformation) {}
 

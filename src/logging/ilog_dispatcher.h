@@ -7,14 +7,12 @@
 #include "logging/log_level.h"
 namespace ws {
 namespace logging {
-
 class ILogDispatcher {
  public:
-  virtual void Dispatch(const ILogSink& sink, const std::string& message) = 0;
-
-  virtual void Await() = 0;
-
   virtual ~ILogDispatcher() = default;
+
+  virtual void Dispatch(const ILogSink& sink, const std::string& message) = 0;
+  virtual void Await() = 0;
 };
 }  // namespace logging
 }  // namespace ws

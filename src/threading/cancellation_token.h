@@ -43,7 +43,9 @@ inline bool CancellationToken::IsCancellationRequested() const {
 }
 
 inline void CancellationToken::ThrowIfCancellationRequested() const {
-  if (IsCancellationRequested()) WsException::OperationCanceled().Throw();
+  if (IsCancellationRequested()) {
+    WsException::OperationCanceled().Throw();
+  }
 }
 }  // namespace threading
 }  // namespace ws

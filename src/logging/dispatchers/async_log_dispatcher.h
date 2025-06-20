@@ -14,10 +14,9 @@ class AsyncLogDispatcher : public ILogDispatcher {
  public:
   AsyncLogDispatcher();
 
-  ~AsyncLogDispatcher();
+  ~AsyncLogDispatcher() override;
 
   void Dispatch(const ILogSink& sink, const std::string& message) override;
-
   void Await() override;
 
  private:
@@ -26,13 +25,13 @@ class AsyncLogDispatcher : public ILogDispatcher {
     std::string message;
   };
 
-  void ProcessQueue();
-
   std::atomic<bool> running_;
   ws::concurrency::ConcurrentQueue<DispatchEvent> log_queue_;
   std::thread log_thread_;
   std::mutex mutex_;
   std::condition_variable cv_;
+
+  void ProcessQueue();
 };
 
 }  // namespace logging

@@ -1,15 +1,15 @@
 #pragma once
+
 #include <string>
 
 #include "logging/events/log_event.h"
 namespace ws {
 namespace logging {
-
 class ILogEnricher {
  public:
-  virtual void Enrich(ws::logging::LogEvent& event) const = 0;
-
   virtual ~ILogEnricher() = default;
+
+  virtual void Enrich(ws::logging::LogEvent& event) const = 0;
 };
 
 template <typename T>
