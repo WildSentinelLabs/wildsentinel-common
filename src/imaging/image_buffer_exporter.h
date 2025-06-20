@@ -15,7 +15,6 @@ template <ws::imaging::IsAllowedPixelNumericType T>
 struct ImageBufferExporter {
   static StatusOr<Array<T>> ExportToInterleavedBuffer(
       const Image& image, ws::imaging::PixelFormat pixel_format);
-
   static StatusOr<Array<T>> ExportToPlanarBuffer(
       const Image& image, ws::imaging::PixelFormat pixel_format);
 };

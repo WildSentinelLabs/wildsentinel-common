@@ -12,7 +12,6 @@ class CmykToSRgbConverter : public PixelColorConverter<T> {
   explicit CmykToSRgbConverter(uint8_t bit_depth);
 
   void Convert(const Cmyk<T>& cmyk, Rgb<T>& rgb) const;
-
   void ConvertWithAlpha(const Cmyka<T>& cmyka, Rgba<T>& rgba) const;
 };
 }  // namespace imaging

@@ -70,14 +70,13 @@ class Delegate<R(Args...)> {
     static void Manager(int op, const void* src, void* dest);
   };
 
-  alignas(ws::detail::CacheLineSize()) std::uint8_t storage_[kSboSize];
+  template <typename F>
+  void Assign(F&& f);
 
+  alignas(ws::detail::CacheLineSize()) std::uint8_t storage_[kSboSize];
   CallFn call_fn_ = nullptr;
   ManagerFn manager_fn_ = nullptr;
   bool using_sbo_ = true;
-
-  template <typename F>
-  void Assign(F&& f);
 };
 
 // ============================================================================

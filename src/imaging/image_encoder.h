@@ -13,8 +13,6 @@ namespace imaging {
 
 class ImageEncoder {
  public:
-  static ws::logging::LoggerConfiguration logger_configuration_;
-
   ImageEncoder(const ImageEncoder& other);
   ImageEncoder(ImageEncoder&& other) noexcept;
 
@@ -26,10 +24,11 @@ class ImageEncoder {
   virtual const ImageFormat& Format() const = 0;
   virtual void Encode(const Image& image, ws::io::Stream& stream) const = 0;
 
+  static ws::logging::LoggerConfiguration logger_configuration_;
+
  protected:
   ImageEncoder(const ImageContext& context, int quality,
                const std::string& source_context);
-
   ImageEncoder(const ImageContext& context, const std::string& source_context);
 
   std::unique_ptr<ws::logging::ILogger> logger_;

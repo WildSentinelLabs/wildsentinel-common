@@ -24,9 +24,9 @@ struct WsException : public std::exception {
   [[noreturn]] void Throw() const;
 
  private:
-  std::string message_;
-
   static std::string AppendDetails(const std::string& details);
+
+  std::string message_;
 };
 
 // ============================================================================

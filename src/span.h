@@ -30,7 +30,6 @@ struct Span {
 
   std::size_t Length() const;
   bool Empty() const;
-
   T* begin();
   T* end();
   const T* begin() const;
@@ -67,7 +66,6 @@ struct ReadOnlySpan {
 
   std::size_t Length() const;
   bool Empty() const;
-
   const T* begin() const;
   const T* end() const;
   const T* cbegin() const;

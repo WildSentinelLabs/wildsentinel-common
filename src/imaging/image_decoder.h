@@ -11,8 +11,6 @@ namespace ws {
 namespace imaging {
 class ImageDecoder {
  public:
-  static ws::logging::LoggerConfiguration logger_configuration_;
-
   ImageDecoder(const ImageDecoder& other);
   ImageDecoder(ImageDecoder&& other) noexcept;
 
@@ -23,6 +21,8 @@ class ImageDecoder {
 
   virtual const ImageFormat& Format() const = 0;
   virtual Image Decode(ws::io::Stream& stream) const = 0;
+
+  static ws::logging::LoggerConfiguration logger_configuration_;
 
  protected:
   ImageDecoder(const ImageContext& context, const std::string& source_context);

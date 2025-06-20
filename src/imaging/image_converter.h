@@ -12,8 +12,6 @@ namespace imaging {
 
 class ImageConverter {
  public:
-  static ws::logging::LoggerConfiguration logger_configuration_;
-
   ImageConverter(const ImageConverter& other);
   ImageConverter(ImageConverter&& other) noexcept;
 
@@ -25,6 +23,8 @@ class ImageConverter {
   ColorSpace GetColorSpace() const;
   ChromaSubsampling GetChromaSubsampling() const;
   virtual Image Convert(const Image& source) const = 0;
+
+  static ws::logging::LoggerConfiguration logger_configuration_;
 
  protected:
   ImageConverter(ColorSpace color_space, ChromaSubsampling chroma_subsampling,

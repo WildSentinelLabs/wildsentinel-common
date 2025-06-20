@@ -21,14 +21,12 @@ class LoggerConfiguration {
   LoggerConfiguration&& SetMinimumLogLevel(LogLevel level);
   LoggerConfiguration&& AddSink(std::unique_ptr<ILogSink>&& sink,
                                 bool enable_async = false);
-
   LoggerConfiguration&& AddConsoleSink(
       LogLevel min_log_level = LogLevel::kInformation,
       const std::string& template_format =
           "{Timestamp:%Y-%m-%d %X} [{Level:u3}] "
           "{Message:lj}{NewLine}{Exception}",
       bool enable_async = false);
-
   LoggerConfiguration&& AddEnricher(std::unique_ptr<ILogEnricher>&& enricher);
 
   template <IsEnricher T>

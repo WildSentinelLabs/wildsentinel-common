@@ -12,7 +12,6 @@ class SRgbToGrayConverter : public PixelColorConverter<T> {
   explicit SRgbToGrayConverter(uint8_t bit_depth);
 
   void Convert(const Rgb<T>& rgb, Gray<T>& gray) const;
-
   void ConvertWithAlpha(const Rgba<T>& rgba, Ya<T>& ya) const;
 
  protected:

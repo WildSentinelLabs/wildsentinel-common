@@ -18,7 +18,6 @@ struct CancellationToken {
   bool IsCancellationRequested() const;
   CancellationTokenRegistration RegisterCallback(
       const ws::Delegate<void()>& callback);
-
   void ThrowIfCancellationRequested() const;
 
  private:

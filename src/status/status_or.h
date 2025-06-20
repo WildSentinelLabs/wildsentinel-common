@@ -34,10 +34,10 @@ class StatusOr {
   friend inline bool operator!=(const StatusOr<U>&, const StatusOr<U>&);
 
  private:
+  void EnsureValue() const;
+
   Status status_;
   std::optional<T> value_;
-
-  void EnsureValue() const;
 };
 
 // ============================================================================

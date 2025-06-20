@@ -28,7 +28,6 @@ struct Array {
 
   std::size_t Length() const;
   bool Empty() const;
-
   T* begin();
   T* end();
   const T* begin() const;

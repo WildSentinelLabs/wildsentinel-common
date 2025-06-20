@@ -18,35 +18,22 @@ struct ImageContext {
       ws::concurrency::stl::concurrent_unordered_map<key_type, mapped_type>;
 
   ImageContext();
-
   ImageContext(const map_type& tags);
 
   ~ImageContext() = default;
 
   bool Empty() const;
-
   size_type Size() const;
-
   bool Contains(const key_type& key) const;
-
   mapped_type& operator[](const key_type& key);
-
   mapped_type& operator[](key_type&& key);
-
   std::optional<mapped_type> Get(const key_type& key) const;
-
   void Add(const key_type& key, mapped_type value);
-
   map_type::iterator begin();
-
   map_type::iterator end();
-
   map_type::const_iterator begin() const;
-
   map_type::const_iterator end() const;
-
   std::string ToString() const;
-
   void Clear();
 
  private:

@@ -16,46 +16,36 @@
 
 namespace ws {
 namespace io {
-class FileHandle : public IDisposable {
+class FileHandle {
  public:
-  FileHandle();
-
   static FileHandle Open(const std::filesystem::path& full_path, FileMode mode,
                          FileAccess access, FileShare share,
                          offset_t preallocation_size = 0);
 
-  static void SetFileLength(FileHandle& handle, offset_t length);
+  FileHandle();
 
+  ~FileHandle() = default;
+
+  static void SetFileLength(FileHandle& handle, offset_t length);
   static offset_t ReadAtOffset(FileHandle& handle, Span<unsigned char> buffer,
                                offset_t file_offset);
-
   static offset_t Seek(FileHandle& handle, offset_t offset, SeekOrigin origin,
                        bool close_invalid_handle = false);
-
   static void WriteAtOffset(FileHandle& handle,
                             ReadOnlySpan<unsigned char> buffer,
                             offset_t file_offset);
-
   static bool IsEndOfFile(offset_t error_code, FileHandle& handle,
                           offset_t file_offset);
-
   static std::filesystem::path GetFullPath(const std::string& input);
-
   static std::filesystem::path GetFullPath(const std::wstring& input);
 
   std::filesystem::path Path() const;
-
   bool IsClosed() const;
-
   bool CanSeek();
-
   bool TryGetCachedLength(offset_t& cached_length);
-
   offset_t FileType();
-
   offset_t FileLength();
-
-  void Dispose() override;
+  void Dispose();
 
  private:
 #ifdef _WIN32

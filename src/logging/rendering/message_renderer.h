@@ -36,18 +36,16 @@ class MessageRenderer {
   static constexpr std::string_view kTimeStampKey = "Timestamp";
   static constexpr std::string_view kLevelKey = "Level";
   static constexpr std::string_view kMessageKey = "Message";
-  std::vector<TemplatePart> template_parts_;
 
   static std::string RenderPlaceholder(const TemplatePart& part,
                                        const ws::logging::LogEvent& event);
-
   static std::string FormatLogLevel(LogLevel level, const std::string& format);
-
   static std::string FormatTimestamp(
       std::chrono::system_clock::time_point timestamp,
       const std::string& format);
-
   void ParseTemplate(const std::string& format);
+
+  std::vector<TemplatePart> template_parts_;
 };
 // TODO: Enhance template rendering and formating
 }  // namespace logging

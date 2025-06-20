@@ -28,6 +28,9 @@ class ImageComponent {
   ImageComponent& operator=(const ImageComponent&) = delete;
   ImageComponent& operator=(ImageComponent&& other) noexcept;
 
+  template <ws::imaging::IsAllowedPixelNumericType T>
+  operator T*() const;
+
   ~ImageComponent();
 
   uint32_t Width() const;
@@ -40,8 +43,6 @@ class ImageComponent {
   ImageBufferType GetBufferType() const;
   template <ws::imaging::IsAllowedPixelNumericType T>
   T* Buffer() const;
-  template <ws::imaging::IsAllowedPixelNumericType T>
-  operator T*() const;
 
  private:
   ImageComponent(void* buffer, uint32_t width, offset_t length,
