@@ -29,9 +29,9 @@ struct WsException : public std::exception {
   static std::string AppendDetails(const std::string& details);
 };
 
-//------------------------------------------------------------------------------
-// Implementation details
-//------------------------------------------------------------------------------
+// ============================================================================
+// Implementation details for WsException
+// ============================================================================
 
 inline WsException WsException::OutOfRange(const std::string& details) {
   return WsException("Out of range error" + AppendDetails(details));

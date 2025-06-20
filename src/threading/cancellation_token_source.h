@@ -19,6 +19,10 @@ class CancellationTokenSource {
   std::shared_ptr<CancellationState> state_;
 };
 
+// ============================================================================
+// Implementation details for CancellationTokenSource
+// ============================================================================
+
 inline CancellationTokenSource::CancellationTokenSource()
     : state_(std::make_shared<CancellationState>()) {}
 

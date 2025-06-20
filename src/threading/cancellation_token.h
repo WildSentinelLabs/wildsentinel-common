@@ -26,6 +26,10 @@ struct CancellationToken {
   std::shared_ptr<CancellationState> state_;
 };
 
+// ============================================================================
+// Implementation details for CancellationToken
+// ============================================================================
+
 inline CancellationToken CancellationToken::None() {
   return CancellationToken();
 }

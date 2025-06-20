@@ -16,6 +16,10 @@ struct CancellationTokenRegistration {
   size_t id_;
 };
 
+// ============================================================================
+// Implementation details for CancellationTokenRegistration
+// ============================================================================
+
 inline CancellationTokenRegistration::CancellationTokenRegistration(
     std::weak_ptr<CancellationState> state, size_t id)
     : state_(state), id_(id) {}

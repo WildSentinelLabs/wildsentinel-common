@@ -80,6 +80,10 @@ class Delegate<R(Args...)> {
   void Assign(F&& f);
 };
 
+// ============================================================================
+// Implementation details for Delete<R(Args...)>
+// ============================================================================
+
 template <typename R, typename... Args>
 inline Delegate<R(Args...)>::Delegate(::std::nullptr_t) noexcept : Delegate() {}
 

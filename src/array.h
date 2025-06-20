@@ -45,7 +45,7 @@ struct Array {
 };
 
 // ============================================================================
-// Implementation details for ReadOnlySpan<T>
+// Implementation details for Array<T>
 // ============================================================================
 
 template <typename T>
