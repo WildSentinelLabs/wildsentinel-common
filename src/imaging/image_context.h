@@ -19,6 +19,8 @@ struct ImageContext {
 
   ImageContext();
   ImageContext(const map_type& tags);
+  ImageContext(
+      std::initializer_list<std::pair<const key_type, mapped_type>> tags);
 
   ~ImageContext() = default;
 

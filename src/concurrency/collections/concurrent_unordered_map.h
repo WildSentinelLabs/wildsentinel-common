@@ -299,6 +299,37 @@ class concurrent_unordered_map {
                            const allocator_type& alloc) noexcept
       : internal_instance_(std::move(other.internal_instance_), alloc) {}
 
+  concurrent_unordered_map(std::initializer_list<value_type> il,
+                           size_type n = 0, const hasher& hf = hasher(),
+                           const key_equal& eql = key_equal(),
+                           const allocator_type& a = allocator_type())
+      : internal_instance_(il, n, hf, eql, a) {}
+
+  concurrent_unordered_map(size_type n, const allocator_type& a)
+      : internal_instance_(n, a) {}
+
+  concurrent_unordered_map(size_type n, const hasher& hf,
+                           const allocator_type& a)
+      : internal_instance_(n, hf, a) {}
+
+  template <typename InputIt>
+  concurrent_unordered_map(InputIt first, InputIt last, size_type n,
+                           const allocator_type& a)
+      : internal_instance_(first, last, n, a) {}
+
+  template <typename InputIt>
+  concurrent_unordered_map(InputIt first, InputIt last, size_type n,
+                           const hasher& hf, const allocator_type& a)
+      : internal_instance_(first, last, n, hf, a) {}
+
+  concurrent_unordered_map(std::initializer_list<value_type> il, size_type n,
+                           const allocator_type& a)
+      : internal_instance_(il, n, a) {}
+
+  concurrent_unordered_map(std::initializer_list<value_type> il, size_type n,
+                           const hasher& hf, const allocator_type& a)
+      : internal_instance_(il, n, hf, a) {}
+
   concurrent_unordered_map& operator=(const concurrent_unordered_map& other) {
     internal_instance_ = other.internal_instance_;
     return *this;
