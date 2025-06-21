@@ -22,7 +22,7 @@ class ImageConverter {
 
   ColorSpace GetColorSpace() const;
   ChromaSubsampling GetChromaSubsampling() const;
-  virtual Image Convert(const Image& source) const = 0;
+  virtual StatusOr<Image> Convert(const Image& source) const = 0;
 
   static ws::logging::LoggerConfiguration logger_configuration_;
 
