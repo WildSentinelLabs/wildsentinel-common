@@ -1,9 +1,9 @@
 # Set necessary files
-file(GLOB WSCOMMON_IO_FILES io/*/*.cc io/*.cc)
-file(GLOB WSCOMMON_THREADING_FILES threading/*.cc)
-file(GLOB WSCOMMON_STATUS_FILES status/*.cc)
 file(GLOB WSCOMMON_IMAGING_FILES "")
+file(GLOB WSCOMMON_IO_FILES io/*/*.cc io/*.cc)
 file(GLOB WSCOMMON_LOGGING_FILES "")
+file(GLOB WSCOMMON_STATUS_FILES status/*.cc)
+file(GLOB WSCOMMON_THREADING_FILES threading/*.cc)
 
 if (WSCOMMON_BUILD_IMAGING)
     file(GLOB WSCOMMON_IMAGING_FILES imaging/*.cc imaging/pixel/*.cc imaging/pixel/color_formats/*.cc imaging/pixel/color_formats/*/*.cc )
@@ -23,9 +23,18 @@ add_library(wscommon SHARED
 )
 
 # Include directories for wscommon library
+file(GLOB_RECURSE DETAIL_DIRS
+    LIST_DIRECTORIES true
+    ${WSCOMMON_SOURCE_DIR}/src/*/detail
+    ${WSCOMMON_SOURCE_DIR}/src/*/*/detail
+    ${WSCOMMON_SOURCE_DIR}/src/*/*/*/detail
+)
+
 target_include_directories(wscommon
     PUBLIC
         ${WSCOMMON_SOURCE_DIR}/src
+    PRIVATE
+        ${DETAIL_DIRS}
 )
 
 set_target_properties(wscommon PROPERTIES

@@ -2,9 +2,9 @@
 
 #include <thread>
 
-#include "format.h"
 #include "logging/events/log_event.h"
 #include "logging/ilog_enricher.h"
+#include "string/format.h"
 namespace ws {
 namespace logging {
 class ThreadIdEnricher : public ILogEnricher {

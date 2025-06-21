@@ -6,12 +6,12 @@
 #include <cstdint>
 
 #include "array.h"
-#include "format.h"
 #include "idisposable.h"
 #include "imaging/image_buffer_type.h"
 #include "imaging/pixel/pixel_allowed_types.h"
 #include "span.h"
 #include "status/status_or.h"
+#include "string/format.h"
 #include "types.h"
 namespace ws {
 namespace imaging {

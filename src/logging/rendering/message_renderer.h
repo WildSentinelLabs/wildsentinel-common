@@ -7,9 +7,9 @@
 #include <string>
 #include <vector>
 
-#include "format.h"
 #include "logging/ilog_enricher.h"
 #include "logging/log_level.h"
+#include "string/format.h"
 namespace ws {
 namespace logging {
 class MessageRenderer {

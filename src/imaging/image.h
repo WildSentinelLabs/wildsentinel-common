@@ -3,12 +3,12 @@
 #include <cstring>
 
 #include "array.h"
-#include "format.h"
 #include "imaging/chroma_subsampling.h"
 #include "imaging/color_space.h"
 #include "imaging/image_component.h"
 #include "imaging/image_context.h"
 #include "status/status_or.h"
+#include "string/format.h"
 
 namespace ws {
 namespace imaging {

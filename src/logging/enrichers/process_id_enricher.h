@@ -1,9 +1,9 @@
 #pragma once
 
-#include "format.h"
 #include "logging/events/log_event.h"
 #include "logging/ilog_enricher.h"
 #include "machine.h"
+#include "string/format.h"
 namespace ws {
 namespace logging {
 

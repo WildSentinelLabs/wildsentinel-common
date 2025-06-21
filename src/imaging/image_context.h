@@ -4,7 +4,7 @@
 #include <string>
 
 #include "concurrency/collections/concurrent_unordered_map.h"
-#include "format.h"
+#include "string/format.h"
 
 namespace ws {
 namespace imaging {
