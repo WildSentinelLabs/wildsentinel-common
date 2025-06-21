@@ -22,7 +22,7 @@ StatusOr<ImageComponent> ImageComponent::Create(uint32_t width, offset_t length,
                   "Bit depth does not match buffer type");
 
   void* buf = static_cast<void*>(new T[length]);
-  return ImageComponent(buf, length, width, bit_depth, is_alpha,
+  return ImageComponent(buf, width, length, bit_depth, is_alpha,
                         ImageBufferTypeOf<T>::value);
 }
 
@@ -73,8 +73,8 @@ ImageComponent::~ImageComponent() { Dispose(); }
 
 std::string ImageComponent::ToString() const {
   return Format(
-      "ImageComponent<{}>( Length: {} Width: {} Bit Depth: {} Alpha: {} )",
-      ImageBufferTypeToString(buffer_type_), length_, width_,
+      "ImageComponent<{}>(Width: {}, Length: {}, Bit Depth: {}, Alpha: {})",
+      ImageBufferTypeToString(buffer_type_), width_, length_,
       static_cast<int>(bit_depth_), (is_alpha_ ? "True" : "False"));
 }
 

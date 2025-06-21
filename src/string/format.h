@@ -24,14 +24,13 @@ inline std::string ToString(unsigned long v) { return std::to_string(v); }
 inline std::string ToString(long long v) { return std::to_string(v); }
 inline std::string ToString(unsigned long long v) { return std::to_string(v); }
 
-// Real
+// Real numbers
 inline std::string ToString(float v) { return std::to_string(v); }
 inline std::string ToString(double v) { return std::to_string(v); }
 inline std::string ToString(long double v) { return std::to_string(v); }
 
 // Pointers and nullptr
 inline std::string ToString(std::nullptr_t) { return "nullptr"; }
-
 inline std::string ToString(std::thread::id id) {
   std::ostringstream oss;
   oss << id;
@@ -57,6 +56,42 @@ inline std::string ToString(T value) {
 }
 
 namespace detail {
+// Format integer with padding
+template <typename T>
+inline std::string FormatPadded(T value, int width, char fill) {
+  char buffer[64];
+  if (fill == '0') {
+    std::string fmt = "%0" + std::to_string(width) + "d";
+    std::snprintf(buffer, sizeof(buffer), fmt.c_str(), value);
+  } else {
+    std::snprintf(buffer, sizeof(buffer), "%*d", width, value);
+  }
+  return buffer;
+}
+
+// Parse format specifiers like {:03} or {:5}
+inline std::optional<std::pair<int, char>> ParseFormatSpec(
+    std::string_view spec) {
+  if (spec.empty() || spec[0] != ':') return std::nullopt;
+
+  int width = 0;
+  char fill = ' ';
+  size_t i = 1;
+
+  if (spec[i] == '0') {
+    fill = '0';
+    ++i;
+  }
+
+  while (i < spec.size() && std::isdigit(spec[i])) {
+    width = width * 10 + (spec[i] - '0');
+    ++i;
+  }
+
+  if (width > 0) return std::make_pair(width, fill);
+  return std::nullopt;
+}
+
 // Base case: no arguments
 inline void FormatToImpl(std::string& out, std::string_view fmt) { out += fmt; }
 
@@ -64,16 +99,35 @@ inline void FormatToImpl(std::string& out, std::string_view fmt) { out += fmt; }
 template <typename Arg, typename... Args>
 inline void FormatToImpl(std::string& out, std::string_view fmt, Arg&& arg,
                          Args&&... args) {
-  size_t pos = fmt.find("{}");
-  if (pos == std::string_view::npos) {
+  size_t open = fmt.find('{');
+  if (open == std::string_view::npos) {
     out += fmt;
     return;
   }
 
-  out += fmt.substr(0, pos);
-  out += ToString(std::forward<Arg>(arg));
-  FormatToImpl(out, fmt.substr(pos + 2), std::forward<Args>(args)...);
+  size_t close = fmt.find('}', open);
+  if (close == std::string_view::npos) {
+    out += fmt;
+    return;
+  }
+
+  out += fmt.substr(0, open);
+  std::string_view spec = fmt.substr(open + 1, close - open - 1);
+  auto fmt_spec = ParseFormatSpec(spec);
+
+  if constexpr (std::is_integral_v<std::decay_t<Arg>>) {
+    if (fmt_spec) {
+      out += FormatPadded(arg, fmt_spec->first, fmt_spec->second);
+    } else {
+      out += ToString(std::forward<Arg>(arg));
+    }
+  } else {
+    out += ToString(std::forward<Arg>(arg));
+  }
+
+  FormatToImpl(out, fmt.substr(close + 1), std::forward<Args>(args)...);
 }
+
 }  // namespace detail
 
 // Entry point

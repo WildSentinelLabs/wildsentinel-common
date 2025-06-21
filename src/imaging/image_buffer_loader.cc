@@ -1,5 +1,4 @@
 #include "imaging/image_buffer_loader.h"
-
 namespace ws {
 namespace imaging {
 template <ws::imaging::IsAllowedPixelNumericType T>
@@ -48,10 +47,10 @@ StatusOr<Image> ImageBufferLoader<T>::LoadFromInterleavedBuffer(
     uint8_t c = components_order[i];
     if (components[c].Empty()) {
       ASSIGN_OR_RETURN(components[c],
-                       std::move(ImageComponent::Create<T>(
+                       ImageComponent::Create<T>(
                            static_cast<uint32_t>(dimensions[c].x),
                            dimensions[c].x * dimensions[c].y, bit_depth,
-                           c == pixel_format_details->alpha_index)));
+                           c == pixel_format_details->alpha_index));
     }
 
     comps_buffer_in_order[i] = components[c].Buffer<T>();
@@ -61,7 +60,7 @@ StatusOr<Image> ImageBufferLoader<T>::LoadFromInterleavedBuffer(
   for (size_t offset = 0; offset < buffer.Length();
        offset += components_order.Length()) {
     for (uint8_t i = 0; i < components_order.Length(); ++i) {
-      comps_buffer_in_order[i][*comps_buffer_index_in_order[i]++] =
+      comps_buffer_in_order[i][(*comps_buffer_index_in_order[i])++] =
           buffer[offset + i];
     }
   }
@@ -127,11 +126,11 @@ StatusOr<Image> ImageBufferLoader<T>::LoadFromPlanarBuffer(
   const T* buffer_ptr = static_cast<const T*>(buffer);
   for (size_t i = 0; i < components_order.Length(); i++) {
     uint8_t c = components_order[i];
-    ASSIGN_OR_RETURN(components[c],
-                     std::move(ImageComponent::Create<T>(
-                         static_cast<uint32_t>(dimensions[c].x),
-                         dimensions[c].x * dimensions[c].y, bit_depth,
-                         c == pixel_format_details->alpha_index)));
+    ASSIGN_OR_RETURN(
+        components[c],
+        ImageComponent::Create<T>(static_cast<uint32_t>(dimensions[c].x),
+                                  dimensions[c].x * dimensions[c].y, bit_depth,
+                                  c == pixel_format_details->alpha_index));
     T* comp_buffer(components[c].Buffer<T>());
     std::memcpy(comp_buffer, buffer_ptr, components[c].Length() * sizeof(T));
     buffer_ptr += components[c].Length();

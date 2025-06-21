@@ -191,7 +191,7 @@ inline constexpr ReadOnlySpan<T>::ReadOnlySpan() : data(nullptr), length(0) {}
 template <typename T>
 inline constexpr ReadOnlySpan<T>::ReadOnlySpan(const T* ptr, std::size_t len)
     : data(ptr), length(len) {
-  if (ptr != nullptr || len == 0) {
+  if (ptr == nullptr || len == 0) {
     ptr = nullptr;
     length = 0;
   }

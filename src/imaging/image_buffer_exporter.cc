@@ -56,7 +56,7 @@ StatusOr<Array<T>> ImageBufferExporter<T>::ExportToInterleavedBuffer(
        offset += components_order.Length()) {
     for (uint8_t i = 0; i < components_order.Length(); ++i) {
       buffer[offset + i] =
-          comps_buffer_in_order[i][*comps_buffer_index_in_order[i]++];
+          comps_buffer_in_order[i][(*comps_buffer_index_in_order[i])++];
     }
   }
 
