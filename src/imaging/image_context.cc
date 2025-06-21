@@ -7,15 +7,11 @@ ImageContext::ImageContext() : data(ImageContext::map_type()) {}
 ImageContext::ImageContext(const ImageContext::map_type& tags) : data(tags) {}
 
 ImageContext::ImageContext(
-    std::initializer_list<std::pair<const key_type, mapped_type>> tags)
-    : data(tags) {}
-
-bool ImageContext::Empty() const { return data.empty(); }
-
-ImageContext::size_type ImageContext::Size() const { return data.size(); }
-
-bool ImageContext::Contains(const ImageContext::key_type& key) const {
-  return data.find(key) != data.end();
+    std::initializer_list<std::pair<key_view_type, mapped_type>> tags)
+    : ImageContext() {
+  for (const auto& tag : tags) {
+    data.emplace(tag.first, tag.second);
+  }
 }
 
 ImageContext::mapped_type& ImageContext::operator[](
@@ -26,6 +22,19 @@ ImageContext::mapped_type& ImageContext::operator[](
 ImageContext::mapped_type& ImageContext::operator[](
     ImageContext::key_type&& key) {
   return data[std::move(key)];
+}
+
+ImageContext::mapped_type& ImageContext::operator[](
+    ImageContext::key_view_type key) {
+  return data[key_type(key)];
+}
+
+bool ImageContext::Empty() const { return data.empty(); }
+
+ImageContext::size_type ImageContext::Size() const { return data.size(); }
+
+bool ImageContext::Contains(const ImageContext::key_type& key) const {
+  return data.find(key) != data.end();
 }
 
 std::optional<ImageContext::mapped_type> ImageContext::Get(
@@ -44,6 +53,28 @@ void ImageContext::Add(const ImageContext::key_type& key,
     it->second = value;
   } else {
     data.insert({key, value});
+  }
+}
+
+bool ImageContext::Contains(ImageContext::key_view_type key) const {
+  return data.find(key) != data.end();
+}
+
+std::optional<ImageContext::mapped_type> ImageContext::Get(
+    ImageContext::key_view_type key) const {
+  if (auto it = data.find(key); it != data.end()) {
+    return it->second;
+  }
+  return std::nullopt;
+}
+
+void ImageContext::Add(ImageContext::key_view_type key,
+                       ImageContext::mapped_type value) {
+  auto it = data.find(key);
+  if (it != data.end()) {
+    it->second = value;
+  } else {
+    data.insert({key_type(key), value});
   }
 }
 

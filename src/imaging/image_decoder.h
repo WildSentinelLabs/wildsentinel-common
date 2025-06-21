@@ -6,6 +6,7 @@
 #include "logging/enrichers/thread_id_enricher.h"
 #include "logging/ilogger.h"
 #include "logging/logger_configuration.h"
+#include "status/status_or.h"
 
 namespace ws {
 namespace imaging {
@@ -20,7 +21,7 @@ class ImageDecoder {
   virtual ~ImageDecoder() = default;
 
   virtual const ImageFormat& Format() const = 0;
-  virtual Image Decode(ws::io::Stream& stream) const = 0;
+  virtual StatusOr<Image> Decode(ws::io::Stream& stream) const = 0;
 
   static ws::logging::LoggerConfiguration logger_configuration_;
 

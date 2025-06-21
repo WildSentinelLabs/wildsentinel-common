@@ -15,8 +15,18 @@ struct TransparentHash {
 struct TransparentEqual {
   using is_transparent = void;
 
-  bool operator()(std::string_view lhs, std::string_view rhs) const noexcept {
+  bool operator()(const std::string& lhs, const std::string& rhs) const {
+    return lhs == rhs;
+  }
+  bool operator()(std::string_view lhs, std::string_view rhs) const {
+    return lhs == rhs;
+  }
+  bool operator()(const std::string& lhs, std::string_view rhs) const {
+    return lhs == rhs;
+  }
+  bool operator()(std::string_view lhs, const std::string& rhs) const {
     return lhs == rhs;
   }
 };
+
 }  // namespace ws

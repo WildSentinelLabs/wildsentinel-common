@@ -1,4 +1,5 @@
 #pragma once
+
 #include "idisposable.h"
 #include "imaging/image.h"
 #include "imaging/image_encoding_type.h"
@@ -7,10 +8,10 @@
 #include "logging/enrichers/thread_id_enricher.h"
 #include "logging/ilogger.h"
 #include "logging/logger_configuration.h"
+#include "status/status.h"
 
 namespace ws {
 namespace imaging {
-
 class ImageEncoder {
  public:
   ImageEncoder(const ImageEncoder& other);
@@ -22,7 +23,7 @@ class ImageEncoder {
   virtual ~ImageEncoder() = default;
 
   virtual const ImageFormat& Format() const = 0;
-  virtual void Encode(const Image& image, ws::io::Stream& stream) const = 0;
+  virtual Status Encode(const Image& image, ws::io::Stream& stream) const = 0;
 
   static ws::logging::LoggerConfiguration logger_configuration_;
 

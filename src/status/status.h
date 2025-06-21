@@ -61,5 +61,4 @@ inline bool operator!=(const Status& lhs, const Status& rhs) {
     auto _status = (expr);             \
     if (!_status.Ok()) return _status; \
   } while (0)
-
 }  // namespace ws
