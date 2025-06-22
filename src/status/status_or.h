@@ -123,4 +123,15 @@ inline bool operator!=(const StatusOr<U>& lhs, const StatusOr<U>& rhs) {
     if (!_result.Ok()) return _result.GetStatus(); \
     lhs = std::move(_result.Value());              \
   } while (0)
+
+#define ASSIGN_OR_CLEANUP(lhs, expr, cleanup) \
+  do {                                        \
+    auto _result = (expr);                    \
+    if (!_result.Ok()) {                      \
+      cleanup;                                \
+      return _result.GetStatus();             \
+    }                                         \
+    lhs = std::move(_result.Value());         \
+  } while (0)
+
 }  // namespace ws

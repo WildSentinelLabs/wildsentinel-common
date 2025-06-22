@@ -61,4 +61,14 @@ inline bool operator!=(const Status& lhs, const Status& rhs) {
     auto _status = (expr);             \
     if (!_status.Ok()) return _status; \
   } while (0)
+
+#define CLEANUP_IF_ERROR(expr, cleanup) \
+  do {                                  \
+    auto _status = (expr);              \
+    if (!_status.Ok()) {                \
+      cleanup;                          \
+      return _status;                   \
+    }                                   \
+  } while (0)
+
 }  // namespace ws
