@@ -44,7 +44,7 @@ StatusOr<Image> ImageBufferLoader<T>::LoadFromInterleavedBuffer(
   Array<ImageComponent> components(num_components);
   T* comps_buffer_in_order[num_components_order];
   size_t* comps_buffer_index_in_order[num_components_order];
-  for (uint8_t i = 0; i < num_components_order; ++i) {
+  for (size_t i = 0; i < num_components_order; ++i) {
     uint8_t c = components_order[i];
     if (components[c].Empty()) {
       ASSIGN_OR_RETURN(components[c],
@@ -61,18 +61,18 @@ StatusOr<Image> ImageBufferLoader<T>::LoadFromInterleavedBuffer(
   if (pixel_format_details->has_common_order) {
 #pragma omp parallel for
     for (size_t c = 0; c < num_components; ++c) {
-      size_t dst_index = *comps_buffer_index_in_order[c];
+      size_t dst_index = comps_index[c];
       T* dst = comps_buffer_in_order[c];
       for (size_t i = 0; i < components[c].Length(); ++i) {
         dst[dst_index + i] = buffer[i * num_components + c];
       }
 
-      *comps_buffer_index_in_order[c] += components[c].Length();
+      comps_index[c] += components[c].Length();
     }
   } else {
     for (size_t offset = 0; offset < buffer.Length();
          offset += num_components_order) {
-      for (uint8_t c = 0; c < num_components_order; ++c) {
+      for (size_t c = 0; c < num_components_order; ++c) {
         comps_buffer_in_order[c][(*comps_buffer_index_in_order[c])++] =
             buffer[offset + c];
       }
@@ -122,9 +122,9 @@ StatusOr<Image> ImageBufferLoader<T>::LoadFromPlanarBuffer(
     return Status(StatusCode::kBadRequest,
                   "Pixel format details must indicate planar layout");
 
+  const uint8_t num_components = pixel_format_details->num_components;
   Array<Point> dimensions = ws::imaging::PixelFormatConstraints::GetDimensions(
-      width, height, pixel_format_details->num_components,
-      pixel_format_details->chroma_subsampling,
+      width, height, num_components, pixel_format_details->chroma_subsampling,
       pixel_format_details->HasAlpha());
   if (dimensions.Empty())
     return Status(StatusCode::kBadRequest,
@@ -132,13 +132,14 @@ StatusOr<Image> ImageBufferLoader<T>::LoadFromPlanarBuffer(
 
   ws::ReadOnlySpan<uint8_t> components_order =
       pixel_format_details->components_order;
-  if (buffer.Length() % components_order.Length() != 0)
+  const size_t num_components_order = components_order.Length();
+  if (buffer.Length() % num_components_order != 0)
     return Status(StatusCode::kBadRequest,
                   "Buffer length must be divisible by components order length");
 
-  Array<ImageComponent> components(pixel_format_details->num_components);
+  Array<ImageComponent> components(num_components);
   const T* buffer_ptr = static_cast<const T*>(buffer);
-  for (size_t i = 0; i < components_order.Length(); ++i) {
+  for (size_t i = 0; i < num_components_order; ++i) {
     uint8_t c = components_order[i];
     ASSIGN_OR_RETURN(
         components[c],

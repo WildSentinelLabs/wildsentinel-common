@@ -7,7 +7,8 @@ StatusOr<Array<T>> ImageBufferExporter<T>::ExportToInterleavedBuffer(
     const Image& image, ws::imaging::PixelFormat pixel_format) {
   size_t image_size = 0;
   if (!image.IsValid()) return Status(StatusCode::kBadRequest, "Invalid image");
-  for (auto& comp : image.Components()) {
+  const Array<ImageComponent>& components = image.Components();
+  for (const auto& comp : components) {
     if (comp.GetBufferType() != ImageBufferTypeOf<T>::value)
       return Status(StatusCode::kBadRequest, "Buffer type mismatch");
 
@@ -27,10 +28,11 @@ StatusOr<Array<T>> ImageBufferExporter<T>::ExportToInterleavedBuffer(
     return Status(StatusCode::kBadRequest,
                   "Pixel format details must indicate interleaved layout");
 
+  const uint8_t num_components = pixel_format_details->num_components;
   if (image.GetColorSpace() != pixel_format_details->color_space ||
       image.GetChromaSubsampling() !=
           pixel_format_details->chroma_subsampling ||
-      image.NumComponents() != pixel_format_details->num_components ||
+      image.NumComponents() != num_components ||
       image.HasAlpha() != pixel_format_details->HasAlpha()) {
     return Status(StatusCode::kBadRequest,
                   "Image properties do not match pixel format details");
@@ -38,29 +40,40 @@ StatusOr<Array<T>> ImageBufferExporter<T>::ExportToInterleavedBuffer(
 
   ws::ReadOnlySpan<uint8_t> components_order =
       pixel_format_details->components_order;
-  if (image_size % components_order.Length() != 0)
+  const size_t num_components_order = components_order.Length();
+  if (image_size % num_components_order != 0)
     return Status(StatusCode::kBadRequest,
                   "Image Size must be divisible by components order length");
 
-  size_t comps_index[pixel_format_details->num_components] = {0};
-  T* comps_buffer_in_order[components_order.Length()];
-  size_t* comps_buffer_index_in_order[components_order.Length()];
-  for (uint8_t i = 0; i < components_order.Length(); ++i) {
+  size_t comps_index[num_components] = {0};
+  T* comps_buffer_in_order[num_components_order];
+  size_t* comps_buffer_index_in_order[num_components_order];
+  for (size_t i = 0; i < num_components_order; ++i) {
     uint8_t c = components_order[i];
-    comps_buffer_in_order[i] = image.GetComponent(c).Buffer<T>();
+    comps_buffer_in_order[i] = components[c].Buffer<T>();
     comps_buffer_index_in_order[i] = &comps_index[c];
   }
 
   Array<T> buffer(image_size);
-  for (size_t offset = 0; offset < buffer.Length();
-       offset += components_order.Length()) {
-    for (uint8_t i = 0; i < components_order.Length(); ++i) {
-      buffer[offset + i] =
-          comps_buffer_in_order[i][(*comps_buffer_index_in_order[i])++];
+  if (pixel_format_details->has_common_order) {
+    const size_t num_pixels = image_size / num_components;
+#pragma omp parallel for
+    for (size_t i = 0; i < num_pixels; ++i) {
+      for (size_t c = 0; c < num_components_order; ++c) {
+        buffer[i * num_components_order + c] = comps_buffer_in_order[c][i];
+      }
+    }
+  } else {
+    for (size_t offset = 0; offset < buffer.Length();
+         offset += num_components_order) {
+      for (size_t i = 0; i < num_components_order; ++i) {
+        buffer[offset + i] =
+            comps_buffer_in_order[i][(*comps_buffer_index_in_order[i])++];
+      }
     }
   }
 
-  return StatusOr(std::move(buffer));
+  return buffer;
 }
 
 template <ws::imaging::IsAllowedPixelNumericType T>
@@ -68,7 +81,8 @@ StatusOr<Array<T>> ImageBufferExporter<T>::ExportToPlanarBuffer(
     const Image& image, ws::imaging::PixelFormat pixel_format) {
   size_t image_size = 0;
   if (!image.IsValid()) return Status(StatusCode::kBadRequest, "Invalid image");
-  for (auto& comp : image.Components()) {
+  const Array<ImageComponent>& components = image.Components();
+  for (const auto& comp : components) {
     if (comp.GetBufferType() != ImageBufferTypeOf<T>::value)
       return Status(StatusCode::kBadRequest, "Buffer type mismatch");
 
@@ -87,10 +101,11 @@ StatusOr<Array<T>> ImageBufferExporter<T>::ExportToPlanarBuffer(
     return Status(StatusCode::kBadRequest,
                   "Pixel format details must indicate planar layout");
 
+  const uint8_t num_components = pixel_format_details->num_components;
   if (image.GetColorSpace() != pixel_format_details->color_space ||
       image.GetChromaSubsampling() !=
           pixel_format_details->chroma_subsampling ||
-      image.NumComponents() != pixel_format_details->num_components ||
+      image.NumComponents() != num_components ||
       image.HasAlpha() != pixel_format_details->HasAlpha()) {
     return Status(StatusCode::kBadRequest,
                   "Image properties do not match pixel format details");
@@ -98,20 +113,21 @@ StatusOr<Array<T>> ImageBufferExporter<T>::ExportToPlanarBuffer(
 
   ws::ReadOnlySpan<uint8_t> components_order =
       pixel_format_details->components_order;
-  if (image_size % components_order.Length() != 0)
+  const size_t num_components_order = components_order.Length();
+  if (image_size % num_components_order != 0)
     return Status(StatusCode::kBadRequest,
                   "Image Size must be divisible by components order length");
 
   Array<T> buffer(image_size);
   T* buffer_ptr = static_cast<T*>(buffer);
-  for (uint8_t i = 0; i < components_order.Length(); ++i) {
+  for (size_t i = 0; i < num_components_order; ++i) {
     uint8_t c = components_order[i];
-    std::memcpy(buffer_ptr, image.GetComponent(c).Buffer<T>(),
-                image.GetComponent(c).Length() * sizeof(T));
-    buffer_ptr += image.GetComponent(c).Length();
+    std::memcpy(buffer_ptr, components[c].Buffer<T>(),
+                components[c].Length() * sizeof(T));
+    buffer_ptr += components[c].Length();
   }
 
-  return StatusOr(std::move(buffer));
+  return buffer;
 }
 
 template struct ImageBufferExporter<uint8_t>;
