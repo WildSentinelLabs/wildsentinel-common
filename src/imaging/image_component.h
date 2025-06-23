@@ -35,6 +35,7 @@ class ImageComponent {
 
   uint32_t Width() const;
   size_t Length() const;
+  size_t Height() const;
   uint8_t BitDepth() const;
   bool IsAlpha() const;
   bool Empty() const;
@@ -53,6 +54,7 @@ class ImageComponent {
 
   void* buffer_;
   uint32_t width_;
+  uint32_t height_;
   offset_t length_;
   uint8_t bit_depth_;
   bool is_alpha_;
@@ -66,6 +68,8 @@ class ImageComponent {
 inline uint32_t ImageComponent::Width() const { return width_; }
 
 inline size_t ImageComponent::Length() const { return length_; }
+
+inline size_t ImageComponent::Height() const { return height_; }
 
 inline uint8_t ImageComponent::BitDepth() const { return bit_depth_; }
 

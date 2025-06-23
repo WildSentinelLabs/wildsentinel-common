@@ -14,6 +14,8 @@ StatusOr<ImageComponent> ImageComponent::Create(uint32_t width, offset_t length,
     return Status(StatusCode::kBadRequest, "Length must be greater than 0");
   if (width <= 0)
     return Status(StatusCode::kBadRequest, "Width must be greater than 0");
+  if (width >= length)
+    return Status(StatusCode::kBadRequest, "Width must be less than Length");
   if (bit_depth <= 0)
     return Status(StatusCode::kBadRequest, "Bit depth must be greater than 0");
 
@@ -30,6 +32,7 @@ ImageComponent::ImageComponent()
     : buffer_(nullptr),
       width_(0),
       length_(0),
+      height_(0),
       bit_depth_(0),
       is_alpha_(false),
       buffer_type_(ImageBufferType::kUnknown) {}
@@ -38,12 +41,14 @@ ImageComponent::ImageComponent(ImageComponent&& other) noexcept
     : buffer_(other.buffer_),
       width_(other.width_),
       length_(other.length_),
+      height_(other.height_),
       bit_depth_(other.bit_depth_),
       is_alpha_(other.is_alpha_),
       buffer_type_(other.buffer_type_) {
   other.buffer_ = nullptr;
   other.width_ = 0;
   other.length_ = 0;
+  other.height_ = 0;
   other.bit_depth_ = 0;
   other.is_alpha_ = false;
   other.buffer_type_ = ImageBufferType::kUnknown;
@@ -54,6 +59,7 @@ ImageComponent& ImageComponent::operator=(ImageComponent&& other) noexcept {
     buffer_ = std::move(other.buffer_);
     width_ = other.width_;
     length_ = other.length_;
+    height_ = other.height_;
     bit_depth_ = other.bit_depth_;
     is_alpha_ = other.is_alpha_;
     buffer_type_ = other.buffer_type_;
@@ -61,6 +67,7 @@ ImageComponent& ImageComponent::operator=(ImageComponent&& other) noexcept {
     other.buffer_ = nullptr;
     other.width_ = 0;
     other.length_ = 0;
+    other.height_ = 0;
     other.bit_depth_ = 0;
     other.is_alpha_ = false;
     other.buffer_type_ = ImageBufferType::kUnknown;
@@ -84,6 +91,7 @@ ImageComponent::ImageComponent(void* buffer, uint32_t width, offset_t length,
     : buffer_(buffer),
       width_(width),
       length_(length),
+      height_(length / width),
       bit_depth_(bit_depth),
       is_alpha_(is_alpha),
       buffer_type_(type) {}
@@ -117,6 +125,7 @@ void ImageComponent::Dispose() {
   FreeBuffer();
   width_ = 0;
   length_ = 0;
+  height_ = 0;
   bit_depth_ = 0;
   is_alpha_ = false;
   buffer_type_ = ImageBufferType::kUnknown;
