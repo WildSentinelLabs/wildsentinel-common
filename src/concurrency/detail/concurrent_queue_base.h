@@ -7,7 +7,6 @@
 #include "concurrency/spin_mutex.h"
 #include "config.h"
 #include "delegate.h"
-#include "wsexception.h"
 
 namespace ws {
 namespace concurrency {
@@ -349,7 +348,7 @@ class MicroQueue {
         return;
       else if (c & 1) {
         ++rb.n_invalid_entries_;
-        WsException::BadAlloc().Throw();
+        throw std::bad_alloc();
       }
     }
   }

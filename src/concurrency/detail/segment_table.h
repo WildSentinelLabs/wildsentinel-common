@@ -230,7 +230,7 @@ class SegmentTable {
 
   void Reserve(size_type n) {
     if (n > allocator_traits_type::max_size(segment_table_allocator_))
-      WsException::BadAlloc().Throw();
+      throw std::bad_alloc();
 
     size_type size = size_.load(std::memory_order_relaxed);
     segment_index_type start_seg_idx =
@@ -303,7 +303,8 @@ class SegmentTable {
         AtomicBackoff backoff;
         do {
           if (segment_table_allocation_failed_.load(std::memory_order_relaxed))
-            WsException::BadAlloc().Throw();
+            throw std::bad_alloc();
+          ;
 
           backoff.Wait();
           table = segment_table_.load(std::memory_order_acquire);
@@ -512,8 +513,8 @@ class SegmentTable {
         EnableSegment(segment, table, seg_index, index);
       }
 
-      if (segment == kSegmentAllocationFailureTag)
-        WsException::BadAlloc().Throw();
+      if (segment == kSegmentAllocationFailureTag) throw std::bad_alloc();
+      ;
     } else {
       segment = table[seg_index].load(std::memory_order_acquire);
     }

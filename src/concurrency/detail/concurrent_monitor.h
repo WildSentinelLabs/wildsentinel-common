@@ -8,7 +8,6 @@
 #include "concurrency/detail/helpers.h"
 #include "concurrency/spin_mutex.h"
 #include "machine.h"
-#include "wsexception.h"
 
 namespace ws {
 namespace concurrency {

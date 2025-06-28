@@ -1,9 +1,9 @@
 #pragma once
+
 #include <type_traits>
 
 #include "config.h"
 #include "machine.h"
-#include "wsexception.h"
 
 namespace ws {
 namespace concurrency {
@@ -12,10 +12,10 @@ namespace detail {
 inline void* CacheAlignedAllocate(std::size_t size) {
   const std::size_t kCacheLineSize = ws::detail::CacheLineSize();
   assert(ws::detail::IsPowerOfTwo(kCacheLineSize) && "must be power of two");
-  if (size + kCacheLineSize < size) WsException::BadAlloc().Throw();
+  if (size + kCacheLineSize < size) throw std::bad_alloc();
   if (size == 0) size = 1;
   void* result = ws::detail::AlignedAllocate(size, kCacheLineSize);
-  if (!result) WsException::BadAlloc().Throw();
+  if (!result) throw std::bad_alloc();
   assert(ws::detail::IsAligned(result, kCacheLineSize) &&
          "The returned address isn't aligned");
   return result;
