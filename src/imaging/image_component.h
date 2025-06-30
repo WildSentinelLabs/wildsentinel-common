@@ -6,7 +6,6 @@
 #include <cstdint>
 
 #include "array.h"
-#include "idisposable.h"
 #include "imaging/image_buffer_type.h"
 #include "imaging/pixel/pixel_allowed_types.h"
 #include "span.h"

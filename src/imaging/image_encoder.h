@@ -1,6 +1,5 @@
 #pragma once
 
-#include "idisposable.h"
 #include "imaging/image.h"
 #include "imaging/image_encoding_type.h"
 #include "imaging/image_format.h"

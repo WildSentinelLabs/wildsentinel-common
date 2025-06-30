@@ -1,6 +1,5 @@
 #pragma once
 
-#include "idisposable.h"
 namespace ws {
 namespace pooling {
 template <typename T>

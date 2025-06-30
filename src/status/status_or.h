@@ -2,8 +2,12 @@
 
 #include "status/status.h"
 #include "status/status_code.h"
-#include "wsexception.h"
 namespace ws {
+
+struct bad_status_or_access_exception : public std::exception {
+  const char* what() const noexcept override;
+};
+
 template <typename T>
 class StatusOr {
  public:
@@ -39,6 +43,14 @@ class StatusOr {
   Status status_;
   std::optional<T> value_;
 };
+
+// ============================================================================
+// Implementation details for bad_status_or_access_exception
+// ============================================================================
+
+inline const char* bad_status_or_access_exception::what() const noexcept {
+  return "Attempted to access value in StatusOr<T> that is not OK.";
+}
 
 // ============================================================================
 // Implementation details for StatusOr<T>
@@ -104,7 +116,7 @@ inline T&& StatusOr<T>::Value() && {
 
 template <typename T>
 inline void StatusOr<T>::EnsureValue() const {
-  if (!Ok() || !value_.has_value()) WsException::BadStatusOrAccess().Throw();
+  if (!Ok() || !value_.has_value()) throw bad_status_or_access_exception();
 }
 
 template <typename U>

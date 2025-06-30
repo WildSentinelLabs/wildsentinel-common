@@ -160,7 +160,7 @@ class SleepNode : public WaitNode<TContext> {
     Semaphore().acquire();
     assert(!this->is_in_list_.load(std::memory_order_relaxed) &&
            "Still in the queue?");
-    if (this->aborted_) WsException::RuntimeError("user_abort").Throw();
+    if (this->aborted_) throw std::runtime_error("user_abort");
   }
 
   void Reset() override {

@@ -98,18 +98,17 @@ class ConcurrentUnorderedMap
   mapped_type& At(const key_type& key) {
     iterator where = this->Find(key);
 
-    if (where == this->end()) {
-      WsException::InvalidArgument("ConcurrentUnorderedMap::at").Throw();
-    }
+    if (where == this->end())
+      throw std::invalid_argument("ConcurrentUnorderedMap::at");
+
     return where->second;
   }
 
   const mapped_type& At(const key_type& key) const {
     const_iterator where = this->Find(key);
 
-    if (where == this->end()) {
-      WsException::OutOfRange("ConcurrentUnorderedMap::at").Throw();
-    }
+    if (where == this->end())
+      throw std::out_of_range("ConcurrentUnorderedMap::at");
 
     return where->second;
   }

@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "array.h"
-#include "wsexception.h"
 
 namespace ws {
 template <typename T>

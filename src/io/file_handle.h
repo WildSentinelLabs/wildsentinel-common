@@ -4,7 +4,6 @@
 #include <filesystem>
 #include <string>
 
-#include "idisposable.h"
 #include "io/file_access.h"
 #include "io/file_mode.h"
 #include "io/file_share.h"

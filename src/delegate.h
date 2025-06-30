@@ -7,9 +7,12 @@
 #include <utility>
 
 #include "machine.h"
-#include "wsexception.h"
 
 namespace ws {
+struct bad_delegate_call_exception : public std::exception {
+  const char* what() const noexcept override;
+};
+
 template <typename Signature>
 class Delegate;
 
@@ -80,7 +83,14 @@ class Delegate<R(Args...)> {
 };
 
 // ============================================================================
-// Implementation details for Delete<R(Args...)>
+// Implementation details for bad_delegate_call_exception
+// ============================================================================
+inline const char* bad_delegate_call_exception::what() const noexcept {
+  return "Bad delegate call";
+}
+
+// ============================================================================
+// Implementation details for Delegate<R(Args...)>
 // ============================================================================
 
 template <typename R, typename... Args>
@@ -174,7 +184,7 @@ inline Delegate<R(Args...)>& Delegate<R(Args...)>::operator=(
 
 template <typename R, typename... Args>
 inline R Delegate<R(Args...)>::operator()(Args... args) const {
-  if (!call_fn_) WsException::InvalidFunctionCall().Throw();
+  if (!call_fn_) throw bad_delegate_call_exception();
   return call_fn_(static_cast<const void*>(storage_),
                   std::forward<Args>(args)...);
 }

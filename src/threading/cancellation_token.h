@@ -2,12 +2,11 @@
 #include <memory>
 
 #include "delegate.h"
+#include "status/status_or.h"
 #include "threading/cancellation_state.h"
 #include "threading/cancellation_token_registration.h"
-#include "wsexception.h"
 namespace ws {
 namespace threading {
-
 struct CancellationToken {
  public:
   static CancellationToken None();
@@ -16,9 +15,8 @@ struct CancellationToken {
   CancellationToken(std::shared_ptr<CancellationState> state);
 
   bool IsCancellationRequested() const;
-  CancellationTokenRegistration RegisterCallback(
+  StatusOr<CancellationTokenRegistration> RegisterCallback(
       const ws::Delegate<void()>& callback);
-  void ThrowIfCancellationRequested() const;
 
  private:
   friend class CancellationTokenSource;
@@ -40,12 +38,6 @@ inline CancellationToken::CancellationToken(
 
 inline bool CancellationToken::IsCancellationRequested() const {
   return state_ && state_->cancelled.load();
-}
-
-inline void CancellationToken::ThrowIfCancellationRequested() const {
-  if (IsCancellationRequested()) {
-    WsException::OperationCanceled().Throw();
-  }
 }
 }  // namespace threading
 }  // namespace ws

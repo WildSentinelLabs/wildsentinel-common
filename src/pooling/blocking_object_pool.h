@@ -4,15 +4,17 @@
 
 #include "concurrency/collections/blocking_queue.h"
 #include "delegate.h"
-#include "idisposable.h"
 #include "pooling/iobject_pool.h"
-#include "wsexception.h"
+#include "status/statusor.h"
 
 namespace ws {
 namespace pooling {
 template <typename T>
 class BlockingObjectPool : public IObjectPool<T> {
  public:
+  static StatusOr<BlockingObjectPool<T>> Create(
+      ws::Delegate<T()> object_generator, std::size_t capacity);
+
   explicit BlockingObjectPool(ws::Delegate<T()> object_generator,
                               std::size_t capacity);
 
@@ -28,7 +30,6 @@ class BlockingObjectPool : public IObjectPool<T> {
   ws::concurrency::BlockingQueue<T> queue_;
   ws::Delegate<T()> object_generator_;
   std::atomic<std::size_t> current_count_;
-  std::atomic<bool> disposed_;
 };
 
 // ============================================================================
@@ -36,25 +37,31 @@ class BlockingObjectPool : public IObjectPool<T> {
 // ============================================================================
 
 template <typename T>
+inline StatusOr<BlockingObjectPool<T>> BlockingObjectPool<T>::Create(
+    ws::Delegate<T()> object_generator, std::size_t capacity) {
+  if (!object_generator_) {
+    return Status(StatusCode::kBadRequest, "object_generator is null");
+  }
+
+  if (capacity == 0) {
+    return Status(StatusCode::kBadRequest,
+                  "Pool capacity must be greater than 0");
+  }
+
+  return BlockingObjectPool<T>(object_generator, capacity);
+}
+
+template <typename T>
 inline BlockingObjectPool<T>::BlockingObjectPool(
     ws::Delegate<T()> object_generator, std::size_t capacity)
     : object_generator_(object_generator),
       capacity_(capacity),
-      current_count_(0),
-      disposed_(false) {
-  assert(capacity_ > 0 && "Pool capacity must not be 0 or less");
-  if (!object_generator_) {
-    WsException::InvalidArgument("object_generator is null").Throw();
-  }
-
+      current_count_(0) {
   queue_.SetCapacity(capacity_);
 }
 
 template <typename T>
 inline T BlockingObjectPool<T>::Get() {
-  if (disposed_.load(std::memory_order_acquire))
-    WsException::DisposedObject().Throw();
-
   T item;
   if (queue_.TryPop(item)) {
     return item;
@@ -76,24 +83,16 @@ inline bool BlockingObjectPool<T>::TryGet(T& item) {
 
 template <typename T>
 inline void BlockingObjectPool<T>::Return(const T& item) {
-  if (disposed_.load(std::memory_order_acquire))
-    WsException::DisposedObject().Throw();
-
   queue_.Push(item);
 }
 
 template <typename T>
 inline void BlockingObjectPool<T>::Return(T&& item) {
-  if (disposed_.load(std::memory_order_acquire))
-    WsException::DisposedObject().Throw();
-
   queue_.Push(std::move(item));
 }
 
 template <typename T>
 inline void BlockingObjectPool<T>::Clear() {
-  if (disposed_.load(std::memory_order_acquire))
-    WsException::DisposedObject().Throw();
   if constexpr (!std::is_member_function_pointer<
                     decltype(&T::Dispose)>::value) {
     objects_.Clear();
@@ -101,7 +100,6 @@ inline void BlockingObjectPool<T>::Clear() {
   }
 
   while (objects_.TryPop(item)) {
-    if (disposed_.load()) WsException::DisposedObject().Throw();
     item.Dispose();
   }
 }
@@ -110,7 +108,6 @@ template <typename T>
 inline void BlockingObjectPool<T>::Dispose() {
   Clear();
   queue_.SetCapacity(0);
-  disposed_.store(true);
 }
 
 }  // namespace pooling

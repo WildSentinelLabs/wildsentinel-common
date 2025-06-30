@@ -4,14 +4,13 @@
 #include <string>
 
 #include "array.h"
-#include "idisposable.h"
 #include "io/seek_origin.h"
 #include "span.h"
 #include "types.h"
 #include "wsexception.h"
 namespace ws {
 namespace io {
-class Stream : public IDisposable {
+class Stream {
  public:
   virtual ~Stream() = default;
 
@@ -33,6 +32,7 @@ class Stream : public IDisposable {
   virtual Array<unsigned char> ToArray() = 0;
   virtual void Close() = 0;
   virtual void CopyTo(Stream& stream);
+  virtual void Dispose() = 0;
 
  protected:
 #if defined(_WIN32)

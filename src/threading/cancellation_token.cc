@@ -2,10 +2,11 @@
 
 namespace ws {
 namespace threading {
-CancellationTokenRegistration CancellationToken::RegisterCallback(
+StatusOr<CancellationTokenRegistration> CancellationToken::RegisterCallback(
     const ws::Delegate<void()>& callback) {
   if (!state_)
-    WsException::InvalidArgument("Cancellation token not initialized.").Throw();
+    return Status(StatusCode::kBadRequest,
+                  "Cancellation token not initialized.");
 
   if (state_->cancelled.load()) {
     callback();

@@ -201,7 +201,7 @@ class BlockingQueue {
       Delegate<bool()> pred = [&] {
         if (abort_counter_.load(std::memory_order_relaxed) !=
             old_abort_counter) {
-          WsException::RuntimeError("user_abort").Throw();
+          throw std::runtime_error("user_abort");
         }
 
         return static_cast<std::ptrdiff_t>(queue_rep_ptr_->head_counter_.load(
@@ -257,7 +257,7 @@ class BlockingQueue {
         auto pred = [&] {
           if (abort_counter_.load(std::memory_order_relaxed) !=
               old_abort_counter) {
-            WsException::RuntimeError("user_abort").Throw();
+            throw std::runtime_error("user_abort");
           }
 
           return static_cast<std::ptrdiff_t>(queue_rep_ptr_->tail_counter_.load(

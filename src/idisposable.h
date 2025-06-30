@@ -2,8 +2,6 @@
 
 #include <type_traits>
 
-#include "wsexception.h"
-
 namespace ws {
 class IDisposable {
  public:

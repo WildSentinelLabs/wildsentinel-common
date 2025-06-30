@@ -5,25 +5,29 @@
 #include "concurrency/collections/concurrent_queue.h"
 #include "delegate.h"
 #include "pooling/iobject_pool.h"
-#include "wsexception.h"
+#include "status/statusor.h"
 
 namespace ws {
 namespace pooling {
 template <typename T>
 class ObjectPool : public IObjectPool<T> {
  public:
-  explicit ObjectPool(ws::Delegate<T()> object_generator);
+  static StatusOr<ObjectPool<T>> Create(ws::Delegate<T()> object_generator);
+
+  ObjectPool<T>() noexcept = default;
+
+  ~ObjectPool<T>();
 
   T Get() override;
   void Return(const T& item) override;
   void Return(T&& item) override;
-  void Dispose() override;
   void Clear() override;
 
  private:
+  explicit ObjectPool(ws::Delegate<T()> object_generator);
+
   ws::concurrency::ConcurrentQueue<T> objects_;
   ws::Delegate<T()> object_generator_;
-  std::atomic<bool> disposed_;
 };
 
 // ============================================================================
@@ -31,16 +35,24 @@ class ObjectPool : public IObjectPool<T> {
 // ============================================================================
 
 template <typename T>
+inline StatusOr<ObjectPool<T>> ObjectPool<T>::Create(
+    ws::Delegate<T()> object_generator) {
+  if (!object_generator_)
+    return Status(StatusCode::kBadRequest, "Object generator cannot be null");
+  return ObjectPool<T>(object_generator);
+}
+
+template <typename T>
 inline ObjectPool<T>::ObjectPool(ws::Delegate<T()> object_generator)
-    : object_generator_(object_generator), disposed_(false) {
-  if (!object_generator_) {
-    WsException::InvalidArgument("object_generator is null").Throw();
-  }
+    : object_generator_(object_generator) {}
+
+template <typename T>
+inline ObjectPool<T>::~ObjectPool() {
+  Clear();
 }
 
 template <typename T>
 inline T ObjectPool<T>::Get() {
-  if (disposed_.load()) WsException::DisposedObject().Throw();
   T item;
   if (objects_.TryPop(item)) {
     return item;
@@ -51,20 +63,16 @@ inline T ObjectPool<T>::Get() {
 
 template <typename T>
 inline void ObjectPool<T>::Return(const T& item) {
-  if (disposed_.load()) WsException::DisposedObject().Throw();
   objects_.Push(item);
 }
 
 template <typename T>
 inline void ObjectPool<T>::Return(T&& item) {
-  if (disposed_.load()) WsException::DisposedObject().Throw();
   objects_.Push(std::move(item));
 }
 
 template <typename T>
 inline void ObjectPool<T>::Clear() {
-  if (disposed_.load(std::memory_order_acquire))
-    WsException::DisposedObject().Throw();
   if constexpr (!std::is_member_function_pointer<
                     decltype(&T::Dispose)>::value) {
     objects_.Clear();
@@ -72,17 +80,8 @@ inline void ObjectPool<T>::Clear() {
   }
 
   while (objects_.TryPop(item)) {
-    if (disposed_.load()) WsException::DisposedObject().Throw();
     item.Dispose();
   }
 }
-
-template <typename T>
-inline void ObjectPool<T>::Dispose() {
-  Clear();
-  queue_.SetCapacity(0);
-  disposed_.store(true);
-}
-
 }  // namespace pooling
 }  // namespace ws
