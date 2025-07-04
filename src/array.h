@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <memory>
 
+#include "config.h"
+
 namespace ws {
 template <typename T>
 struct Span;

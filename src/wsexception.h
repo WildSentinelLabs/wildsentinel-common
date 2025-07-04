@@ -4,6 +4,8 @@
 #include <stdexcept>
 #include <string>
 
+#include "config.h"
+
 namespace ws {
 struct WsException : public std::exception {
  public:

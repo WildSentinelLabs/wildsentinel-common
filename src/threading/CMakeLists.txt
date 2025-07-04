@@ -1,0 +1,13 @@
+wscommon_cc_library(
+  NAME
+    ws::threading
+  SRCS
+    cancellation_token_source.cc
+    cancellation_token.cc
+  HDRS
+    cancellation_state.h
+    cancellation_token_registration.h
+    cancellation_token_source.h
+    cancellation_token.h
+  PUBLIC
+)

@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "array.h"
+#include "config.h"
 
 namespace ws {
 template <typename T>

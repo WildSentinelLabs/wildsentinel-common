@@ -2,6 +2,8 @@
 
 #include <type_traits>
 
+#include "config.h"
+
 namespace ws {
 class IDisposable {
  public:

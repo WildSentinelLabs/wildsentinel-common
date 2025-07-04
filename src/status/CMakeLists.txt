@@ -1,0 +1,12 @@
+wscommon_cc_library(
+  NAME
+    ws::status
+  SRCS
+    status_code.cc
+    status.cc
+  HDRS
+    status_code.h
+    status_or.h
+    status.h
+  PUBLIC
+)

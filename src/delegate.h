@@ -6,6 +6,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "config.h"
 #include "machine.h"
 
 namespace ws {

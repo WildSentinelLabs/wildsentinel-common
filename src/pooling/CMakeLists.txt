@@ -1,0 +1,9 @@
+wscommon_cc_library(
+  NAME
+    ws::pooling
+  HDRS
+    blocking_object_pool.h
+    iobject_pool.h
+    object_pool.h
+  INTERFACE
+)

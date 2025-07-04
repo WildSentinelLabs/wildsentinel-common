@@ -1,5 +1,15 @@
 #pragma once
 
+#ifdef _WIN32
+#ifdef WS_DLL
+#define WS_API __declspec(dllexport)
+#else
+#define WS_API __declspec(dllimport)
+#endif
+#else
+#define WS_API
+#endif
+
 #if defined(_MSVC_LANG)
 #define _LANG _MSVC_LANG
 #else

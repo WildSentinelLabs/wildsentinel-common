@@ -1,5 +1,7 @@
 #pragma once
 
+#include "config.h"
+
 #if defined(_WIN32)
 #define KEEP_WIN_ORDER
 #include <winsock2.h>
