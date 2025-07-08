@@ -25,11 +25,11 @@ class FileStream : public Stream {
              FileShare share);
   FileStream(const std::string& path, FileMode mode, FileAccess access,
              FileShare share, offset_t buffer_size);
-  FileStream(FileStream&& other) noexcept;
+  FileStream(FileStream&&) noexcept;
   FileStream(const FileStream&) = delete;
 
   FileStream& operator=(const FileStream&) = delete;
-  FileStream& operator=(FileStream&& other) noexcept;
+  FileStream& operator=(FileStream&&) noexcept;
 
   ~FileStream() override;
 

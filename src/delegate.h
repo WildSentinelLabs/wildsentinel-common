@@ -32,11 +32,11 @@ class Delegate<R(Args...)> {
                 std::is_member_function_pointer<MemFunc>::value>>
   Delegate(T* object, MemFunc memFunc);
 
-  Delegate(const Delegate& other);
-  Delegate(Delegate&& other) noexcept;
+  Delegate(const Delegate&);
+  Delegate(Delegate&&) noexcept;
 
-  Delegate& operator=(const Delegate& other);
-  Delegate& operator=(Delegate&& other) noexcept;
+  Delegate& operator=(const Delegate&);
+  Delegate& operator=(Delegate&&) noexcept;
   R operator()(Args... args) const;
   explicit operator bool() const noexcept;
 

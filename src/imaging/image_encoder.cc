@@ -27,7 +27,7 @@ ImageEncoder::ImageEncoder(const ImageEncoder& other)
 
 ImageEncoder::ImageEncoder(ImageEncoder&& other) noexcept
     : context_(std::move(other.context_)),
-      source_context_(other.source_context_),
+      source_context_(std::move(other.source_context_)),
       encoding_type_(other.encoding_type_),
       quality_(other.quality_),
       logger_(std::move(other.logger_)) {
@@ -52,7 +52,7 @@ ImageEncoder& ImageEncoder::operator=(ImageEncoder&& other) noexcept {
     context_ = std::move(other.context_);
     encoding_type_ = other.encoding_type_;
     quality_ = other.quality_;
-    source_context_ = other.source_context_;
+    source_context_ = std::move(other.source_context_);
     logger_ = std::move(other.logger_);
 
     other.context_ = ImageContext();

@@ -15,7 +15,7 @@ ImageDecoder::ImageDecoder(const ImageDecoder& other)
 
 ImageDecoder::ImageDecoder(ImageDecoder&& other) noexcept
     : context_(std::move(other.context_)),
-      source_context_(other.source_context_),
+      source_context_(std::move(other.source_context_)),
       logger_(std::move(other.logger_)) {
   other.context_ = ImageContext();
 }
@@ -33,7 +33,7 @@ ImageDecoder& ImageDecoder::operator=(const ImageDecoder& other) {
 ImageDecoder& ImageDecoder::operator=(ImageDecoder&& other) noexcept {
   if (this != &other) {
     context_ = std::move(other.context_);
-    source_context_ = other.source_context_;
+    source_context_ = std::move(other.source_context_);
     logger_ = std::move(other.logger_);
 
     other.context_ = ImageContext();

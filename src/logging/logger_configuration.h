@@ -13,10 +13,10 @@ class LoggerConfiguration {
  public:
   LoggerConfiguration();
   LoggerConfiguration(const LoggerConfiguration&) = delete;
-  LoggerConfiguration(LoggerConfiguration&& other) noexcept;
+  LoggerConfiguration(LoggerConfiguration&&) noexcept;
 
   LoggerConfiguration& operator=(const LoggerConfiguration&) = delete;
-  LoggerConfiguration& operator=(LoggerConfiguration&& other) noexcept;
+  LoggerConfiguration& operator=(LoggerConfiguration&&) noexcept;
 
   LoggerConfiguration&& SetMinimumLogLevel(LogLevel level);
   LoggerConfiguration&& AddSink(std::unique_ptr<ILogSink>&& sink,

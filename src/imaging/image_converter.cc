@@ -26,7 +26,7 @@ ImageConverter::ImageConverter(ImageConverter&& other) noexcept
       chroma_subsampling_(other.chroma_subsampling_),
       num_components_(other.num_components_),
       alignment_(other.alignment_),
-      source_context_(other.source_context_),
+      source_context_(std::move(other.source_context_)),
       logger_(std::move(other.logger_)) {
   other.color_space_ = ColorSpace::kUnsupported;
   other.chroma_subsampling_ = ChromaSubsampling::kUnsupported;
@@ -53,7 +53,7 @@ ImageConverter& ImageConverter::operator=(ImageConverter&& other) noexcept {
     chroma_subsampling_ = other.chroma_subsampling_;
     num_components_ = other.num_components_;
     alignment_ = other.alignment_;
-    source_context_ = other.source_context_;
+    source_context_ = std::move(other.source_context_);
     logger_ = std::move(other.logger_);
 
     other.color_space_ = ColorSpace::kUnsupported;

@@ -23,9 +23,9 @@ class ImageComponent {
 
   ImageComponent();
   ImageComponent(const ImageComponent&) = delete;
-  ImageComponent(ImageComponent&& other) noexcept;
+  ImageComponent(ImageComponent&&) noexcept;
   ImageComponent& operator=(const ImageComponent&) = delete;
-  ImageComponent& operator=(ImageComponent&& other) noexcept;
+  ImageComponent& operator=(ImageComponent&&) noexcept;
 
   template <ws::imaging::IsAllowedPixelNumericType T>
   operator T*() const;

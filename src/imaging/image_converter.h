@@ -12,11 +12,11 @@ namespace imaging {
 
 class ImageConverter {
  public:
-  ImageConverter(const ImageConverter& other);
-  ImageConverter(ImageConverter&& other) noexcept;
+  ImageConverter(const ImageConverter&);
+  ImageConverter(ImageConverter&&) noexcept;
 
-  ImageConverter& operator=(const ImageConverter& other);
-  ImageConverter& operator=(ImageConverter&& other) noexcept;
+  ImageConverter& operator=(const ImageConverter&);
+  ImageConverter& operator=(ImageConverter&&) noexcept;
 
   virtual ~ImageConverter() = default;
 

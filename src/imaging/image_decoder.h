@@ -12,11 +12,11 @@ namespace ws {
 namespace imaging {
 class ImageDecoder {
  public:
-  ImageDecoder(const ImageDecoder& other);
-  ImageDecoder(ImageDecoder&& other) noexcept;
+  ImageDecoder(const ImageDecoder&);
+  ImageDecoder(ImageDecoder&&) noexcept;
 
-  ImageDecoder& operator=(const ImageDecoder& other);
-  ImageDecoder& operator=(ImageDecoder&& other) noexcept;
+  ImageDecoder& operator=(const ImageDecoder&);
+  ImageDecoder& operator=(ImageDecoder&&) noexcept;
 
   virtual ~ImageDecoder() = default;
 

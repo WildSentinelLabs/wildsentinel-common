@@ -16,11 +16,11 @@ class MemoryStream : public Stream {
   MemoryStream(Array<unsigned char>&& buffer);
   MemoryStream(Array<unsigned char>&& buffer, bool writable);
   MemoryStream(Array<unsigned char>&& buffer, bool writable, bool visible);
-  MemoryStream(MemoryStream&& other) noexcept;
+  MemoryStream(MemoryStream&&) noexcept;
   MemoryStream(const MemoryStream&) = delete;
 
   MemoryStream& operator=(const MemoryStream&) = delete;
-  MemoryStream& operator=(MemoryStream&& other) noexcept;
+  MemoryStream& operator=(MemoryStream&&) noexcept;
 
   ~MemoryStream() = default;
 

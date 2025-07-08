@@ -21,10 +21,10 @@ class Image {
                                 ChromaSubsampling chroma_subsampling);
 
   Image();
-  Image(Image&& other) noexcept;
+  Image(Image&&) noexcept;
   Image(const Image&) = delete;
   Image& operator=(const Image&) = delete;
-  Image& operator=(Image&& other) noexcept;
+  Image& operator=(Image&&) noexcept;
 
   ~Image() = default;
 

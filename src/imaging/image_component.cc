@@ -56,7 +56,7 @@ ImageComponent::ImageComponent(ImageComponent&& other) noexcept
 
 ImageComponent& ImageComponent::operator=(ImageComponent&& other) noexcept {
   if (this != &other) {
-    buffer_ = std::move(other.buffer_);
+    buffer_ = other.buffer_;
     width_ = other.width_;
     length_ = other.length_;
     height_ = other.height_;

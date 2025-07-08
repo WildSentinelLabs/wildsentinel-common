@@ -13,11 +13,11 @@ namespace ws {
 namespace imaging {
 class ImageEncoder {
  public:
-  ImageEncoder(const ImageEncoder& other);
-  ImageEncoder(ImageEncoder&& other) noexcept;
+  ImageEncoder(const ImageEncoder&);
+  ImageEncoder(ImageEncoder&&) noexcept;
 
-  ImageEncoder& operator=(const ImageEncoder& other);
-  ImageEncoder& operator=(ImageEncoder&& other) noexcept;
+  ImageEncoder& operator=(const ImageEncoder&);
+  ImageEncoder& operator=(ImageEncoder&&) noexcept;
 
   virtual ~ImageEncoder() = default;
 

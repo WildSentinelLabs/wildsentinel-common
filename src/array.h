@@ -16,11 +16,11 @@ struct Array {
   Array(std::size_t length);
   Array(std::initializer_list<T> init);
   Array(T* data, std::size_t length);
-  Array(Array&& other) noexcept;
+  Array(Array&&) noexcept;
   Array(const Array&) = delete;
 
   Array& operator=(const Array&) = delete;
-  Array& operator=(Array&& other) noexcept;
+  Array& operator=(Array&&) noexcept;
   T& operator[](std::size_t index);
   const T& operator[](std::size_t index) const;
   operator T*();

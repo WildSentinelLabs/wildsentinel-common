@@ -20,7 +20,7 @@ class StatusOr {
   StatusOr(StatusOr&&) noexcept;
 
   StatusOr& operator=(const StatusOr&) = delete;
-  StatusOr& operator=(StatusOr&& other) noexcept;
+  StatusOr& operator=(StatusOr&&) noexcept;
 
   ~StatusOr() = default;
 
@@ -67,8 +67,8 @@ inline StatusOr<T>::StatusOr(const Status& status)
     : status_(status), value_(std::nullopt) {}
 
 template <typename T>
-inline StatusOr<T>::StatusOr(StatusOr&&) noexcept
-    : status_(std::move(status_)), value_(std::move(value_)) {}
+inline StatusOr<T>::StatusOr(StatusOr&& other) noexcept
+    : status_(std::move(other.status_)), value_(std::move(other.value_)) {}
 
 template <typename T>
 inline StatusOr<T>& StatusOr<T>::operator=(StatusOr&& other) noexcept {
