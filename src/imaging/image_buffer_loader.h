@@ -9,6 +9,7 @@ namespace ws {
 namespace imaging {
 template <ws::imaging::IsAllowedPixelNumericType T>
 class ImageBufferLoader {
+ public:
   static StatusOr<Image> LoadFromInterleavedBuffer(
       ReadOnlySpan<T> buffer, uint32_t width, uint32_t height,
       uint8_t bit_depth,
