@@ -35,5 +35,9 @@ ImageConverter& ImageConverter::operator=(ImageConverter&& other) noexcept {
 
   return *this;
 }
+
+void ImageConverter::SetLogger(std::unique_ptr<ws::logging::ILogger>&& logger) {
+  logger_ = std::move(logger);
+}
 }  // namespace imaging
 }  // namespace ws

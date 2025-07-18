@@ -20,6 +20,7 @@ class ImageDecoder {
 
   virtual ~ImageDecoder() = default;
 
+  void SetLogger(std::unique_ptr<ws::logging::ILogger>&& logger);
   virtual const ImageFormat& Format() const = 0;
   virtual StatusOr<Image> Decode(ws::io::Stream& stream) const = 0;
 

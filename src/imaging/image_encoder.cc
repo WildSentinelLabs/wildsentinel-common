@@ -29,5 +29,9 @@ ImageEncoder& ImageEncoder::operator=(ImageEncoder&& other) noexcept {
 void ImageEncoder::SetOptions(const ImageCompressionOptions& options) {
   compression_options_ = options;
 }
+
+void ImageEncoder::SetLogger(std::unique_ptr<ws::logging::ILogger>&& logger) {
+  logger_ = std::move(logger);
+}
 }  // namespace imaging
 }  // namespace ws

@@ -22,6 +22,7 @@ class ImageEncoder {
   virtual ~ImageEncoder() = default;
 
   ImageCompressionOptions Options() const;
+  void SetLogger(std::unique_ptr<ws::logging::ILogger>&& logger);
   virtual void SetOptions(const ImageCompressionOptions& options);
   virtual const ImageFormat& Format() const = 0;
   virtual Status Encode(const Image& image, ws::io::Stream& stream) const = 0;

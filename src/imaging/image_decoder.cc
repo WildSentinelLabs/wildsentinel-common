@@ -17,5 +17,9 @@ ImageDecoder& ImageDecoder::operator=(ImageDecoder&& other) noexcept {
 
   return *this;
 }
+
+void ImageDecoder::SetLogger(std::unique_ptr<ws::logging::ILogger>&& logger) {
+  logger_ = std::move(logger);
+}
 }  // namespace imaging
 }  // namespace ws

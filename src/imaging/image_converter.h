@@ -22,6 +22,7 @@ class ImageConverter {
 
   ColorSpace GetColorSpace() const;
   ChromaSubsampling GetChromaSubsampling() const;
+  void SetLogger(std::unique_ptr<ws::logging::ILogger>&& logger);
   virtual StatusOr<Image> Convert(const Image& source) const = 0;
 
  protected:
