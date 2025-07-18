@@ -217,6 +217,40 @@
       "inherits": ["core-build"],
       "cleanFirst": true,
       "verbose": false
+    },
+    {
+      "name": "core-install",
+      "description": "Inherits environment from base configurePreset",
+      "configurePreset": "base",
+      "hidden": true,
+      "inheritConfigureEnvironment": true,
+      "targets": ["install"]
+    },
+    {
+      "name": "windows-install-debug",
+      "displayName": "Instalar Windows Debug",
+      "inherits": ["core-install"],
+      "configurePreset": "windows-debug"
+    },
+    {
+      "name": "windows-install-release",
+      "displayName": "Instalar Windows Release",
+      "inherits": ["core-install"],
+      "configurePreset": "windows-release"
+    },
+    {
+      "name": "linux-install-debug",
+      "displayName": "Install Linux Debug",
+      "inherits": ["core-install"],
+      "hidden": true,
+      "configurePreset": "linux-debug"
+    },
+    {
+      "name": "linux-install-release",
+      "displayName": "Install Linux Release",
+      "inherits": ["core-install"],
+      "hidden": true,
+      "configurePreset": "linux-release"
     }
   ],
   "testPresets": [
@@ -238,7 +272,7 @@
   ],
   "workflowPresets": [
     {
-      "name": "windows-debug-clean",
+      "name": "windows-flow-debug",
       "steps": [
         {
           "type": "configure",
@@ -247,6 +281,27 @@
         {
           "type": "build",
           "name": "windows-build-debug"
+        },
+        {
+          "type": "build",
+          "name": "windows-install-debug"
+        }
+      ]
+    },
+    {
+      "name": "windows-flow-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "windows-release"
+        },
+        {
+          "type": "build",
+          "name": "windows-build-release"
+        },
+        {
+          "type": "build",
+          "name": "windows-install-release"
         }
       ]
     }
