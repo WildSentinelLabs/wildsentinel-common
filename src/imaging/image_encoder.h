@@ -42,7 +42,7 @@ class ImageEncoder {
 // Implementation details for ImageEncoder<T>
 // ============================================================================
 
-ImageCompressionOptions ImageEncoder::Options() const {
+inline ImageCompressionOptions ImageEncoder::Options() const {
   return compression_options_;
 }
 }  // namespace imaging

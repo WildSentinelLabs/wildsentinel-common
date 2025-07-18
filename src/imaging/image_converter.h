@@ -68,25 +68,25 @@ inline ChromaSubsampling ImageConverter::GetChromaSubsampling() const {
 
 template <typename Derived>
 template <typename... Args>
-TypedImageConverter<Derived>::TypedImageConverter(Args&&... args)
+inline TypedImageConverter<Derived>::TypedImageConverter(Args&&... args)
     : ImageConverter(std::forward<Args>(args)...) {}
 
 template <typename Derived>
-StatusOr<Image> TypedImageConverter<Derived>::Convert(
+inline StatusOr<Image> TypedImageConverter<Derived>::Convert(
     const Image& source) const {
   return DispatchConvert(source);
 }
 
 template <typename Derived>
 template <typename T>
-StatusOr<Image> TypedImageConverter<Derived>::DispatchType(
+inline StatusOr<Image> TypedImageConverter<Derived>::DispatchType(
     const Image& source) const {
   return static_cast<const Derived*>(this)->template InnerConvert<T>(
       source, this->alignment_);
 }
 
 template <typename Derived>
-StatusOr<Image> TypedImageConverter<Derived>::DispatchConvert(
+inline StatusOr<Image> TypedImageConverter<Derived>::DispatchConvert(
     const Image& source) const {
   switch (source.GetComponent(0).GetBufferType()) {
     case ImageBufferType::kUInt8:

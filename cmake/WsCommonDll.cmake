@@ -37,6 +37,6 @@ function(wscommon_make_dll)
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   )
 
-  add_library(ws::dll ALIAS ${dll_name})
+  add_library(ws::wscommon ALIAS ${dll_name})
 endfunction()
 
