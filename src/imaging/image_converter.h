@@ -41,7 +41,8 @@ class ImageConverter {
 template <typename Derived>
 class TypedImageConverter : public ImageConverter {
  public:
-  using ImageConverter::ImageConverter;
+  template <typename... Args>
+  TypedImageConverter(Args&&... args);
 
   StatusOr<Image> Convert(const Image& source) const final;
 
@@ -64,6 +65,12 @@ inline ChromaSubsampling ImageConverter::GetChromaSubsampling() const {
 // ============================================================================
 // Implementation details for TypedImageConverter<T>
 // ============================================================================
+
+template <typename Derived>
+template <typename... Args>
+TypedImageConverter<Derived>::TypedImageConverter(Args&&... args)
+    : ImageConverter(std::forward<Args>(args)...) {}
+
 template <typename Derived>
 StatusOr<Image> TypedImageConverter<Derived>::Convert(
     const Image& source) const {
