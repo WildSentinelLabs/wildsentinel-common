@@ -156,11 +156,11 @@ StatusOr<Array<T>> ImageBufferExporter<T>::ExportToPlanarBuffer(
   return buffer;
 }
 
-template struct ImageBufferExporter<uint8_t>;
-template struct ImageBufferExporter<int8_t>;
-template struct ImageBufferExporter<uint16_t>;
-template struct ImageBufferExporter<int16_t>;
-template struct ImageBufferExporter<uint32_t>;
-template struct ImageBufferExporter<int32_t>;
+template class ImageBufferExporter<uint8_t>;
+template class ImageBufferExporter<int8_t>;
+template class ImageBufferExporter<uint16_t>;
+template class ImageBufferExporter<int16_t>;
+template class ImageBufferExporter<uint32_t>;
+template class ImageBufferExporter<int32_t>;
 }  // namespace imaging
 }  // namespace ws

@@ -15,6 +15,7 @@ wscommon_cc_library(
     ilog_enricher.h
     ilog_sink.h
     ilogger.h
+    log_context.h
     log_level.h
     logger_configuration.h
     logger.h

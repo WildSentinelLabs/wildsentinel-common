@@ -12,7 +12,7 @@
 
 namespace ws {
 namespace imaging {
-struct ImageContext {
+class ImageContext {
  public:
   using size_type = std::size_t;
   using key_type = std::string;

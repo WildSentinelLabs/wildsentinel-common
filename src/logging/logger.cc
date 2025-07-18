@@ -4,15 +4,12 @@
 
 namespace ws {
 namespace logging {
-Logger::Logger(LoggerConfiguration& config, const std::string& source_context,
-               LogLevel min_log_level)
-    : ILogger(),
-      min_log_level_(min_log_level),
-      source_context_(source_context),
-      config_(config) {}
+Logger::Logger(LoggerConfiguration& config, const std::string& source_context)
+    : ILogger(), source_context_(source_context), config_(config) {}
 
 void Logger::Log(LogLevel level, const std::string& message) const {
-  if (level < min_log_level_) return;
+  if (level < LogContext::min_log_level_) return;
+  if (level < config_.min_log_level_) return;
   LogEvent::map_type properties;
   ws::logging::LogEvent event(source_context_, message, level, properties);
   for (auto& enricher : config_.enrichers_) {

@@ -13,7 +13,16 @@
 namespace ws {
 namespace imaging {
 
-struct PixelFormatConstraints {
+class PixelFormatConstraints {
+ public:
+  static const PixelFormatDetails* GetFormat(PixelFormat pixel_format);
+  static Array<Point> GetDimensions(uint32_t width, uint32_t height,
+                                    uint8_t num_components,
+                                    ChromaSubsampling chroma_subsampling,
+                                    bool has_alpha);
+
+  static std::vector<const PixelFormatDetails*> formats;
+
  private:
   // Component orders for each PixelFormat
   // Rgb and Rgba formats
@@ -233,15 +242,6 @@ struct PixelFormatConstraints {
                                                -1,
                                                PixelLayoutFlag::kPlanar,
                                                true};
-
- public:
-  static const PixelFormatDetails* GetFormat(PixelFormat pixel_format);
-  static Array<Point> GetDimensions(uint32_t width, uint32_t height,
-                                    uint8_t num_components,
-                                    ChromaSubsampling chroma_subsampling,
-                                    bool has_alpha);
-
-  static std::vector<const PixelFormatDetails*> formats;
 };
 // TODO: Enhace pixel_format management and structures if needed
 }  // namespace imaging

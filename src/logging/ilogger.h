@@ -10,7 +10,6 @@ class ILogger {
   virtual ~ILogger() = default;
 
   virtual void Log(LogLevel level, const std::string& message) const = 0;
-  virtual void SetMinimumLogLevel(LogLevel level) = 0;
   virtual void LogTrace(const std::string& message) const;
   virtual void LogDebug(const std::string& message) const;
   virtual void LogInformation(const std::string& message) const;
