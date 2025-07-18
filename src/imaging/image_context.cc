@@ -91,7 +91,7 @@ ImageContext::map_type::const_iterator ImageContext::end() const {
 }
 
 std::string ImageContext::ToString() const {
-  std::string result = Format("ImageContext<{}>(", data.size());
+  std::string result = Format("ImageContext[{}](", data.size());
   if (data.empty()) {
     result += ")";
     return result;
