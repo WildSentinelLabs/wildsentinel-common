@@ -4,10 +4,12 @@
 namespace ws {
 namespace logging {
 enum class LogLevel : int8_t {
-  kVerbose = 0,
-  kInformation = 1,
-  kWarning = 2,
-  kError = 3,
+  kTrace = 0,
+  kDebug = 1,
+  kInformation = 2,
+  kWarning = 3,
+  kError = 4,
+  kCritical = 5,
 };
 
 const std::string LogLevelToString(const LogLevel& log_level);

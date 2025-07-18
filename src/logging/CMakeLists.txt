@@ -4,6 +4,7 @@ wscommon_cc_library(
   SRCS
     log_level.cc
     logger_configuration.cc
+    ilogger.cc
     logger.cc
     dispatchers/async_log_dispatcher.cc
     events/log_event.cc

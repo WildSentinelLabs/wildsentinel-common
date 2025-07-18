@@ -4,7 +4,6 @@
 #include <vector>
 
 #include "logging/ilog_enricher.h"
-#include "logging/ilogger.h"
 #include "logging/logger.h"
 #include "logging/sinks/console_log_sink.h"
 namespace ws {
@@ -35,9 +34,11 @@ class LoggerConfiguration {
     return std::move(*this);
   }
 
-  std::unique_ptr<ILogger> CreateLogger(const std::string& source_context);
+  std::unique_ptr<Logger> CreateLogger(const std::string& source_context);
 
  private:
+  friend class Logger;
+
   LogLevel min_log_level_;
   std::vector<std::unique_ptr<ILogSink>> sinks_;
   std::vector<std::unique_ptr<ILogEnricher>> enrichers_;

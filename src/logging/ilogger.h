@@ -11,22 +11,12 @@ class ILogger {
 
   virtual void Log(LogLevel level, const std::string& message) const = 0;
   virtual void SetMinimumLogLevel(LogLevel level) = 0;
-
-  virtual void LogVerbose(const std::string& message) const {
-    Log(LogLevel::kVerbose, message);
-  }
-
-  virtual void LogInformation(const std::string& message) const {
-    Log(LogLevel::kInformation, message);
-  }
-
-  virtual void LogWarning(const std::string& message) const {
-    Log(LogLevel::kWarning, message);
-  }
-
-  virtual void LogError(const std::string& message) const {
-    Log(LogLevel::kError, message);
-  }
+  virtual void LogTrace(const std::string& message) const;
+  virtual void LogDebug(const std::string& message) const;
+  virtual void LogInformation(const std::string& message) const;
+  virtual void LogWarning(const std::string& message) const;
+  virtual void LogError(const std::string& message) const;
+  virtual void LogCritical(const std::string& message) const;
 };
 }  // namespace logging
 }  // namespace ws

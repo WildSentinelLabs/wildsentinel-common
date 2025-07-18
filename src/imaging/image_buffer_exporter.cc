@@ -38,13 +38,26 @@ StatusOr<Array<T>> ImageBufferExporter<T>::ExportToInterleavedBuffer(
                   "Image properties do not match pixel format details");
   }
 
+  Array<Point> dimensions = ws::imaging::PixelFormatConstraints::GetDimensions(
+      image.GetComponent(0).Width(), image.GetComponent(0).Height(),
+      num_components, pixel_format_details->chroma_subsampling,
+      pixel_format_details->HasAlpha());
+  if (dimensions.Empty())
+    return Status(StatusCode::kBadRequest,
+                  "Unsupported dimensions for the given pixel format");
+
+  for (int i = 0; i < num_components; ++i) {
+    auto& dim = dimensions[i];
+    auto& comp = image.GetComponent(i);
+    if (comp.Width() != dim.x || comp.Height() != dim.y) {
+      return Status(StatusCode::kBadRequest,
+                    "Image component dimensions do not match");
+    }
+  }
+
   ws::ReadOnlySpan<uint8_t> components_order =
       pixel_format_details->components_order;
   const size_t num_components_order = components_order.Length();
-  if (image_size % num_components_order != 0)
-    return Status(StatusCode::kBadRequest,
-                  "Image Size must be divisible by components order length");
-
   size_t comps_index[num_components] = {0};
   T* comps_buffer_in_order[num_components_order];
   size_t* comps_buffer_index_in_order[num_components_order];
@@ -111,13 +124,26 @@ StatusOr<Array<T>> ImageBufferExporter<T>::ExportToPlanarBuffer(
                   "Image properties do not match pixel format details");
   }
 
+  Array<Point> dimensions = ws::imaging::PixelFormatConstraints::GetDimensions(
+      image.GetComponent(0).Width(), image.GetComponent(0).Height(),
+      num_components, pixel_format_details->chroma_subsampling,
+      pixel_format_details->HasAlpha());
+  if (dimensions.Empty())
+    return Status(StatusCode::kBadRequest,
+                  "Unsupported dimensions for the given pixel format");
+
+  for (int i = 0; i < num_components; ++i) {
+    auto& dim = dimensions[i];
+    auto& comp = image.GetComponent(i);
+    if (comp.Width() != dim.x || comp.Height() != dim.y) {
+      return Status(StatusCode::kBadRequest,
+                    "Image component dimensions do not match");
+    }
+  }
+
   ws::ReadOnlySpan<uint8_t> components_order =
       pixel_format_details->components_order;
   const size_t num_components_order = components_order.Length();
-  if (image_size % num_components_order != 0)
-    return Status(StatusCode::kBadRequest,
-                  "Image Size must be divisible by components order length");
-
   Array<T> buffer(image_size);
   T* buffer_ptr = static_cast<T*>(buffer);
   for (size_t i = 0; i < num_components_order; ++i) {

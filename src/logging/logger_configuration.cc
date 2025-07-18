@@ -53,10 +53,9 @@ LoggerConfiguration&& LoggerConfiguration::AddEnricher(
   return std::move(*this);
 }
 
-std::unique_ptr<ILogger> LoggerConfiguration::CreateLogger(
+std::unique_ptr<Logger> LoggerConfiguration::CreateLogger(
     const std::string& source_context) {
-  return std::unique_ptr<ILogger>(
-      new Logger(source_context, min_log_level_, &sinks_, &enrichers_));
+  return std::make_unique<Logger>(*this, source_context, min_log_level_);
 }
 }  // namespace logging
 }  // namespace ws

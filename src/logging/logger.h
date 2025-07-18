@@ -20,17 +20,13 @@ class Logger : public ILogger {
   void Log(LogLevel level, const std::string& message) const override;
   void SetMinimumLogLevel(LogLevel level) override;
 
+  explicit Logger(LoggerConfiguration& config,
+                  const std::string& source_context = "",
+                  LogLevel min_log_level = LogLevel::kInformation);
+
  private:
-  friend class LoggerConfiguration;
-
-  explicit Logger(
-      const std::string& source_context, LogLevel min_log_level,
-      std::vector<std::unique_ptr<ILogSink>>* sinks,
-      std::vector<std::unique_ptr<ILogEnricher>>* enrichers = nullptr);
-
+  LoggerConfiguration& config_;
   std::string source_context_;
-  std::vector<std::unique_ptr<ILogSink>>* sinks_;
-  std::vector<std::unique_ptr<ILogEnricher>>* enrichers_;
   std::atomic<LogLevel> min_log_level_;
 };
 

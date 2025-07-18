@@ -12,10 +12,10 @@ namespace ws {
 namespace imaging {
 class ImageDecoder {
  public:
-  ImageDecoder(const ImageDecoder&);
+  ImageDecoder(const ImageDecoder&) = delete;
   ImageDecoder(ImageDecoder&&) noexcept;
 
-  ImageDecoder& operator=(const ImageDecoder&);
+  ImageDecoder& operator=(const ImageDecoder&) = delete;
   ImageDecoder& operator=(ImageDecoder&&) noexcept;
 
   virtual ~ImageDecoder() = default;
@@ -23,13 +23,11 @@ class ImageDecoder {
   virtual const ImageFormat& Format() const = 0;
   virtual StatusOr<Image> Decode(ws::io::Stream& stream) const = 0;
 
-  static ws::logging::LoggerConfiguration logger_configuration_;
-
  protected:
-  ImageDecoder(const ImageContext& context, const std::string& source_context);
+  ImageDecoder(const ImageContext& context,
+               std::unique_ptr<ws::logging::ILogger>&& logger = nullptr);
 
   std::unique_ptr<ws::logging::ILogger> logger_;
-  std::string source_context_;
   ImageContext context_;
 };
 }  // namespace imaging

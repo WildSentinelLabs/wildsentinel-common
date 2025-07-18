@@ -12,10 +12,10 @@ namespace imaging {
 
 class ImageConverter {
  public:
-  ImageConverter(const ImageConverter&);
+  ImageConverter(const ImageConverter&) = delete;
   ImageConverter(ImageConverter&&) noexcept;
 
-  ImageConverter& operator=(const ImageConverter&);
+  ImageConverter& operator=(const ImageConverter&) = delete;
   ImageConverter& operator=(ImageConverter&&) noexcept;
 
   virtual ~ImageConverter() = default;
@@ -24,14 +24,12 @@ class ImageConverter {
   ChromaSubsampling GetChromaSubsampling() const;
   virtual StatusOr<Image> Convert(const Image& source) const = 0;
 
-  static ws::logging::LoggerConfiguration logger_configuration_;
-
  protected:
   ImageConverter(ColorSpace color_space, ChromaSubsampling chroma_subsampling,
-                 uint8_t num_components, const std::string& source_context);
+                 uint8_t num_components,
+                 std::unique_ptr<ws::logging::ILogger>&& logger = nullptr);
 
   std::unique_ptr<ws::logging::ILogger> logger_;
-  std::string source_context_;
   ColorSpace color_space_;
   ChromaSubsampling chroma_subsampling_;
   uint8_t num_components_;
