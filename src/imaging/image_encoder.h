@@ -1,7 +1,7 @@
 #pragma once
 
 #include "imaging/image.h"
-#include "imaging/image_encoding_type.h"
+#include "imaging/image_compression_options.h"
 #include "imaging/image_format.h"
 #include "io/stream.h"
 #include "logging/enrichers/thread_id_enricher.h"
@@ -21,21 +21,29 @@ class ImageEncoder {
 
   virtual ~ImageEncoder() = default;
 
+  ImageCompressionOptions Options() const;
+  virtual void SetOptions(const ImageCompressionOptions& options);
   virtual const ImageFormat& Format() const = 0;
   virtual Status Encode(const Image& image, ws::io::Stream& stream) const = 0;
 
   static ws::logging::LoggerConfiguration logger_configuration_;
 
  protected:
-  ImageEncoder(const ImageContext& context, int quality,
-               const std::string& source_context);
-  ImageEncoder(const ImageContext& context, const std::string& source_context);
+  ImageEncoder(const ImageContext& context, const std::string& source_context,
+               const ImageCompressionOptions& compression_options = {});
 
   std::unique_ptr<ws::logging::ILogger> logger_;
   std::string source_context_;
-  ImageEncodingType encoding_type_;
+  ImageCompressionOptions compression_options_;
   ImageContext context_;
-  int quality_;
 };
+
+// ============================================================================
+// Implementation details for ImageEncoder<T>
+// ============================================================================
+
+ImageCompressionOptions ImageEncoder::Options() const {
+  return compression_options_;
+}
 }  // namespace imaging
 }  // namespace ws

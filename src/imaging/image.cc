@@ -105,16 +105,17 @@ bool Image::IsValid() const {
 
 std::string Image::ToString() const {
   std::string result = Format(
-      "Image:\n Width: {}\n Height: {}\n ColorSpace: {}\n ChromaSubsampling: "
-      "{}\n",
+      "Image(Width: {} Height: {} ColorSpace: {} ChromaSubsampling: "
+      "{})",
       width_, height_, ColorSpaceToString(color_space_),
       ChromaSubsamplingToString(chroma_subsampling_));
 
   for (uint8_t c = 0; c < components_.Length(); ++c) {
-    result += Format(" Component {}: {}\n", static_cast<int>(c),
+    result += Format("=> Component {}: {}\n", static_cast<int>(c),
                      components_[c].ToString());
   }
 
+  result += Format("=> Context: {}", context_.ToString());
   return result;
 }
 

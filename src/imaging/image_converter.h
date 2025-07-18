@@ -38,6 +38,19 @@ class ImageConverter {
   uint8_t alignment_;
 };
 
+template <typename Derived>
+class TypedImageConverter : public ImageConverter {
+ public:
+  using ImageConverter::ImageConverter;
+
+  StatusOr<Image> Convert(const Image& source) const final;
+
+ private:
+  template <typename T>
+  StatusOr<Image> DispatchType(const Image& source) const;
+  StatusOr<Image> DispatchConvert(const Image& source) const;
+};
+
 // ============================================================================
 // Implementation details for ImageConverter
 // ============================================================================
@@ -46,6 +59,43 @@ inline ColorSpace ImageConverter::GetColorSpace() const { return color_space_; }
 
 inline ChromaSubsampling ImageConverter::GetChromaSubsampling() const {
   return chroma_subsampling_;
+}
+
+// ============================================================================
+// Implementation details for TypedImageConverter<T>
+// ============================================================================
+template <typename Derived>
+StatusOr<Image> TypedImageConverter<Derived>::Convert(
+    const Image& source) const {
+  return DispatchConvert(source);
+}
+
+template <typename Derived>
+template <typename T>
+StatusOr<Image> TypedImageConverter<Derived>::DispatchType(
+    const Image& source) const {
+  return static_cast<const Derived*>(this)->template InnerConvert<T>(
+      source, this->alignment_);
+}
+
+template <typename Derived>
+StatusOr<Image> TypedImageConverter<Derived>::DispatchConvert(
+    const Image& source) const {
+  switch (source.GetComponent(0).GetBufferType()) {
+    case ImageBufferType::kUInt8:
+      return DispatchType<uint8_t>(source);
+    case ImageBufferType::kUInt16:
+      return DispatchType<uint16_t>(source);
+    case ImageBufferType::kInt16:
+      return DispatchType<int16_t>(source);
+    case ImageBufferType::kUInt32:
+      return DispatchType<uint32_t>(source);
+    case ImageBufferType::kInt32:
+      return DispatchType<int32_t>(source);
+    default:
+      return Status(StatusCode::kBadRequest,
+                    "[Convert] Unsupported pixel type");
+  }
 }
 }  // namespace imaging
 }  // namespace ws

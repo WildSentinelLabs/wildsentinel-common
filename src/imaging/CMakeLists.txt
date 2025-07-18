@@ -13,7 +13,8 @@ wscommon_cc_library(
     image_converter.cc
     image_decoder.cc
     image_encoder.cc
-    image_encoding_type.cc
+    image_compression_options.cc
+    image_compression_type.cc
     pixel/pixel_color_converter.cc
     pixel/pixel_format.cc
     pixel/pixel_format_constraints.cc
@@ -38,7 +39,8 @@ wscommon_cc_library(
     image_converter.h
     image_decoder.h
     image_encoder.h
-    image_encoding_type.h
+    image_compression_options.h
+    image_compression_type.h
     image_format.h
     image_format_detector.h
     image_tags.h

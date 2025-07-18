@@ -4,13 +4,13 @@
 #include <string>
 namespace ws {
 namespace imaging {
-enum class ImageEncodingType : int8_t {
+enum class ImageCompressionType : int8_t {
   kLossy = 0,
   kLossless = 1,
   kUnsupported = -1,
 };
 
-const std::string ImageEncodingTypeToString(
-    const ImageEncodingType& encoding_type);
+const std::string ImageCompressionTypeToString(
+    const ImageCompressionType& encoding_type);
 }  // namespace imaging
 }  // namespace ws

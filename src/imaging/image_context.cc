@@ -91,11 +91,18 @@ ImageContext::map_type::const_iterator ImageContext::end() const {
 }
 
 std::string ImageContext::ToString() const {
-  std::string result;
-  for (const auto& [tag, value] : data) {
-    result += Format("{}: {}\n", tag, value);
+  std::string result = Format("ImageContext<{}>(", data.size());
+  if (data.empty()) {
+    result += ")";
+    return result;
   }
 
+  result += "\n";
+  for (const auto& [tag, value] : data) {
+    result += Format("  {}: {}\n", tag, value);
+  }
+
+  result += ")";
   return result;
 }
 

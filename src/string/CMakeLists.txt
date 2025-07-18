@@ -3,6 +3,7 @@ wscommon_cc_library(
     ws::string
   HDRS
     format.h
+    string_helpers.h
     transparent_hash.h
   INTERFACE
 )
