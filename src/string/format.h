@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -93,39 +94,69 @@ inline std::optional<std::pair<int, char>> ParseFormatSpec(
 }
 
 // Base case: no arguments
-inline void FormatToImpl(std::string& out, std::string_view fmt) { out += fmt; }
+inline void FormatToImpl(std::string& out, std::string_view fmt) {
+  size_t pos = 0;
+  while (pos < fmt.size()) {
+    size_t found = fmt.find("{{", pos);
+    if (found == std::string_view::npos) {
+      found = fmt.find("}}", pos);
+      if (found == std::string_view::npos) {
+        out += fmt.substr(pos);
+        break;
+      }
+      out += fmt.substr(pos, found - pos);
+      out += '}';
+      pos = found + 2;
+    } else {
+      out += fmt.substr(pos, found - pos);
+      out += '{';
+      pos = found + 2;
+    }
+  }
+}
 
 // Recursive formatter
 template <typename Arg, typename... Args>
 inline void FormatToImpl(std::string& out, std::string_view fmt, Arg&& arg,
                          Args&&... args) {
-  size_t open = fmt.find('{');
-  if (open == std::string_view::npos) {
-    out += fmt;
-    return;
-  }
+  size_t pos = 0;
 
-  size_t close = fmt.find('}', open);
-  if (close == std::string_view::npos) {
-    out += fmt;
-    return;
-  }
+  while (pos < fmt.size()) {
+    size_t open = fmt.find('{', pos);
+    if (open == std::string_view::npos) {
+      FormatToImpl(out, fmt.substr(pos));
+      return;
+    }
 
-  out += fmt.substr(0, open);
-  std::string_view spec = fmt.substr(open + 1, close - open - 1);
-  auto fmt_spec = ParseFormatSpec(spec);
+    if (open + 1 < fmt.size() && fmt[open + 1] == '{') {
+      out += fmt.substr(pos, open - pos);
+      out += '{';
+      pos = open + 2;
+      continue;
+    }
 
-  if constexpr (std::is_integral_v<std::decay_t<Arg>>) {
-    if (fmt_spec) {
-      out += FormatPadded(arg, fmt_spec->first, fmt_spec->second);
+    size_t close = fmt.find('}', open);
+    if (close == std::string_view::npos) {
+      FormatToImpl(out, fmt.substr(pos));
+      return;
+    }
+
+    out += fmt.substr(pos, open - pos);
+    std::string_view spec = fmt.substr(open + 1, close - open - 1);
+    auto fmt_spec = ParseFormatSpec(spec);
+    if constexpr (std::is_integral_v<std::decay_t<Arg>>) {
+      if (fmt_spec && !spec.empty()) {
+        out += FormatPadded(arg, fmt_spec->first, fmt_spec->second);
+      } else {
+        out += ToString(std::forward<Arg>(arg));
+      }
     } else {
       out += ToString(std::forward<Arg>(arg));
     }
-  } else {
-    out += ToString(std::forward<Arg>(arg));
-  }
 
-  FormatToImpl(out, fmt.substr(close + 1), std::forward<Args>(args)...);
+    FormatToImpl(out, fmt.substr(close + 1), std::forward<Args>(args)...);
+    return;
+  }
 }
 
 }  // namespace detail

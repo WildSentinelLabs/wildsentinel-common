@@ -19,5 +19,25 @@ const std::string LogLevelToString(const LogLevel& log_level) {
       return "UNKNOWN";
   }
 }
+
+const std::string LogLevelToString3Char(const LogLevel& log_level) {
+  switch (log_level) {
+    case LogLevel::kTrace:
+      return "TRC";
+    case LogLevel::kDebug:
+      return "DBG";
+    case LogLevel::kInformation:
+      return "INF";
+    case LogLevel::kWarning:
+      return "WRN";
+    case LogLevel::kError:
+      return "ERR";
+    case LogLevel::kCritical:
+      return "CRT";
+    default:
+      return "UNK";
+  }
+}
+
 }  // namespace logging
 }  // namespace ws

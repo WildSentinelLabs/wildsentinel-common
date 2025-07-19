@@ -3,6 +3,7 @@
 #include <string>
 
 #include "logging/log_level.h"
+#include "string/format.h"
 namespace ws {
 namespace logging {
 class ILogger {
@@ -10,12 +11,26 @@ class ILogger {
   virtual ~ILogger() = default;
 
   virtual void Log(LogLevel level, const std::string& message) const = 0;
-  virtual void LogTrace(const std::string& message) const;
-  virtual void LogDebug(const std::string& message) const;
-  virtual void LogInformation(const std::string& message) const;
-  virtual void LogWarning(const std::string& message) const;
-  virtual void LogError(const std::string& message) const;
-  virtual void LogCritical(const std::string& message) const;
+  void LogTrace(const std::string& message) const;
+  void LogDebug(const std::string& message) const;
+  void LogInformation(const std::string& message) const;
+  void LogWarning(const std::string& message) const;
+  void LogError(const std::string& message) const;
+  void LogCritical(const std::string& message) const;
+  template <typename... Args>
+  void Log(LogLevel level, const std::string& message, Args&&... args) const;
+  template <typename... Args>
+  void LogTrace(const std::string& message, Args&&... args) const;
+  template <typename... Args>
+  void LogDebug(const std::string& message, Args&&... args) const;
+  template <typename... Args>
+  void LogInformation(const std::string& message, Args&&... args) const;
+  template <typename... Args>
+  void LogWarning(const std::string& message, Args&&... args) const;
+  template <typename... Args>
+  void LogError(const std::string& message, Args&&... args) const;
+  template <typename... Args>
+  void LogCritical(const std::string& message, Args&&... args) const;
 };
 }  // namespace logging
 }  // namespace ws

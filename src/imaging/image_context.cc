@@ -97,9 +97,14 @@ std::string ImageContext::ToString() const {
     return result;
   }
 
-  result += "\n";
+  bool first = true;
   for (const auto& [tag, value] : data) {
-    result += Format("  {}: {}\n", tag, value);
+    if (!first) {
+      result += ", ";
+    }
+
+    result += Format("{{{}: {}}}", tag, value);
+    first = false;
   }
 
   result += ")";

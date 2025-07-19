@@ -10,6 +10,7 @@
 #include "logging/ilog_enricher.h"
 #include "logging/log_level.h"
 #include "string/format.h"
+#include "string/string_helpers.h"
 namespace ws {
 namespace logging {
 class MessageRenderer {

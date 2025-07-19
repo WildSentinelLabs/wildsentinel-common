@@ -111,11 +111,11 @@ std::string Image::ToString() const {
       ChromaSubsamplingToString(chroma_subsampling_));
 
   for (uint8_t c = 0; c < components_.Length(); ++c) {
-    result += Format("=> Component {}: {}\n", static_cast<int>(c),
+    result += Format("\n=> Component {}: {}", static_cast<int>(c),
                      components_[c].ToString());
   }
 
-  result += Format("=> Context: {}", context_.ToString());
+  result += Format("\n=> Context: {}", context_.ToString());
   return result;
 }
 

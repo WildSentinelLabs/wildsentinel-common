@@ -13,5 +13,6 @@ enum class LogLevel : int8_t {
 };
 
 const std::string LogLevelToString(const LogLevel& log_level);
+const std::string LogLevelToString3Char(const LogLevel& log_level);
 }  // namespace logging
 }  // namespace ws

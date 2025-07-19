@@ -1,4 +1,6 @@
 #include "logging/rendering/message_renderer.h"
+
+#include <stdexcept>
 namespace ws {
 namespace logging {
 MessageRenderer::MessageRenderer(const std::string& template_format) {
@@ -70,10 +72,40 @@ std::string MessageRenderer::RenderPlaceholder(
 
 std::string MessageRenderer::FormatLogLevel(LogLevel level,
                                             const std::string& format) {
-  std::string levelStr = LogLevelToString(level);
-  if (format == "u3") return levelStr.substr(0, 3);
-  if (format == "u4") return levelStr.substr(0, 4);
-  return levelStr;
+  if (format.empty()) {
+    return LogLevelToString(level);
+  }
+
+  std::string formatter_type = format.substr(0, 1);
+  int formatter_value = 0;
+  if (format.length() > 1) {
+    try {
+      formatter_value = std::stoi(format.substr(1));
+    } catch (const std::exception&) {
+      return LogLevelToString(level);
+    }
+  }
+
+  if (formatter_type == "u") {
+    if (formatter_value == 3) {
+      return LogLevelToString3Char(level);
+    } else if (formatter_value > 0) {
+      return LogLevelToString(level).substr(0, formatter_value);
+    }
+  } else if (formatter_type == "l") {
+    std::string result;
+    if (formatter_value == 3) {
+      result = LogLevelToString3Char(level);
+    } else if (formatter_value > 0) {
+      result = LogLevelToString(level).substr(0, formatter_value);
+    } else {
+      result = LogLevelToString(level);
+    }
+
+    return ToLower(result);
+  }
+
+  return LogLevelToString(level);
 }
 
 std::string MessageRenderer::FormatTimestamp(
