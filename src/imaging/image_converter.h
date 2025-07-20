@@ -20,6 +20,7 @@ class ImageConverter {
 
   virtual ~ImageConverter() = default;
 
+  uint8_t NumComponents() const;
   ColorSpace GetColorSpace() const;
   ChromaSubsampling GetChromaSubsampling() const;
   void SetLogger(std::unique_ptr<ws::logging::ILogger>&& logger);
@@ -54,6 +55,7 @@ class TypedImageConverter : public ImageConverter {
 // ============================================================================
 // Implementation details for ImageConverter
 // ============================================================================
+inline uint8_t ImageConverter::NumComponents() const { return num_components_; }
 
 inline ColorSpace ImageConverter::GetColorSpace() const { return color_space_; }
 

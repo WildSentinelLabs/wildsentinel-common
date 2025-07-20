@@ -18,7 +18,6 @@ wscommon_cc_library(
     pixel/pixel_color_converter.cc
     pixel/pixel_format.cc
     pixel/pixel_format_constraints.cc
-    pixel/pixel_format_details.cc
     pixel/color_formats/cmyk/cmyk_to_srgb_converter.cc
     pixel/color_formats/gray/gray_to_srgb_converter.cc
     pixel/color_formats/gray/gray_to_sycc_converter.cc
