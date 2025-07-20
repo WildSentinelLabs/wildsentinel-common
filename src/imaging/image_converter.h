@@ -87,21 +87,37 @@ inline StatusOr<Image> TypedImageConverter<Derived>::DispatchType(
 template <typename Derived>
 inline StatusOr<Image> TypedImageConverter<Derived>::DispatchConvert(
     const Image& source) const {
+  if (logger_)
+    logger_->LogDebug(
+        "Initializing ImageConverter [ChromaSubsampling: {}, ColorSpace: {}, "
+        "Components: {}]",
+        ChromaSubsamplingToString(chroma_subsampling_),
+        ColorSpaceToString(color_space_), num_components_);
+  Image image;
   switch (source.GetComponent(0).GetBufferType()) {
     case ImageBufferType::kUInt8:
-      return DispatchType<uint8_t>(source);
+      ASSIGN_OR_RETURN(image, DispatchType<uint8_t>(source));
+      break;
     case ImageBufferType::kUInt16:
-      return DispatchType<uint16_t>(source);
+      ASSIGN_OR_RETURN(image, DispatchType<uint16_t>(source));
+      break;
     case ImageBufferType::kInt16:
-      return DispatchType<int16_t>(source);
+      ASSIGN_OR_RETURN(image, DispatchType<int16_t>(source));
+      break;
     case ImageBufferType::kUInt32:
-      return DispatchType<uint32_t>(source);
+      ASSIGN_OR_RETURN(image, DispatchType<uint32_t>(source));
+      break;
     case ImageBufferType::kInt32:
-      return DispatchType<int32_t>(source);
+      ASSIGN_OR_RETURN(image, DispatchType<int32_t>(source));
+      break;
     default:
       return Status(StatusCode::kBadRequest,
                     "[Convert] Unsupported pixel type");
   }
+
+  if (logger_) logger_->LogDebug(image.ToString());
+  if (logger_) logger_->LogDebug("Done.");
+  return image;
 }
 }  // namespace imaging
 }  // namespace ws
