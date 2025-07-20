@@ -105,7 +105,7 @@ bool Image::IsValid() const {
 
 std::string Image::ToString() const {
   std::string result = Format(
-      "Image(Width: {} Height: {} ColorSpace: {} ChromaSubsampling: "
+      "Image(Width: {}, Height: {}, ColorSpace: {}, ChromaSubsampling: "
       "{})",
       width_, height_, ColorSpaceToString(color_space_),
       ChromaSubsamplingToString(chroma_subsampling_));
