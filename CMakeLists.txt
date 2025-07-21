@@ -18,6 +18,9 @@ if(POLICY CMP0179)
 endif()
 
 project(WsCommon VERSION 0.1.1 LANGUAGES C CXX)
+set(WSCOMMON_SOVERSION ${PROJECT_VERSION})
+set(WSCOMMON_VERSION ${PROJECT_VERSION})
+include(CTest)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -25,17 +28,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  message(STATUS "Using Debug configuration")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
-elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
-  message(STATUS "Using Release configuration")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -DNDEBUG -flto -march=native")
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--strip-all")
-endif()
 
 if(NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   option(WSCOMMON_ENABLE_INSTALL "Enable install" OFF)
@@ -55,16 +47,18 @@ set(CMAKE_INSTALL_RPATH "$ORIGIN")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmake
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/copts
+)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
-include(WsCommonHelpers)
 include(WsCommonDll)
+include(WsCommonHelpers)
 
-set(WSCOMMON_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(WSCOMMON_LIB_DIR ${WSCOMMON_SOURCE_DIR}/lib)
-set(WSCOMMON_BIN_DIR ${WSCOMMON_SOURCE_DIR}/bin)
+set(WSCOMMON_LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+set(WSCOMMON_BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 
 option(WSCOMMON_BUILD_IMAGING "Build imaging and pixel modules" ON)
 option(WSCOMMON_BUILD_IO "Build IO module" ON)
@@ -72,12 +66,37 @@ option(WSCOMMON_BUILD_LOGGING "Build logging module" ON)
 option(WSCOMMON_BUILD_POOLING "Build pooling module" ON)
 option(WSCOMMON_BUILD_THREADING "Build threading module" ON)
 
+set(WSCOMMON_COMMON_INCLUDEDIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(WSCOMMON_INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR})
+list(APPEND WSCOMMON_INCLUDE_DIRS ${WSCOMMON_COMMON_INCLUDEDIR})
+
 message(STATUS "PROJECT_NAME ${PROJECT_NAME}")
 message(STATUS "CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
 message(STATUS "CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
 message(STATUS "CMAKE_GENERATOR: ${CMAKE_GENERATOR}")
 message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "CMAKE_RUNTIME_OUTPUT_DIRECTORY: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+  set(WSCOMMON_USING_CLANG ON)
+else()
+  set(WSCOMMON_USING_CLANG OFF)
+endif()
+
+find_package(Threads REQUIRED)
+
+include(CMakeDependentOption)
+
+option(WSCOMMON_BUILD_TESTING
+  "If ON, WsCommon will build all of WsCommon's own tests." OFF)
+
+option(WSCOMMON_BUILD_MONOLITHIC_SHARED_LIBS
+  "Build WsCommon as a single shared library (always enabled for Windows)"
+  OFF
+)
+if(NOT BUILD_SHARED_LIBS AND WSCOMMON_BUILD_MONOLITHIC_SHARED_LIBS)
+  message(WARNING "Not building a shared library because BUILD_SHARED_LIBS is not set. Ignoring WSCOMMON_BUILD_MONOLITHIC_SHARED_LIBS.")
+endif()
 
 add_subdirectory(src)
 
@@ -97,21 +116,15 @@ if(WSCOMMON_ENABLE_INSTALL)
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
   )
 
-  write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY SameMajorVersion
-  )
+  if(WSCOMMON_VERSION)
+    write_basic_package_version_file(
+      "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+      VERSION ${PROJECT_VERSION}
+      COMPATIBILITY SameMajorVersion
+    )
 
-  install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
-  )
-
-  install(DIRECTORY ${WSCOMMON_SOURCE_DIR}/src
-  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ws
-  FILES_MATCHING
-    PATTERN "*.h"
-    PATTERN "detail" EXCLUDE
-    PATTERN "*/detail/*" EXCLUDE
-  )
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+    )
+  endif()
 endif()

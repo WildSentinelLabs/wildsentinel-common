@@ -1,0 +1,101 @@
+include(WsGeneratedCopts)
+
+set(WSCOMMON_DEFAULT_LINKOPTS "")
+
+if(BUILD_SHARED_LIBS AND (MSVC OR WSCOMMON_BUILD_MONOLITHIC_SHARED_LIBS))
+  set(WSCOMMON_BUILD_DLL TRUE)
+  set(CMAKE_WINDOWSCOMMON_EXPORT_ALL_SYMBOLS ON)
+else()
+  set(WSCOMMON_BUILD_DLL FALSE)
+endif()
+
+# Architecture-specific optimizations for crypto/imaging
+if(APPLE AND CMAKE_CXX_COMPILER_ID MATCHES [[Clang]])
+  # Multi-architecture support for Apple Silicon
+  set(WSCOMMON_CRYPTO_COPTS "")
+  foreach(_arch IN ITEMS "x86_64" "arm64")
+    string(TOUPPER "${_arch}" _arch_uppercase)
+    string(REPLACE "X86_64" "X64" _arch_uppercase ${_arch_uppercase})
+    foreach(_flag IN LISTS WSCOMMON_CRYPTO_${_arch_uppercase}_FLAGS)
+      list(APPEND WSCOMMON_CRYPTO_COPTS "SHELL:-Xarch_${_arch} ${_flag}")
+    endforeach()
+  endforeach()
+
+  option(WSCOMMON_CRYPTO_COPTS_WARNING OFF
+         "Warn if one of WSCOMMON_CRYPTO_COPTS is unused")
+  if(WSCOMMON_CRYPTO_COPTS AND NOT WSCOMMON_CRYPTO_COPTS_WARNING)
+    list(APPEND WSCOMMON_CRYPTO_COPTS "-Wno-unused-command-line-argument")
+  endif()
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|AMD64")
+  if(MSVC)
+    set(WSCOMMON_CRYPTO_COPTS "${WSCOMMON_CRYPTO_MSVC_X64_FLAGS}")
+  else()
+    set(WSCOMMON_CRYPTO_COPTS "${WSCOMMON_CRYPTO_X64_FLAGS}")
+  endif()
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*|aarch64")
+  if(CMAKE_SIZEOF_VOID_P STREQUAL "8")
+    set(WSCOMMON_CRYPTO_COPTS "${WSCOMMON_CRYPTO_ARM64_FLAGS}")
+  elseif(CMAKE_SIZEOF_VOID_P STREQUAL "4")
+    set(WSCOMMON_CRYPTO_COPTS "${WSCOMMON_CRYPTO_ARM32_FLAGS}")
+  else()
+    message(WARNING "Value of CMAKE_SIZEOF_VOID_P (${CMAKE_SIZEOF_VOID_P}) is not supported.")
+  endif()
+else()
+  set(WSCOMMON_CRYPTO_COPTS "")
+endif()
+
+# Compiler detection and flag assignment
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "QCC")
+  set(WSCOMMON_DEFAULT_COPTS "${WSCOMMON_GCC_FLAGS}")
+  set(WSCOMMON_TEST_COPTS "${WSCOMMON_GCC_TEST_FLAGS}")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")  # MATCHES so we get both Clang and AppleClang
+  if(MSVC)
+    # clang-cl is half MSVC, half LLVM
+    set(WSCOMMON_DEFAULT_COPTS "${WSCOMMON_CLANG_CL_FLAGS}")
+    set(WSCOMMON_TEST_COPTS "${WSCOMMON_CLANG_CL_TEST_FLAGS}")
+  else()
+    set(WSCOMMON_DEFAULT_COPTS "${WSCOMMON_LLVM_FLAGS}")
+    set(WSCOMMON_TEST_COPTS "${WSCOMMON_LLVM_TEST_FLAGS}")
+  endif()
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "IntelLLVM")
+  # IntelLLVM is similar to Clang, with some additional flags
+  if(MSVC)
+    set(WSCOMMON_DEFAULT_COPTS "${WSCOMMON_CLANG_CL_FLAGS}")
+    set(WSCOMMON_TEST_COPTS "${WSCOMMON_CLANG_CL_TEST_FLAGS}")
+  else()
+    set(WSCOMMON_DEFAULT_COPTS "${WSCOMMON_LLVM_FLAGS}")
+    set(WSCOMMON_TEST_COPTS "${WSCOMMON_LLVM_TEST_FLAGS}")
+  endif()
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  set(WSCOMMON_DEFAULT_COPTS "${WSCOMMON_MSVC_FLAGS}")
+  set(WSCOMMON_TEST_COPTS "${WSCOMMON_MSVC_TEST_FLAGS}")
+  set(WSCOMMON_DEFAULT_LINKOPTS "${WSCOMMON_MSVC_LINKOPTS}")
+else()
+  message(WARNING "Unknown compiler: ${CMAKE_CXX_COMPILER}. Building with no default flags")
+  set(WSCOMMON_DEFAULT_COPTS "")
+  set(WSCOMMON_TEST_COPTS "")
+endif()
+
+set(WSCOMMON_CXX_STANDARD "${CMAKE_CXX_STANDARD}")
+
+# DLL-specific flags
+if(WSCOMMON_BUILD_DLL)
+  list(APPEND WSCOMMON_DEFAULT_COPTS "-DWSCOMMON_BUILD_DLL=1")
+  if(MSVC)
+    list(APPEND WSCOMMON_DEFAULT_COPTS /wd4251 /wd4275)  # Suppress DLL interface warnings
+  endif()
+endif()
+
+if(WSCOMMON_CONSUME_DLL)
+  list(APPEND WSCOMMON_DEFAULT_COPTS "-DWSCOMMON_CONSUME_DLL=1")
+endif()
+
+# Configuration-specific compiler and linker options
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  message(STATUS "Using Debug configuration")
+  list(APPEND WSCOMMON_DEFAULT_COPTS "-g" "-O0")
+elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+  message(STATUS "Using Release configuration")
+  list(APPEND WSCOMMON_DEFAULT_COPTS "-O3" "-DNDEBUG" "-flto" "-march=native")
+  list(APPEND WSCOMMON_DEFAULT_LINKOPTS "-Wl,--strip-all")
+endif()

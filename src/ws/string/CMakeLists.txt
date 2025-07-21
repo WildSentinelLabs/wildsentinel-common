@@ -1,0 +1,9 @@
+wscommon_cc_library(
+  NAME
+    string
+  HDRS
+    format.h
+    string_helpers.h
+    transparent_hash.h
+  INTERFACE
+)

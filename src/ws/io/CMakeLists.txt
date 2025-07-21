@@ -1,0 +1,25 @@
+wscommon_cc_library(
+  NAME
+    io
+  SRCS
+    buffer_stream.cc
+    file_handle.cc
+    file_stream.cc
+    memory_stream.cc
+    stream.cc
+  HDRS
+    buffer_stream.h
+    file_access.h
+    file_format.h
+    file_format_detector.h
+    file_handle.h
+    file_mode.h
+    file_share.h
+    file_stream.h
+    memory_stream.h
+    seek_origin.h
+    stream.h
+  DEPS
+    ws::core
+  PUBLIC
+)
