@@ -9,5 +9,5 @@ wscommon_cc_library(
     ws::concurrency
     ws::status
     ws::core
-  INTERFACE
+  PUBLIC
 )

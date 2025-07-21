@@ -32,7 +32,7 @@ function(wscommon_cc_library)
     endif()
   endforeach()
 
-  if(WSCOMMON_CC_SRCS  STREQUAL "")
+  if(WSCOMMON_CC_SRCS STREQUAL "")
     set(WSCOMMON_CC_LIB_IS_INTERFACE 1)
   else()
     set(WSCOMMON_CC_LIB_IS_INTERFACE 0)

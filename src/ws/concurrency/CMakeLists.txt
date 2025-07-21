@@ -19,5 +19,5 @@ wscommon_cc_library(
     detail/helpers.h
     detail/node_handle.h
     detail/segment_table.h
-  INTERFACE
+  PUBLIC
 )

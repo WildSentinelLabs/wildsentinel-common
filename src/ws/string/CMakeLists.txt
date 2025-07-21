@@ -5,5 +5,5 @@ wscommon_cc_library(
     format.h
     string_helpers.h
     transparent_hash.h
-  INTERFACE
+  PUBLIC
 )

@@ -9,7 +9,7 @@ wscommon_cc_library(
     types.h
     idisposable.h
     wsexception.h
-  INTERFACE
+  PUBLIC
 )
 
 add_subdirectory(concurrency)
