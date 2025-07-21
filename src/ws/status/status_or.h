@@ -1,9 +1,11 @@
 #pragma once
 
+#include <optional>
+
 #include "ws/status/status.h"
 #include "ws/status/status_code.h"
-namespace ws {
 
+namespace ws {
 struct bad_status_or_access_exception : public std::exception {
   const char* what() const noexcept override;
 };

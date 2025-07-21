@@ -73,7 +73,6 @@ function(wscommon_make_dll)
   set(_dll_files ${WSCOMMON_INTERNAL_DLL_FILES})
   set(_dll_libs
       Threads::Threads
-      # minimum CMake version >= 3.24
       $<$<PLATFORM_ID:Darwin>:-Wl,-framework,CoreFoundation>
   )
   set(_dll_compile_definitions "")

@@ -25,10 +25,10 @@ function(wscommon_cc_library)
     set(_NAME "wscommon_${WSCOMMON_CC_LIB_NAME}")
   endif()
 
-  set(WSCOMMON_CC_SRCS ${WSCOMMON_CC_LIB_SRCS})
-  foreach(_src_file IN LISTS WSCOMMON_CC_SRCS)
-    if(${_src_file} MATCHES ".*\\.(h|inc)$")
-      list(REMOVE_ITEM WSCOMMON_CC_SRCS "${_src_file}")
+  set(WSCOMMON_CC_SRCS "${WSCOMMON_CC_LIB_SRCS}")
+  foreach(src_file IN LISTS WSCOMMON_CC_SRCS)
+    if(${src_file} MATCHES ".*\\.(h|inc)$")
+      list(REMOVE_ITEM WSCOMMON_CC_SRCS "${src_file}")
     endif()
   endforeach()
 
@@ -69,16 +69,13 @@ function(wscommon_cc_library)
       if(${dep} MATCHES "^ws::(.*)")
         if(_build_type STREQUAL "dll")
           if(NOT PC_DEPS MATCHES "wscommon_dll")
-            # Join deps with commas.
             if(PC_DEPS)
               set(PC_DEPS "${PC_DEPS},")
             endif()
-            # don't duplicate dll-dep if it exists already
             set(PC_DEPS "${PC_DEPS} wscommon_dll = ${PC_VERSION}")
             set(LNK_LIB "${LNK_LIB} -lwscommon_dll")
           endif()
         else()
-          # Join deps with commas.
           if(PC_DEPS)
             set(PC_DEPS "${PC_DEPS},")
           endif()
@@ -87,22 +84,12 @@ function(wscommon_cc_library)
       endif()
     endforeach()
     foreach(cflag ${WSCOMMON_CC_LIB_COPTS})
-      # Strip out the CMake-specific `SHELL:` prefix, which is used to construct
-      # a group of space-separated options.
-      # https://cmake.org/cmake/help/v3.30/command/target_compile_options.html#option-de-duplication
       string(REGEX REPLACE "^SHELL:" "" cflag "${cflag}")
       if(${cflag} MATCHES "^-Xarch_")
-        # An -Xarch_ flag implies that its successor only applies to the
-        # specified platform. Such option groups are each specified in a single
-        # `SHELL:`-prefixed string in the COPTS list, which we simply ignore.
       elseif(${cflag} MATCHES "^(-Wno-|/wd)")
-        # These flags are needed to suppress warnings that might fire in our headers.
         set(PC_CFLAGS "${PC_CFLAGS} ${cflag}")
       elseif(${cflag} MATCHES "^(-W|/w[1234eo])")
-        # Don't impose our warnings on others.
       elseif(${cflag} MATCHES "^-m")
-        # Don't impose CPU instruction requirements on others, as
-        # the code performs feature detection on runtime.
       else()
         set(PC_CFLAGS "${PC_CFLAGS} ${cflag}")
       endif()

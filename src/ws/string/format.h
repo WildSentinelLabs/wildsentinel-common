@@ -1,10 +1,12 @@
 #pragma once
 
+#include <cstdio>
 #include <optional>
 #include <sstream>
 #include <string>
 #include <string_view>
 #include <thread>
+#include <type_traits>
 #include <utility>
 
 namespace ws {
@@ -59,13 +61,34 @@ inline std::string ToString(T value) {
 namespace detail {
 // Format integer with padding
 template <typename T>
+constexpr const char* IntFmt() {
+  if constexpr (std::is_same_v<T, int>)
+    return "%d";
+  else if constexpr (std::is_same_v<T, long>)
+    return "%ld";
+  else if constexpr (std::is_same_v<T, long long>)
+    return "%lld";
+  else if constexpr (std::is_same_v<T, unsigned>)
+    return "%u";
+  else if constexpr (std::is_same_v<T, unsigned long>)
+    return "%lu";
+  else if constexpr (std::is_same_v<T, unsigned long long>)
+    return "%llu";
+  else
+    static_assert(std::is_integral_v<T>, "Unsupported integral type");
+}
+
+template <typename T>
 inline std::string FormatPadded(T value, int width, char fill) {
   char buffer[64];
+  // build e.g. "%05ld" or "%*d"
+  char fmt[16];
   if (fill == '0') {
-    std::string fmt = "%0" + std::to_string(width) + "d";
-    std::snprintf(buffer, sizeof(buffer), fmt.c_str(), value);
+    std::snprintf(fmt, sizeof(fmt), "%%0%d%s", width, IntFmt<T>());
+    std::snprintf(buffer, sizeof(buffer), fmt, value);
   } else {
-    std::snprintf(buffer, sizeof(buffer), "%*d", width, value);
+    std::snprintf(fmt, sizeof(fmt), "%%*%s", IntFmt<T>());
+    std::snprintf(buffer, sizeof(buffer), fmt, width, value);
   }
   return buffer;
 }

@@ -7,20 +7,13 @@
     {
       "name": "Linux x64",
       "compilerPath": "/usr/bin/gcc",
-      "compilerArgs": [],
       "intelliSenseMode": "linux-gcc-x64",
       "includePath": ["${myIncludePath}", "/usr/include"],
       "defines": ["${myDefines}"],
       "cStandard": "gnu23",
       "cppStandard": "gnu++23",
-      "configurationProvider": "ms-vscode.cmake-tools",
-      "forcedInclude": ["${workspaceFolder}/common.h"],
       "compileCommands": "${workspaceFolder}/build/compile_commands.json",
       "dotConfig": "${workspaceFolder}/.config",
-      "mergeConfigurations": true,
-      "customConfigurationVariables": {
-        "myVar": "myvalue"
-      },
       "browse": {
         "path": ["${myIncludePath}", "/usr/include", "${workspaceFolder}"],
         "limitSymbolsToIncludedHeaders": true,
