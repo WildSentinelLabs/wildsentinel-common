@@ -18,8 +18,7 @@
     },
     {
       "name": "windows-base",
-      "displayName": "Windows x64 Debug",
-      "description": "Sets compilers, x64 architecture",
+      "description": "Sets compilers for windows",
       "hidden": true,
       "inherits": ["base"],
       "cacheVariables": {
@@ -34,15 +33,15 @@
     },
     {
       "name": "windows-debug",
-      "displayName": "Windows x64 Debug",
+      "displayName": "Windows Configure Debug",
       "description": "Sets debug build type",
       "inherits": ["windows-base"],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       },
       "warnings": {
-        "dev": true,
-        "deprecated": true
+        "deprecated": true,
+        "dev": false
       },
       "errors": {
         "deprecated": true,
@@ -56,7 +55,7 @@
     },
     {
       "name": "windows-release",
-      "displayName": "Windows x64 Release",
+      "displayName": "Windows Configure Release",
       "description": "Sets release build type",
       "inherits": ["windows-base"],
       "cacheVariables": {
@@ -65,7 +64,7 @@
     },
     {
       "name": "linux-base",
-      "description": "Sets compilers",
+      "description": "Sets compilers for linux",
       "hidden": true,
       "inherits": ["base"],
       "cacheVariables": {
@@ -75,23 +74,20 @@
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
           "hostOS": ["Linux"]
-        },
-        "microsoft.com/VisualStudioRemoteSettings/CMake/1.0": {
-          "sourceDir": "$env{HOME}/.vs/$ms{projectDirName}"
         }
       }
     },
     {
       "name": "linux-debug",
-      "displayName": "Linux Debug",
+      "displayName": "Linux Configure Debug",
       "description": "Sets debug build type",
       "inherits": ["linux-base"],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       },
       "warnings": {
-        "dev": true,
-        "deprecated": true
+        "deprecated": true,
+        "dev": false
       },
       "errors": {
         "deprecated": true,
@@ -99,21 +95,13 @@
       },
       "debug": {
         "find": false,
-        "tryCompile": true,
+        "tryCompile": false,
         "output": true
       }
     },
     {
-      "name": "linux-warnings",
-      "description": "Enables dev warnnings (-wdev)",
-      "inherits": ["linux-debug"],
-      "warnings": {
-        "dev": true
-      }
-    },
-    {
       "name": "linux-release",
-      "displayName": "Linux Release",
+      "displayName": "Linux Configure Release",
       "description": "Sets release build type",
       "inherits": ["linux-base"],
       "cacheVariables": {
@@ -172,7 +160,8 @@
     },
     {
       "name": "windows-build-debug",
-      "description": "Debug build",
+      "displayName": "Windows Build Debug",
+      "description": "Build windows debug version",
       "configurePreset": "windows-debug",
       "inherits": ["core-build"],
       "cleanFirst": false,
@@ -180,6 +169,7 @@
     },
     {
       "name": "windows-build-release",
+      "displayName": "Windows Build Release",
       "description": "Build windows release version",
       "configurePreset": "windows-release",
       "inherits": ["core-build"],
@@ -188,14 +178,16 @@
     },
     {
       "name": "linux-build-debug",
-      "description": "Debug build",
-      "configurePreset": "linux-base",
+      "displayName": "Linux Build Debug",
+      "description": "Build linux debug version",
+      "configurePreset": "linux-debug",
       "inherits": ["core-build"],
       "cleanFirst": false,
       "verbose": true
     },
     {
       "name": "linux-build-release",
+      "displayName": "Linux Build Release",
       "description": "Build linux release version",
       "configurePreset": "linux-release",
       "inherits": ["core-build"],
@@ -228,26 +220,30 @@
     },
     {
       "name": "windows-install-debug",
-      "displayName": "Instalar Windows Debug",
+      "displayName": "Windows Install Debug",
+      "description": "Install windows debug version",
       "inherits": ["core-install"],
       "configurePreset": "windows-debug"
     },
     {
       "name": "windows-install-release",
-      "displayName": "Instalar Windows Release",
+      "displayName": "Windows Install Release",
+      "description": "Install windows release version",
       "inherits": ["core-install"],
       "configurePreset": "windows-release"
     },
     {
       "name": "linux-install-debug",
-      "displayName": "Install Linux Debug",
+      "displayName": "Linux Install Debug",
+      "description": "Install linux debug version",
       "inherits": ["core-install"],
       "hidden": true,
       "configurePreset": "linux-debug"
     },
     {
       "name": "linux-install-release",
-      "displayName": "Install Linux Release",
+      "displayName": "Linux Install Release",
+      "description": "Install linux release version",
       "inherits": ["core-install"],
       "hidden": true,
       "configurePreset": "linux-release"
@@ -273,6 +269,8 @@
   "workflowPresets": [
     {
       "name": "windows-flow-debug",
+      "displayName": "Windows Flow Debug",
+      "description": "Complete workflow for Windows debug build",
       "steps": [
         {
           "type": "configure",
@@ -290,6 +288,8 @@
     },
     {
       "name": "windows-flow-release",
+      "displayName": "Windows Flow Release",
+      "description": "Complete workflow for Windows release build",
       "steps": [
         {
           "type": "configure",
@@ -302,6 +302,44 @@
         {
           "type": "build",
           "name": "windows-install-release"
+        }
+      ]
+    },
+    {
+      "name": "linux-flow-debug",
+      "displayName": "Linux Flow Debug",
+      "description": "Complete workflow for Linux debug build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux-debug"
+        },
+        {
+          "type": "build",
+          "name": "linux-build-debug"
+        },
+        {
+          "type": "build",
+          "name": "linux-install-debug"
+        }
+      ]
+    },
+    {
+      "name": "linux-flow-release",
+      "displayName": "Linux Flow Release",
+      "description": "Complete workflow for Linux release build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "linux-release"
+        },
+        {
+          "type": "build",
+          "name": "linux-build-release"
+        },
+        {
+          "type": "build",
+          "name": "linux-install-release"
         }
       ]
     }
