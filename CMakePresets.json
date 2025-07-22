@@ -40,12 +40,10 @@
         "CMAKE_BUILD_TYPE": "Debug"
       },
       "warnings": {
-        "deprecated": true,
-        "dev": false
+        "deprecated": true
       },
       "errors": {
-        "deprecated": true,
-        "dev": true
+        "deprecated": true
       },
       "debug": {
         "find": false,
@@ -86,12 +84,10 @@
         "CMAKE_BUILD_TYPE": "Debug"
       },
       "warnings": {
-        "deprecated": true,
-        "dev": false
+        "deprecated": true
       },
       "errors": {
-        "deprecated": true,
-        "dev": true
+        "deprecated": true
       },
       "debug": {
         "find": false,
