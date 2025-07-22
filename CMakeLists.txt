@@ -43,8 +43,6 @@ else()
   set(WSCOMMON_BUILD_DLL OFF)
 endif()
 
-option(WSCOMMON_MODULAR_BUILD "Build each module as a separate target" OFF)
-
 set(CMAKE_INSTALL_RPATH "$ORIGIN")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
