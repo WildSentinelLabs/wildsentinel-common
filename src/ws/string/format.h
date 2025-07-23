@@ -58,7 +58,7 @@ inline std::string ToString(T value) {
   return std::to_string(value);
 }
 
-namespace detail {
+namespace internal {
 // Format integer with padding
 template <typename T>
 constexpr const char* IntFmt() {
@@ -182,14 +182,14 @@ inline void FormatToImpl(std::string& out, std::string_view fmt, Arg&& arg,
   }
 }
 
-}  // namespace detail
+}  // namespace internal
 
 // Entry point
 template <typename... Args>
 inline std::string Format(std::string_view fmt, Args&&... args) {
   std::string out;
   out.reserve(fmt.size() + sizeof...(args) * 8);  // heuristic
-  ws::detail::FormatToImpl(out, fmt, std::forward<Args>(args)...);
+  ws::internal::FormatToImpl(out, fmt, std::forward<Args>(args)...);
   return out;
 }
 }  // namespace ws

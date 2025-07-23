@@ -1,17 +1,17 @@
 #pragma once
 
-#include "ws/concurrency/detail/helpers.h"
+#include "ws/concurrency/internal/helpers.h"
 #include "ws/config.h"
 
 namespace ws {
 namespace concurrency {
-namespace detail {
+namespace internal {
 
 template <typename TKey, typename THash, typename TKeyEqual>
 class HashCompare {
   using is_transparent_hash =
-      ws::concurrency::detail::containers::HasTransparentKeyEqual<TKey, THash,
-                                                                  TKeyEqual>;
+      ws::concurrency::internal::containers::HasTransparentKeyEqual<TKey, THash,
+                                                                    TKeyEqual>;
 
  public:
   using hasher = THash;
@@ -82,6 +82,6 @@ concept HashCompareConcept =
     };
 #endif
 
-}  // namespace detail
+}  // namespace internal
 }  // namespace concurrency
 }  // namespace ws

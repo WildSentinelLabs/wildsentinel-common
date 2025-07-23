@@ -174,7 +174,7 @@ Cflags: -I\${includedir}${PC_CFLAGS}\n")
     elseif(WSCOMMON_CC_LIB_TESTONLY)
       set_property(TARGET ${_NAME} PROPERTY FOLDER ${WSCOMMON_IDE_FOLDER}/test)
     else()
-      set_property(TARGET ${_NAME} PROPERTY FOLDER ${WSCOMMON_IDE_FOLDER}/detail)
+      set_property(TARGET ${_NAME} PROPERTY FOLDER ${WSCOMMON_IDE_FOLDER}/internal)
     endif()
 
     if(WSCOMMON_ENABLE_INSTALL)

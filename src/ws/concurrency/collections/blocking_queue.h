@@ -3,8 +3,8 @@
 #include <cstdint>
 #include <memory>
 
-#include "ws/concurrency/detail/concurrent_monitor.h"
-#include "ws/concurrency/detail/concurrent_queue_base.h"
+#include "ws/concurrency/internal/concurrent_monitor.h"
+#include "ws/concurrency/internal/concurrent_queue_base.h"
 #include "ws/delegate.h"
 
 namespace ws {
@@ -14,17 +14,17 @@ template <typename T, typename Allocator = std::allocator<T>>
 class BlockingQueue {
   using allocator_traits_type = std::allocator_traits<Allocator>;
   using queue_representation_type =
-      ws::concurrency::detail::ConcurrentQueueRep<T, Allocator>;
+      ws::concurrency::internal::ConcurrentQueueRep<T, Allocator>;
   using queue_allocator_type =
       typename allocator_traits_type::template rebind_alloc<
           queue_representation_type>;
   using queue_allocator_traits = std::allocator_traits<queue_allocator_type>;
 
-  void InternalWait(ws::concurrency::detail::ConcurrentMonitor* monitors,
+  void InternalWait(ws::concurrency::internal::ConcurrentMonitor* monitors,
                     std::size_t monitor_tag, std::ptrdiff_t target,
                     ws::Delegate<bool()> predicate) {
-    ws::concurrency::detail::WaitBoundedQueueMonitor(monitors, monitor_tag,
-                                                     target, predicate);
+    ws::concurrency::internal::WaitBoundedQueueMonitor(monitors, monitor_tag,
+                                                       target, predicate);
   }
 
  public:
@@ -46,25 +46,26 @@ class BlockingQueue {
         abort_counter_(0),
         queue_rep_ptr_(nullptr) {
     queue_rep_ptr_ = reinterpret_cast<queue_representation_type*>(
-        ws::concurrency::detail::AllocateBoundedQueueRep(
+        ws::concurrency::internal::AllocateBoundedQueueRep(
             sizeof(queue_representation_type)));
-    monitors_ = reinterpret_cast<ws::concurrency::detail::ConcurrentMonitor*>(
+    monitors_ = reinterpret_cast<ws::concurrency::internal::ConcurrentMonitor*>(
         queue_rep_ptr_ + 1);
     queue_allocator_traits::construct(allocator_, queue_rep_ptr_);
     capacity_ = std::size_t(-1) / (queue_representation_type::kItemSize > 1
                                        ? queue_representation_type::kItemSize
                                        : 2);
 
-    assert(ws::detail::IsAligned(queue_rep_ptr_, ws::detail::CacheLineSize()) &&
+    assert(ws::internal::IsAligned(queue_rep_ptr_,
+                                   ws::internal::CacheLineSize()) &&
            "alignment error");
-    assert(ws::detail::IsAligned(&queue_rep_ptr_->head_counter_,
-                                 ws::detail::CacheLineSize()) &&
+    assert(ws::internal::IsAligned(&queue_rep_ptr_->head_counter_,
+                                   ws::internal::CacheLineSize()) &&
            "alignment error");
-    assert(ws::detail::IsAligned(&queue_rep_ptr_->tail_counter_,
-                                 ws::detail::CacheLineSize()) &&
+    assert(ws::internal::IsAligned(&queue_rep_ptr_->tail_counter_,
+                                   ws::internal::CacheLineSize()) &&
            "alignment error");
-    assert(ws::detail::IsAligned(&queue_rep_ptr_->array_,
-                                 ws::detail::CacheLineSize()) &&
+    assert(ws::internal::IsAligned(&queue_rep_ptr_->array_,
+                                   ws::internal::CacheLineSize()) &&
            "alignment error");
   }
 
@@ -101,7 +102,7 @@ class BlockingQueue {
   ~BlockingQueue() {
     Clear();
     queue_allocator_traits::destroy(allocator_, queue_rep_ptr_);
-    ws::concurrency::detail::DeallocateBoundedQueueRep(
+    ws::concurrency::internal::DeallocateBoundedQueueRep(
         reinterpret_cast<std::uint8_t*>(queue_rep_ptr_),
         sizeof(queue_representation_type));
   }
@@ -192,7 +193,7 @@ class BlockingQueue {
   template <typename... TArgs>
   void InternalPush(TArgs&&... args) {
     unsigned old_abort_counter = abort_counter_.load(std::memory_order_relaxed);
-    ws::concurrency::detail::ticket_type ticket =
+    ws::concurrency::internal::ticket_type ticket =
         queue_rep_ptr_->tail_counter_++;
     std::ptrdiff_t target = ticket - capacity_;
 
@@ -208,8 +209,8 @@ class BlockingQueue {
                    std::memory_order_relaxed)) <= target;
       };
 
-      ws::concurrency::detail::templates::TryCall([&] {
-        InternalWait(monitors_, ws::concurrency::detail::kCbqSlotsAvailTag,
+      ws::concurrency::internal::templates::TryCall([&] {
+        InternalWait(monitors_, ws::concurrency::internal::kCbqSlotsAvailTag,
                      target, pred);
       }).OnException([&] {
         queue_rep_ptr_->Choose(ticket).AbortPush(ticket, *queue_rep_ptr_,
@@ -220,13 +221,13 @@ class BlockingQueue {
                std::memory_order_relaxed)) > target);
     queue_rep_ptr_->Choose(ticket).Push(ticket, *queue_rep_ptr_, allocator_,
                                         std::forward<TArgs>(args)...);
-    ws::concurrency::detail::NotifyBoundedQueueMonitor(
-        monitors_, ws::concurrency::detail::kCbqItemsAvailTag, ticket);
+    ws::concurrency::internal::NotifyBoundedQueueMonitor(
+        monitors_, ws::concurrency::internal::kCbqItemsAvailTag, ticket);
   }
 
   template <typename... TArgs>
   bool InternalPushIfNotFull(TArgs&&... args) {
-    ws::concurrency::detail::ticket_type ticket =
+    ws::concurrency::internal::ticket_type ticket =
         queue_rep_ptr_->tail_counter_.load(std::memory_order_relaxed);
     do {
       if (static_cast<std::ptrdiff_t>(
@@ -240,8 +241,8 @@ class BlockingQueue {
 
     queue_rep_ptr_->Choose(ticket).Push(ticket, *queue_rep_ptr_, allocator_,
                                         std::forward<TArgs>(args)...);
-    ws::concurrency::detail::NotifyBoundedQueueMonitor(
-        monitors_, ws::concurrency::detail::kCbqItemsAvailTag, ticket);
+    ws::concurrency::internal::NotifyBoundedQueueMonitor(
+        monitors_, ws::concurrency::internal::kCbqItemsAvailTag, ticket);
     return true;
   }
 
@@ -264,8 +265,8 @@ class BlockingQueue {
                      std::memory_order_relaxed)) <= target;
         };
 
-        ws::concurrency::detail::templates::TryCall([&] {
-          InternalWait(monitors_, ws::concurrency::detail::kCbqItemsAvailTag,
+        ws::concurrency::internal::templates::TryCall([&] {
+          InternalWait(monitors_, ws::concurrency::internal::kCbqItemsAvailTag,
                        target, pred);
         }).OnException([&] { queue_rep_ptr_->head_counter_--; });
       }
@@ -274,26 +275,26 @@ class BlockingQueue {
     } while (!queue_rep_ptr_->Choose(target).Pop(dst, target, *queue_rep_ptr_,
                                                  allocator_));
 
-    ws::concurrency::detail::NotifyBoundedQueueMonitor(
-        monitors_, ws::concurrency::detail::kCbqSlotsAvailTag, target);
+    ws::concurrency::internal::NotifyBoundedQueueMonitor(
+        monitors_, ws::concurrency::internal::kCbqSlotsAvailTag, target);
   }
 
   bool InternalPopIfPresent(void* dst) {
     bool present{};
-    ws::concurrency::detail::ticket_type ticket{};
-    std::tie(present, ticket) = ws::concurrency::detail::InternalTryPopImpl(
+    ws::concurrency::internal::ticket_type ticket{};
+    std::tie(present, ticket) = ws::concurrency::internal::InternalTryPopImpl(
         dst, *queue_rep_ptr_, allocator_);
 
     if (present) {
-      ws::concurrency::detail::NotifyBoundedQueueMonitor(
-          monitors_, ws::concurrency::detail::kCbqSlotsAvailTag, ticket);
+      ws::concurrency::internal::NotifyBoundedQueueMonitor(
+          monitors_, ws::concurrency::internal::kCbqSlotsAvailTag, ticket);
     }
     return present;
   }
 
   void InternalAbort() {
     ++abort_counter_;
-    ws::concurrency::detail::AbortBoundedQueueMonitors(monitors_);
+    ws::concurrency::internal::AbortBoundedQueueMonitors(monitors_);
   }
 
   static void CopyConstructItem(T* location, const void* src) {
@@ -310,7 +311,7 @@ class BlockingQueue {
   std::atomic<unsigned> abort_counter_;
   queue_representation_type* queue_rep_ptr_;
 
-  ws::concurrency::detail::ConcurrentMonitor* monitors_;
+  ws::concurrency::internal::ConcurrentMonitor* monitors_;
 
   friend void Swap(BlockingQueue& lhs, BlockingQueue& rhs) { lhs.swap(rhs); }
 

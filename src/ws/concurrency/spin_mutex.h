@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ws/concurrency/detail/atomic_backoff.h"
+#include "ws/concurrency/internal/atomic_backoff.h"
 
 namespace ws {
 namespace concurrency {
@@ -48,7 +48,7 @@ class SpinMutex {
 template <typename T, typename TC>
 T SpinWaitWhile(const std::atomic<T>& location, TC comp,
                 std::memory_order order) {
-  ws::concurrency::detail::AtomicBackoff backoff;
+  ws::concurrency::internal::AtomicBackoff backoff;
   T snapshot = location.load(order);
   while (comp(snapshot)) {
     backoff.Wait();

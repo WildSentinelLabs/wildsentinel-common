@@ -8,11 +8,11 @@
 #include <type_traits>
 #include <utility>
 
-#include "ws/concurrency/detail/allocator_traits.h"
-#include "ws/concurrency/detail/hash_compare.h"
-#include "ws/concurrency/detail/helpers.h"
-#include "ws/concurrency/detail/node_handle.h"
-#include "ws/concurrency/detail/segment_table.h"
+#include "ws/concurrency/internal/allocator_traits.h"
+#include "ws/concurrency/internal/hash_compare.h"
+#include "ws/concurrency/internal/helpers.h"
+#include "ws/concurrency/internal/node_handle.h"
+#include "ws/concurrency/internal/segment_table.h"
 #include "ws/config.h"
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
@@ -22,7 +22,7 @@
 
 namespace ws {
 namespace concurrency {
-namespace detail {
+namespace internal {
 
 template <typename TTraits>
 class ConcurrentUnorderedBase;
@@ -204,20 +204,20 @@ class ConcurrentUnorderedBase {
       std::allocator_traits<value_node_allocator_type>;
 
   static constexpr size_type RoundUpToPowerOfTwo(size_type bucket_count) {
-    return size_type(1) << size_type(ws::concurrency::detail::Log2(
+    return size_type(1) << size_type(ws::concurrency::internal::Log2(
                uintptr_t(bucket_count == 0 ? 1 : bucket_count) * 2 - 1));
   }
 
   template <typename T>
-  using is_transparent = ws::concurrency::detail::containers::DependentBool<
-      ws::concurrency::detail::containers::HasTransparentKeyEqual<
+  using is_transparent = ws::concurrency::internal::containers::DependentBool<
+      ws::concurrency::internal::containers::HasTransparentKeyEqual<
           key_type, hasher, key_equal>,
       T>;
 
  public:
   using node_type =
-      ws::concurrency::detail::NodeHandle<key_type, value_type, value_node_type,
-                                          allocator_type>;
+      ws::concurrency::internal::NodeHandle<key_type, value_type,
+                                            value_node_type, allocator_type>;
 
   explicit ConcurrentUnorderedBase(
       size_type bucket_count, const hasher& hash = hasher(),
@@ -273,7 +273,7 @@ class ConcurrentUnorderedBase {
         hash_compare_(other.hash_compare_),
         head_(other.head_.OrderKey()),
         segments_(other.segments_) {
-    ws::concurrency::detail::templates::TryCall([&] {
+    ws::concurrency::internal::templates::TryCall([&] {
       InternalCopy(other);
     }).OnException([&] { Clear(); });
   }
@@ -286,7 +286,7 @@ class ConcurrentUnorderedBase {
         hash_compare_(other.hash_compare_),
         head_(other.head_.OrderKey()),
         segments_(other.segments_, alloc) {
-    ws::concurrency::detail::templates::TryCall([&] {
+    ws::concurrency::internal::templates::TryCall([&] {
       InternalCopy(other);
     }).OnException([&] { Clear(); });
   }
@@ -443,7 +443,7 @@ class ConcurrentUnorderedBase {
   std::pair<iterator, bool> Insert(node_type&& nh) {
     if (!nh.Empty()) {
       value_node_ptr insert_node =
-          ws::concurrency::detail::NodeHandleAccessor::GetNodePtr(nh);
+          ws::concurrency::internal::NodeHandleAccessor::GetNodePtr(nh);
       auto init_node = [&insert_node](sokey_type order_key) -> value_node_ptr {
         insert_node->Init(order_key);
         return insert_node;
@@ -453,7 +453,7 @@ class ConcurrentUnorderedBase {
         assert(insert_result.remaining_node == nullptr &&
                "internal_insert_node should not return the remaining "
                "node if the insertion succeeded");
-        ws::concurrency::detail::NodeHandleAccessor::Deactivate(nh);
+        ws::concurrency::internal::NodeHandleAccessor::Deactivate(nh);
       }
       return {iterator(insert_result.node_with_equal_key),
               insert_result.inserted};
@@ -518,13 +518,13 @@ class ConcurrentUnorderedBase {
 
   node_type UnsafeExtract(const_iterator pos) {
     InternalExtract(pos.NodePtr());
-    return ws::concurrency::detail::NodeHandleAccessor::Construct<node_type>(
+    return ws::concurrency::internal::NodeHandleAccessor::Construct<node_type>(
         pos.NodePtr());
   }
 
   node_type UnsafeExtract(iterator pos) {
     InternalExtract(pos.NodePtr());
-    return ws::concurrency::detail::NodeHandleAccessor::Construct<node_type>(
+    return ws::concurrency::internal::NodeHandleAccessor::Construct<node_type>(
         pos.NodePtr());
   }
 
@@ -719,7 +719,8 @@ class ConcurrentUnorderedBase {
 
     size_type Grainsize() const { return 1; }
 
-    ConstRangeType(ConstRangeType& range, ws::concurrency::detail::range::split)
+    ConstRangeType(ConstRangeType& range,
+                   ws::concurrency::internal::range::split)
         : instance_(range.instance_),
           begin_node_(range.midpoint_node_),
           end_node_(range.end_node_) {
@@ -757,14 +758,14 @@ class ConcurrentUnorderedBase {
             end_node_ != nullptr ? end_node_->OrderKey() : invalid_key;
 
         size_type mid_bucket =
-            ws::concurrency::detail::ReverseBits(begin_key +
-                                                 (end_key - begin_key) / 2) %
+            ws::concurrency::internal::ReverseBits(begin_key +
+                                                   (end_key - begin_key) / 2) %
             instance_.bucket_count_.load(std::memory_order_relaxed);
         while (instance_.segments_[mid_bucket].load(
                    std::memory_order_relaxed) == nullptr) {
           mid_bucket = instance_.GetParent(mid_bucket);
         }
-        if (ws::concurrency::detail::ReverseBits(mid_bucket) > begin_key) {
+        if (ws::concurrency::internal::ReverseBits(mid_bucket) > begin_key) {
           midpoint_node_ = instance_.FirstValueNode(
               instance_.segments_[mid_bucket].load(std::memory_order_relaxed));
         } else {
@@ -799,12 +800,12 @@ class ConcurrentUnorderedBase {
       sizeof(size_type) * 8 - 1;
 
   class UnorderedSegmentTable
-      : public ws::concurrency::detail::SegmentTable<
+      : public ws::concurrency::internal::SegmentTable<
             std::atomic<node_ptr>, allocator_type, UnorderedSegmentTable,
             kPointersPerEmbeddedTable> {
     using self_type = UnorderedSegmentTable;
     using atomic_node_ptr = std::atomic<node_ptr>;
-    using base_type = ws::concurrency::detail::SegmentTable<
+    using base_type = ws::concurrency::internal::SegmentTable<
         std::atomic<node_ptr>, allocator_type, UnorderedSegmentTable,
         kPointersPerEmbeddedTable>;
     using segment_type = typename base_type::segment_type;
@@ -1126,7 +1127,7 @@ class ConcurrentUnorderedBase {
     value_node_allocator_traits::construct(value_node_allocator, new_node,
                                            order_key);
 
-    auto value_guard = ws::concurrency::detail::templates::MakeRaiiGuard([&] {
+    auto value_guard = ws::concurrency::internal::templates::MakeRaiiGuard([&] {
       value_node_allocator_traits::destroy(value_node_allocator, new_node);
       value_node_allocator_traits::deallocate(value_node_allocator, new_node,
                                               1);
@@ -1207,8 +1208,8 @@ class ConcurrentUnorderedBase {
           sokey_type old_order_key = curr->OrderKey();
 
           node_type curr_node =
-              ws::concurrency::detail::NodeHandleAccessor::Construct<node_type>(
-                  curr);
+              ws::concurrency::internal::NodeHandleAccessor::Construct<
+                  node_type>(curr);
 
           if (!Insert(std::move(curr_node)).second) {
             assert(!kAllowMultimapping &&
@@ -1226,7 +1227,8 @@ class ConcurrentUnorderedBase {
             curr->SetNext(next_node);
             source_prev->SetNext(curr);
             source_prev = curr;
-            ws::concurrency::detail::NodeHandleAccessor::Deactivate(curr_node);
+            ws::concurrency::internal::NodeHandleAccessor::Deactivate(
+                curr_node);
           } else {
             source.size_.fetch_sub(1, std::memory_order_relaxed);
           }
@@ -1323,8 +1325,8 @@ class ConcurrentUnorderedBase {
                               static_cast<value_node_ptr>(node)->Value());
       } else {
         new_node = CreateDummyNode(node->OrderKey());
-        segments_[ws::concurrency::detail::ReverseBits(node->OrderKey())].store(
-            new_node, std::memory_order_relaxed);
+        segments_[ws::concurrency::internal::ReverseBits(node->OrderKey())]
+            .store(new_node, std::memory_order_relaxed);
       }
 
       last_node->SetNext(new_node);
@@ -1345,8 +1347,8 @@ class ConcurrentUnorderedBase {
                        std::move(static_cast<value_node_ptr>(node)->value()));
       } else {
         new_node = CreateDummyNode(node->OrderKey());
-        segments_[ws::concurrency::detail::ReverseBits(node->OrderKey())].store(
-            new_node, std::memory_order_relaxed);
+        segments_[ws::concurrency::internal::ReverseBits(node->OrderKey())]
+            .store(new_node, std::memory_order_relaxed);
       }
 
       last_node->SetNext(new_node);
@@ -1433,25 +1435,25 @@ class ConcurrentUnorderedBase {
   }
 
   static constexpr sokey_type SplitOrderKeyRegular(sokey_type hash) {
-    return ws::concurrency::detail::ReverseBits(hash) | 0x1;
+    return ws::concurrency::internal::ReverseBits(hash) | 0x1;
   }
 
   static constexpr sokey_type SplitOrderKeyDummy(sokey_type hash) {
-    return ws::concurrency::detail::ReverseBits(hash) & ~sokey_type(0x1);
+    return ws::concurrency::internal::ReverseBits(hash) & ~sokey_type(0x1);
   }
 
   size_type GetParent(size_type bucket) const {
     assert(bucket != 0 && "Unable to GetParent of the bucket 0");
-    size_type msb = ws::concurrency::detail::Log2(bucket);
+    size_type msb = ws::concurrency::internal::Log2(bucket);
     return bucket & ~(size_type(1) << msb);
   }
 
   size_type GetNextBucketIndex(size_type bucket) const {
-    size_type bits = ws::concurrency::detail::Log2(
+    size_type bits = ws::concurrency::internal::Log2(
         bucket_count_.load(std::memory_order_relaxed));
     size_type reversed_next =
-        ws::concurrency::detail::ReverseNBits(bucket, bits) + 1;
-    return ws::concurrency::detail::ReverseNBits(reversed_next, bits);
+        ws::concurrency::internal::ReverseNBits(bucket, bits) + 1;
+    return ws::concurrency::internal::ReverseNBits(reversed_next, bits);
   }
 
   std::atomic<size_type> size_;
@@ -1499,6 +1501,6 @@ bool operator!=(const concurrent_unordered_base<Traits>& lhs,
 #pragma warning(pop)
 #endif
 
-}  // namespace detail
+}  // namespace internal
 }  // namespace concurrency
 }  // namespace ws

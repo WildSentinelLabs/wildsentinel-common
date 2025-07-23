@@ -1,16 +1,16 @@
 #pragma once
 
-#include "ws/concurrency/detail/allocator_traits.h"
-#include "ws/concurrency/detail/atomic_backoff.h"
-#include "ws/concurrency/detail/concurrent_monitor.h"
-#include "ws/concurrency/detail/helpers.h"
+#include "ws/concurrency/internal/allocator_traits.h"
+#include "ws/concurrency/internal/atomic_backoff.h"
+#include "ws/concurrency/internal/concurrent_monitor.h"
+#include "ws/concurrency/internal/helpers.h"
 #include "ws/concurrency/spin_mutex.h"
 #include "ws/config.h"
 #include "ws/delegate.h"
 
 namespace ws {
 namespace concurrency {
-namespace detail {
+namespace internal {
 
 using ticket_type = std::size_t;
 
@@ -88,10 +88,10 @@ class MicroQueue {
                         page_allocator_type page_allocator, PaddedPage*& p) {
     assert(p == nullptr && "Invalid page argument for prepare_page");
     k &= -queue_rep_type::kNQueue;
-    size_type index = ws::detail::ModulusPowerOfTwo(k / queue_rep_type::kNQueue,
-                                                    kItemsPerPage);
+    size_type index = ws::internal::ModulusPowerOfTwo(
+        k / queue_rep_type::kNQueue, kItemsPerPage);
     if (!index) {
-      ws::concurrency::detail::templates::TryCall([&] {
+      ws::concurrency::internal::templates::TryCall([&] {
         p = page_allocator_traits::allocate(page_allocator, 1);
       }).OnException([&] {
         ++base.n_invalid_entries_;
@@ -125,7 +125,7 @@ class MicroQueue {
     size_type index = PreparePage(k, base, page_allocator, p);
     assert(p != nullptr && "Page was not prepared");
 
-    auto value_guard = ws::concurrency::detail::templates::MakeRaiiGuard([&] {
+    auto value_guard = ws::concurrency::internal::templates::MakeRaiiGuard([&] {
       ++base.n_invalid_entries_;
       tail_counter_.fetch_add(queue_rep_type::kNQueue);
     });
@@ -156,8 +156,8 @@ class MicroQueue {
     ws::concurrency::SpinWaitWhileEq(tail_counter_, k);
     PaddedPage* p = head_page_.load(std::memory_order_relaxed);
     assert(p);
-    size_type index = ws::detail::ModulusPowerOfTwo(k / queue_rep_type::kNQueue,
-                                                    kItemsPerPage);
+    size_type index = ws::internal::ModulusPowerOfTwo(
+        k / queue_rep_type::kNQueue, kItemsPerPage);
     bool success = false;
     {
       page_allocator_type page_allocator(allocator);
@@ -188,14 +188,14 @@ class MicroQueue {
       size_type n_items = (tail_counter_.load(std::memory_order_relaxed) -
                            head_counter_.load(std::memory_order_relaxed)) /
                           queue_rep_type::kNQueue;
-      size_type index = ws::detail::ModulusPowerOfTwo(
+      size_type index = ws::internal::ModulusPowerOfTwo(
           head_counter_.load(std::memory_order_relaxed) /
               queue_rep_type::kNQueue,
           kItemsPerPage);
       size_type end_in_first_page =
           (index + n_items < kItemsPerPage) ? (index + n_items) : kItemsPerPage;
 
-      ws::concurrency::detail::templates::TryCall([&] {
+      ws::concurrency::internal::templates::TryCall([&] {
         head_page_.store(MakeCopy(allocator, kSrcp, index, end_in_first_page,
                                   g_index, construct_item),
                          std::memory_order_relaxed);
@@ -205,7 +205,7 @@ class MicroQueue {
       });
       PaddedPage* cur_page = head_page_.load(std::memory_order_relaxed);
 
-      ws::concurrency::detail::templates::TryCall([&] {
+      ws::concurrency::internal::templates::TryCall([&] {
         if (kSrcp != src.tail_page_.load(std::memory_order_relaxed)) {
           for (kSrcp = kSrcp->next;
                kSrcp != src.tail_page_.load(std::memory_order_relaxed);
@@ -216,7 +216,7 @@ class MicroQueue {
           }
 
           assert(kSrcp == src.tail_page_.load(std::memory_order_relaxed));
-          size_type last_index = ws::detail::ModulusPowerOfTwo(
+          size_type last_index = ws::internal::ModulusPowerOfTwo(
               tail_counter_.load(std::memory_order_relaxed) /
                   queue_rep_type::kNQueue,
               kItemsPerPage);
@@ -342,7 +342,7 @@ class MicroQueue {
 
   void SpinWaitUntilTurn(std::atomic<ticket_type>& counter, ticket_type k,
                          queue_rep_type& rb) const {
-    for (ws::concurrency::detail::AtomicBackoff b{};; b.Wait()) {
+    for (ws::concurrency::internal::AtomicBackoff b{};; b.Wait()) {
       ticket_type c = counter.load(std::memory_order_acquire);
       if (c == k)
         return;
@@ -458,7 +458,7 @@ struct ConcurrentQueueRep {
         std::memory_order_relaxed);
 
     size_type queue_idx = 0;
-    ws::concurrency::detail::templates::TryCall([&] {
+    ws::concurrency::internal::templates::TryCall([&] {
       for (; queue_idx < kNQueue; ++queue_idx) {
         array_[queue_idx].assign(src.array_[queue_idx], alloc, construct_item);
       }
@@ -503,12 +503,14 @@ struct ConcurrentQueueRep {
 
   MicroQueue_type& Choose(ticket_type k) { return array_[Index(k)]; }
 
-  alignas(ws::detail::CacheLineSize()) MicroQueue_type array_[kNQueue];
+  alignas(ws::internal::CacheLineSize()) MicroQueue_type array_[kNQueue];
 
-  alignas(ws::detail::CacheLineSize()) std::atomic<ticket_type> head_counter_{};
-  alignas(ws::detail::CacheLineSize()) std::atomic<ticket_type> tail_counter_{};
   alignas(
-      ws::detail::CacheLineSize()) std::atomic<size_type> n_invalid_entries_{};
+      ws::internal::CacheLineSize()) std::atomic<ticket_type> head_counter_{};
+  alignas(
+      ws::internal::CacheLineSize()) std::atomic<ticket_type> tail_counter_{};
+  alignas(ws::internal::CacheLineSize())
+      std::atomic<size_type> n_invalid_entries_{};
 };
 
 #if _MSC_VER && !defined(__INTEL_COMPILER)
@@ -540,16 +542,16 @@ static constexpr std::size_t kMonitorsNumber = 2;
 
 inline std::uint8_t* AllocateBoundedQueueRep(std::size_t queue_rep_size) {
   std::size_t monitors_mem_size =
-      sizeof(ws::concurrency::detail::ConcurrentMonitor) * kMonitorsNumber;
-  std::uint8_t* mem =
-      static_cast<std::uint8_t*>(ws::concurrency::detail::CacheAlignedAllocate(
-          queue_rep_size + monitors_mem_size));
+      sizeof(ws::concurrency::internal::ConcurrentMonitor) * kMonitorsNumber;
+  std::uint8_t* mem = static_cast<std::uint8_t*>(
+      ws::concurrency::internal::CacheAlignedAllocate(queue_rep_size +
+                                                      monitors_mem_size));
 
-  ws::concurrency::detail::ConcurrentMonitor* monitors =
-      reinterpret_cast<ws::concurrency::detail::ConcurrentMonitor*>(
+  ws::concurrency::internal::ConcurrentMonitor* monitors =
+      reinterpret_cast<ws::concurrency::internal::ConcurrentMonitor*>(
           mem + queue_rep_size);
   for (std::size_t i = 0; i < kMonitorsNumber; ++i) {
-    new (monitors + i) ws::concurrency::detail::ConcurrentMonitor();
+    new (monitors + i) ws::concurrency::internal::ConcurrentMonitor();
   }
 
   return mem;
@@ -557,32 +559,32 @@ inline std::uint8_t* AllocateBoundedQueueRep(std::size_t queue_rep_size) {
 
 inline void DeallocateBoundedQueueRep(std::uint8_t* mem,
                                       std::size_t queue_rep_size) {
-  ws::concurrency::detail::ConcurrentMonitor* monitors =
-      reinterpret_cast<ws::concurrency::detail::ConcurrentMonitor*>(
+  ws::concurrency::internal::ConcurrentMonitor* monitors =
+      reinterpret_cast<ws::concurrency::internal::ConcurrentMonitor*>(
           mem + queue_rep_size);
   for (std::size_t i = 0; i < kMonitorsNumber; ++i) {
     monitors[i].~ConcurrentMonitor();
   }
 
-  ws::concurrency::detail::CacheAlignedDeallocate(mem);
+  ws::concurrency::internal::CacheAlignedDeallocate(mem);
 }
 
 inline void WaitBoundedQueueMonitor(
-    ws::concurrency::detail::ConcurrentMonitor* monitors,
+    ws::concurrency::internal::ConcurrentMonitor* monitors,
     std::size_t monitor_tag, std::ptrdiff_t target,
     const ws::Delegate<bool()>& predicate) {
   assert(monitor_tag < kMonitorsNumber);
-  ws::concurrency::detail::ConcurrentMonitor& monitor = monitors[monitor_tag];
+  ws::concurrency::internal::ConcurrentMonitor& monitor = monitors[monitor_tag];
 
-  monitor.Wait<ws::concurrency::detail::ConcurrentMonitor::thread_context>(
+  monitor.Wait<ws::concurrency::internal::ConcurrentMonitor::thread_context>(
       [&] { return !predicate(); }, std::uintptr_t(target));
 }
 
 inline void AbortBoundedQueueMonitors(
-    ws::concurrency::detail::ConcurrentMonitor* monitors) {
-  ws::concurrency::detail::ConcurrentMonitor& items_avail =
+    ws::concurrency::internal::ConcurrentMonitor* monitors) {
+  ws::concurrency::internal::ConcurrentMonitor& items_avail =
       monitors[kCbqItemsAvailTag];
-  ws::concurrency::detail::ConcurrentMonitor& slots_avail =
+  ws::concurrency::internal::ConcurrentMonitor& slots_avail =
       monitors[kCbqSlotsAvailTag];
 
   items_avail.AbortAll();
@@ -598,13 +600,13 @@ struct predicate_leq {
 };
 
 void inline NotifyBoundedQueueMonitor(
-    ws::concurrency::detail::ConcurrentMonitor* monitors,
+    ws::concurrency::internal::ConcurrentMonitor* monitors,
     std::size_t monitor_tag, std::size_t ticket) {
   assert(monitor_tag < kMonitorsNumber);
-  ws::concurrency::detail::ConcurrentMonitor& monitor = monitors[monitor_tag];
+  ws::concurrency::internal::ConcurrentMonitor& monitor = monitors[monitor_tag];
   monitor.Notify(predicate_leq(ticket));
 }
 
-}  // namespace detail
+}  // namespace internal
 }  // namespace concurrency
 }  // namespace ws

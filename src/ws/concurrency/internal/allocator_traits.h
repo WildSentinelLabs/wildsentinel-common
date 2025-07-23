@@ -7,22 +7,22 @@
 
 namespace ws {
 namespace concurrency {
-namespace detail {
+namespace internal {
 
 inline void* CacheAlignedAllocate(std::size_t size) {
-  const std::size_t kCacheLineSize = ws::detail::CacheLineSize();
-  assert(ws::detail::IsPowerOfTwo(kCacheLineSize) && "must be power of two");
+  const std::size_t kCacheLineSize = ws::internal::CacheLineSize();
+  assert(ws::internal::IsPowerOfTwo(kCacheLineSize) && "must be power of two");
   if (size + kCacheLineSize < size) throw std::bad_alloc();
   if (size == 0) size = 1;
-  void* result = ws::detail::AlignedAllocate(size, kCacheLineSize);
+  void* result = ws::internal::AlignedAllocate(size, kCacheLineSize);
   if (!result) throw std::bad_alloc();
-  assert(ws::detail::IsAligned(result, kCacheLineSize) &&
+  assert(ws::internal::IsAligned(result, kCacheLineSize) &&
          "The returned address isn't aligned");
   return result;
 }
 
 inline void CacheAlignedDeallocate(void* p) {
-  ws::detail::AlignedDeallocate(p);
+  ws::internal::AlignedDeallocate(p);
 }
 
 template <typename TAllocator>
@@ -73,6 +73,6 @@ void SwapAllocators(TAllocator& lhs, TAllocator& rhs) {
   SwapAllocatorsImpl(lhs, rhs, pocs_type());
 }
 
-}  // namespace detail
+}  // namespace internal
 }  // namespace concurrency
 }  // namespace ws

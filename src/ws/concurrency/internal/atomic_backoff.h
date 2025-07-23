@@ -5,7 +5,7 @@
 
 namespace ws {
 namespace concurrency {
-namespace detail {
+namespace internal {
 class AtomicBackoff {
   static constexpr std::int32_t kLoopsBeforeYield = 16;
   std::int32_t count_;
@@ -19,7 +19,7 @@ class AtomicBackoff {
 
   void Wait() {
     if (count_ <= kLoopsBeforeYield) {
-      ws::detail::CpuWait(count_);
+      ws::internal::CpuWait(count_);
       count_ *= 2;
     } else {
       std::this_thread::yield();
@@ -27,7 +27,7 @@ class AtomicBackoff {
   }
 
   bool BoundedWait() {
-    ws::detail::CpuWait(count_);
+    ws::internal::CpuWait(count_);
     if (count_ < kLoopsBeforeYield) {
       count_ *= 2;
       return true;
@@ -38,6 +38,6 @@ class AtomicBackoff {
 
   void Reset() { count_ = 1; }
 };
-}  // namespace detail
+}  // namespace internal
 }  // namespace concurrency
 }  // namespace ws

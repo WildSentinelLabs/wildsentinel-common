@@ -8,17 +8,17 @@ wscommon_cc_library(
     collections/concurrent_unordered_map.h
     collections/concurrent_unordered_set.h
     collections/synchronized_queue.h
-    detail/aligned_space.h
-    detail/allocator_traits.h
-    detail/atomic_backoff.h
-    detail/concurrent_monitor.h
-    detail/concurrent_monitor_mutex.h
-    detail/concurrent_queue_base.h
-    detail/concurrent_unordered_base.h
-    detail/hash_compare.h
-    detail/helpers.h
-    detail/node_handle.h
-    detail/segment_table.h
+    internal/aligned_space.h
+    internal/allocator_traits.h
+    internal/atomic_backoff.h
+    internal/concurrent_monitor.h
+    internal/concurrent_monitor_mutex.h
+    internal/concurrent_queue_base.h
+    internal/concurrent_unordered_base.h
+    internal/hash_compare.h
+    internal/helpers.h
+    internal/node_handle.h
+    internal/segment_table.h
   DEPS
     ws::core
   PUBLIC

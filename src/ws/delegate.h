@@ -77,7 +77,7 @@ class Delegate<R(Args...)> {
   template <typename F>
   void Assign(F&& f);
 
-  alignas(ws::detail::CacheLineSize()) std::uint8_t storage_[kSboSize];
+  alignas(ws::internal::CacheLineSize()) std::uint8_t storage_[kSboSize];
   CallFn call_fn_ = nullptr;
   ManagerFn manager_fn_ = nullptr;
   bool using_sbo_ = true;

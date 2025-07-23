@@ -2,7 +2,7 @@
 
 #include <utility>
 
-#include "ws/concurrency/detail/concurrent_queue_base.h"
+#include "ws/concurrency/internal/concurrent_queue_base.h"
 
 namespace ws {
 namespace concurrency {
@@ -10,7 +10,7 @@ template <typename T, typename TAllocator = std::allocator<T>>
 class ConcurrentQueue {
   using allocator_traits_type = std::allocator_traits<TAllocator>;
   using queue_representation_type =
-      ws::concurrency::detail::ConcurrentQueueRep<T, TAllocator>;
+      ws::concurrency::internal::ConcurrentQueueRep<T, TAllocator>;
   using queue_allocator_type =
       typename allocator_traits_type::template rebind_alloc<
           queue_representation_type>;
@@ -32,19 +32,20 @@ class ConcurrentQueue {
   explicit ConcurrentQueue(const allocator_type& a)
       : allocator_(a), queue_rep_ptr(nullptr) {
     queue_rep_ptr = static_cast<queue_representation_type*>(
-        ws::concurrency::detail::CacheAlignedAllocate(
+        ws::concurrency::internal::CacheAlignedAllocate(
             sizeof(queue_representation_type)));
     queue_allocator_traits::construct(allocator_, queue_rep_ptr);
-    assert(ws::detail::IsAligned(queue_rep_ptr, ws::detail::CacheLineSize()) &&
+    assert(
+        ws::internal::IsAligned(queue_rep_ptr, ws::internal::CacheLineSize()) &&
+        "alignment error");
+    assert(ws::internal::IsAligned(&queue_rep_ptr->head_counter_,
+                                   ws::internal::CacheLineSize()) &&
            "alignment error");
-    assert(ws::detail::IsAligned(&queue_rep_ptr->head_counter_,
-                                 ws::detail::CacheLineSize()) &&
+    assert(ws::internal::IsAligned(&queue_rep_ptr->tail_counter_,
+                                   ws::internal::CacheLineSize()) &&
            "alignment error");
-    assert(ws::detail::IsAligned(&queue_rep_ptr->tail_counter_,
-                                 ws::detail::CacheLineSize()) &&
-           "alignment error");
-    assert(ws::detail::IsAligned(&queue_rep_ptr->array_,
-                                 ws::detail::CacheLineSize()) &&
+    assert(ws::internal::IsAligned(&queue_rep_ptr->array_,
+                                   ws::internal::CacheLineSize()) &&
            "alignment error");
   }
 
@@ -78,7 +79,7 @@ class ConcurrentQueue {
   ~ConcurrentQueue() {
     Clear();
     queue_allocator_traits::destroy(allocator_, queue_rep_ptr);
-    ws::concurrency::detail::CacheAlignedDeallocate(queue_rep_ptr);
+    ws::concurrency::internal::CacheAlignedDeallocate(queue_rep_ptr);
   }
 
   ConcurrentQueue& operator=(const ConcurrentQueue& other) {
@@ -141,14 +142,14 @@ class ConcurrentQueue {
 
   template <typename... TArgs>
   void InternalPush(TArgs&&... args) {
-    ws::concurrency::detail::ticket_type k = queue_rep_ptr->tail_counter_++;
+    ws::concurrency::internal::ticket_type k = queue_rep_ptr->tail_counter_++;
     queue_rep_ptr->Choose(k).Push(k, *queue_rep_ptr, allocator_,
                                   std::forward<TArgs>(args)...);
   }
 
   bool InternalTryPop(void* dst) {
-    return ws::concurrency::detail::InternalTryPopImpl(dst, *queue_rep_ptr,
-                                                       allocator_)
+    return ws::concurrency::internal::InternalTryPopImpl(dst, *queue_rep_ptr,
+                                                         allocator_)
         .first;
   }
 

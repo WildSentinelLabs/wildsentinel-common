@@ -5,7 +5,7 @@
 
 namespace ws {
 namespace concurrency {
-namespace detail {
+namespace internal {
 namespace templates {
 
 template <typename TFunc>
@@ -48,7 +48,7 @@ struct TryCallProxy {
   template <typename TOnExceptionBody>
   void OnException(TOnExceptionBody on_exception_body) {
     auto guard =
-        ws::concurrency::detail::templates::MakeRaiiGuard(on_exception_body);
+        ws::concurrency::internal::templates::MakeRaiiGuard(on_exception_body);
     body();
     guard.Dismiss();
   }
@@ -56,7 +56,7 @@ struct TryCallProxy {
   template <typename TOnCompletionBody>
   void OnCompletion(TOnCompletionBody on_completion_body) {
     auto guard =
-        ws::concurrency::detail::templates::MakeRaiiGuard(on_completion_body);
+        ws::concurrency::internal::templates::MakeRaiiGuard(on_completion_body);
     body();
   }
 
@@ -143,7 +143,7 @@ template <typename TCompare, typename = void>
 struct CompIsTransparent : std::false_type {};
 
 template <typename TCompare>
-struct CompIsTransparent<TCompare, ws::concurrency::detail::templates::void_t<
+struct CompIsTransparent<TCompare, ws::concurrency::internal::templates::void_t<
                                        typename TCompare::is_transparent>>
     : std::true_type {};
 
@@ -154,7 +154,7 @@ struct HasTransparentKeyEqual : std::false_type {
 
 template <typename TKey, typename THasher, typename TKeyEqual>
 struct HasTransparentKeyEqual<TKey, THasher, TKeyEqual,
-                              ws::concurrency::detail::templates::void_t<
+                              ws::concurrency::internal::templates::void_t<
                                   typename THasher::transparent_key_equal>>
     : std::true_type {
   using type = typename THasher::transparent_key_equal;
@@ -182,7 +182,7 @@ struct IsIteratorImpl {
 };
 
 template <typename T>
-using is_input_iterator = ws::concurrency::detail::templates::supports<
+using is_input_iterator = ws::concurrency::internal::templates::supports<
     T, IsIteratorImpl::iter_traits_category,
     IsIteratorImpl::input_iter_category>;
 
@@ -200,20 +200,20 @@ class split {};
 template <typename T>
 std::uintptr_t Log2(T in) {
   assert((in > 0) && "The logarithm of a non-positive value is undefined.");
-  return ws::detail::CpuLog2(in);
+  return ws::internal::CpuLog2(in);
 }
 
 template <typename T>
 T ReverseBits(T src) {
-  return ws::detail::CpuReverseBits(src);
+  return ws::internal::CpuReverseBits(src);
 }
 
 template <typename T>
 T ReverseNBits(T src, std::size_t n) {
   assert(n != 0 && "Reverse for 0 bits is undefined behavior.");
-  return ReverseBits(src) >> (ws::detail::NumberOfBits<T>() - n);
+  return ReverseBits(src) >> (ws::internal::NumberOfBits<T>() - n);
 }
 
-}  // namespace detail
+}  // namespace internal
 }  // namespace concurrency
 }  // namespace ws

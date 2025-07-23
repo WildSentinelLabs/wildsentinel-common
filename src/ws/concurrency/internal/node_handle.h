@@ -1,11 +1,11 @@
 #pragma once
 
-#include "ws/concurrency/detail/allocator_traits.h"
+#include "ws/concurrency/internal/allocator_traits.h"
 #include "ws/config.h"
 
 namespace ws {
 namespace concurrency {
-namespace detail {
+namespace internal {
 
 struct NodeHandleAccessor {
   template <typename TNodeHandleType>
@@ -138,6 +138,6 @@ void Swap(NodeHandle<TKey, TValue, TNode, TAllocator>& lhs,
   return lhs.Swap(rhs);
 }
 
-}  // namespace detail
+}  // namespace internal
 }  // namespace concurrency
 }  // namespace ws

@@ -6,9 +6,9 @@
 #include <memory>
 #include <type_traits>
 
-#include "ws/concurrency/detail/allocator_traits.h"
-#include "ws/concurrency/detail/atomic_backoff.h"
-#include "ws/concurrency/detail/helpers.h"
+#include "ws/concurrency/internal/allocator_traits.h"
+#include "ws/concurrency/internal/atomic_backoff.h"
+#include "ws/concurrency/internal/helpers.h"
 #include "ws/config.h"
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
@@ -18,7 +18,7 @@
 
 namespace ws {
 namespace concurrency {
-namespace detail {
+namespace internal {
 
 template <typename T, typename TAllocator, typename TDerivedType,
           std::size_t PointersPerEmbeddedTable>
@@ -68,7 +68,7 @@ class SegmentTable {
         segment_table_allocation_failed_{} {
     segment_table_.store(my_embedded_table_, std::memory_order_relaxed);
     ZeroTable(my_embedded_table_, kPointersPerEmbeddedTable);
-    ws::concurrency::detail::templates::TryCall([&] {
+    ws::concurrency::internal::templates::TryCall([&] {
       InternalTransfer(other, CopySegmentBodyType{*this});
     }).OnException([&] { Clear(); });
   }
@@ -281,7 +281,7 @@ class SegmentTable {
                               size_type end_index) {
     if (table == my_embedded_table_ && end_index > kEmbeddedTableSize) {
       if (start_index <= kEmbeddedTableSize) {
-        ws::concurrency::detail::templates::TryCall([&] {
+        ws::concurrency::internal::templates::TryCall([&] {
           segment_table_type new_table =
               Self()->AllocateLongTable(my_embedded_table_, start_index);
 
@@ -314,7 +314,7 @@ class SegmentTable {
   }
 
   static constexpr segment_index_type SegmentIndexOf(size_type index) {
-    return size_type(ws::concurrency::detail::Log2(uintptr_t(index | 1)));
+    return size_type(ws::concurrency::internal::Log2(uintptr_t(index | 1)));
   }
 
   static constexpr size_type SegmentBase(size_type index) {
@@ -551,7 +551,7 @@ class SegmentTable {
   std::atomic<bool> segment_table_allocation_failed_;
 };
 
-}  // namespace detail
+}  // namespace internal
 }  // namespace concurrency
 }  // namespace ws
 

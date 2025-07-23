@@ -3,15 +3,15 @@
 #include <atomic>
 #include <semaphore>
 
-#include "ws/concurrency/detail/aligned_space.h"
-#include "ws/concurrency/detail/concurrent_monitor_mutex.h"
-#include "ws/concurrency/detail/helpers.h"
+#include "ws/concurrency/internal/aligned_space.h"
+#include "ws/concurrency/internal/concurrent_monitor_mutex.h"
+#include "ws/concurrency/internal/helpers.h"
 #include "ws/concurrency/spin_mutex.h"
 #include "ws/machine.h"
 
 namespace ws {
 namespace concurrency {
-namespace detail {
+namespace internal {
 
 inline static void AtomicFenceSeqCst() {
   std::atomic_thread_fence(std::memory_order_seq_cst);
@@ -171,7 +171,7 @@ class SleepNode : public WaitNode<TContext> {
   void Notify() override { Semaphore().release(); }
 
  private:
-  ws::concurrency::detail::AlignedSpace<std::binary_semaphore> semaphore_;
+  ws::concurrency::internal::AlignedSpace<std::binary_semaphore> semaphore_;
 };
 
 template <typename TContext>
@@ -413,7 +413,7 @@ class ConcurrentMonitorBase {
   template <typename TNodeType, typename TPred>
   bool GuardedCall(TPred&& predicate, TNodeType& node) {
     bool res = false;
-    ws::concurrency::detail::templates::TryCall([&] {
+    ws::concurrency::internal::templates::TryCall([&] {
       res = std::forward<TPred>(predicate)();
     }).OnException([&] { CancelWait(node); });
 
@@ -440,6 +440,6 @@ class ConcurrentMonitor : public ConcurrentMonitorBase<std::uintptr_t> {
   using thread_context = SleepNode<std::uintptr_t>;
 };
 
-}  // namespace detail
+}  // namespace internal
 }  // namespace concurrency
 }  // namespace ws

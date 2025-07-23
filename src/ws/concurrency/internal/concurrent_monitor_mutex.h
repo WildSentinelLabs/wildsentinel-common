@@ -3,18 +3,18 @@
 #include <mutex>
 #include <semaphore>
 
-#include "ws/concurrency/detail/aligned_space.h"
+#include "ws/concurrency/internal/aligned_space.h"
 #include "ws/machine.h"
 
 namespace ws {
 namespace concurrency {
-namespace detail {
+namespace internal {
 
 template <typename TCondition>
 bool TimedSpinWaitUntil(TCondition condition) {
   bool finish = condition();
   for (int i = 1; !finish && i < 32; finish = condition(), i *= 2) {
-    ws::detail::CpuWait(i);
+    ws::internal::CpuWait(i);
   }
   for (int i = 32; !finish && i < 64; finish = condition(), ++i) {
     std::this_thread::yield();
@@ -84,6 +84,6 @@ class ConcurrentMonitorMutex {
   AlignedSpace<std::binary_semaphore> semaphore_{};
 };
 
-}  // namespace detail
+}  // namespace internal
 }  // namespace concurrency
 }  // namespace ws

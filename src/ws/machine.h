@@ -28,7 +28,7 @@ extern "C" {
 #include <thread>
 
 namespace ws {
-namespace detail {
+namespace internal {
 inline constexpr size_t kMaxNfsSize = 128;
 
 inline constexpr std::size_t kMaxNfsSizeExp = 7;
@@ -213,7 +213,7 @@ T CpuReverseBits(T src) {
 }
 
 static std::mutex console_mutex;
-}  // namespace detail
+}  // namespace internal
 
 inline void FormatConsoleOutput() {
 #ifdef _WIN32
@@ -230,7 +230,7 @@ inline int GetPid() {
 }
 
 inline void ConsoleWrite(const std::string& message) {
-  std::lock_guard<std::mutex> lock(detail::console_mutex);
+  std::lock_guard<std::mutex> lock(internal::console_mutex);
 
 #ifdef _WIN32
   HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -248,7 +248,7 @@ inline void ConsoleWrite(const std::string& message) {
 }
 
 inline void ConsoleError(const std::string& message) {
-  std::lock_guard<std::mutex> lock(detail::console_mutex);
+  std::lock_guard<std::mutex> lock(internal::console_mutex);
 
 #ifdef _WIN32
   HANDLE hError = GetStdHandle(STD_ERROR_HANDLE);
