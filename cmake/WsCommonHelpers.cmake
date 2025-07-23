@@ -1,11 +1,69 @@
 include(CMakeParseArguments)
-include(WsCommonDll)
+include(CMakePackageConfigHelpers)
+
+if(NOT DEFINED WSCOMMON_IDE_FOLDER)
+  set(WSCOMMON_IDE_FOLDER WsCommon)
+endif()
 
 if(WSCOMMON_USE_SYSTEM_INCLUDES)
   set(WSCOMMON_INTERNAL_INCLUDE_WARNING_GUARD SYSTEM)
 else()
   set(WSCOMMON_INTERNAL_INCLUDE_WARNING_GUARD "")
 endif()
+
+set(WSCOMMON_INTERNAL_DLL_TARGETS "" CACHE INTERNAL "Internal list of target object generators for wscommon_dll")
+function(wscommon_add_dll_library target_obj)
+  set(_old "${WSCOMMON_INTERNAL_DLL_TARGETS}")
+  list(APPEND _old "$<TARGET_OBJECTS:${target_obj}>")
+  set(WSCOMMON_INTERNAL_DLL_TARGETS "${_old}" CACHE INTERNAL "" FORCE)
+endfunction()
+
+function(wscommon_generate_pc_file target)
+  get_target_property(_lib_name ${target} OUTPUT_NAME)
+  if(NOT _lib_name)
+    set(_lib_name ${target})
+  endif()
+
+  set(pc_version $<IF:$<BOOL:${WSCOMMON_VERSION}>,${WSCOMMON_VERSION},head>)
+  string(REGEX MATCH "^wscommon_" has_prefix "${_lib_name}")
+  if(has_prefix)
+    set(pc_name "${_lib_name}")
+  else()
+    set(pc_name "wscommon_${_lib_name}")
+  endif()
+
+  get_target_property(_deps ${target} INTERFACE_LINK_LIBRARIES)
+  list(FILTER _deps INCLUDE REGEX "^ws::")
+  set(_pc_requires_list "")
+  foreach(dep IN LISTS _deps)
+    string(REGEX REPLACE "^ws::" "" _d ${dep})
+    list(APPEND _pc_requires_list "wscommon_${_d}")
+  endforeach()
+  string(JOIN ", " pc_requires ${_pc_requires_list})
+
+  get_target_property(_cflags ${target} INTERFACE_COMPILE_OPTIONS)
+  get_target_property(_ldflags ${target} INTERFACE_LINK_OPTIONS)
+
+  string(REGEX REPLACE "^wscommon_" "" _link_name "${pc_name}")
+  set(pc_libs   "-L\${libdir} ${_ldflags} -l${_link_name}")
+  set(pc_cflags "-I\${includedir} ${_cflags}")
+
+  FILE(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/lib/pkgconfig/${pc_name}.pc" CONTENT
+"prefix=${CMAKE_INSTALL_PREFIX}\n\
+exec_prefix=\${prefix}\n\
+libdir=${CMAKE_INSTALL_FULL_LIBDIR}\n\
+includedir=${CMAKE_INSTALL_FULL_INCLUDEDIR}\n\
+\n\
+Name: ${pc_name}\n\
+Description: ${PROJECT_NAME} ${pc_name} library\n\
+URL: https://wildsentinel.io/\n\
+Version: ${pc_version}\n\
+Requires: ${pc_requires}\n\
+Libs: ${pc_libs}\n\
+Cflags: ${pc_cflags}\n")
+  INSTALL(FILES "${CMAKE_BINARY_DIR}/lib/pkgconfig/${pc_name}.pc"
+            DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+endfunction()
 
 function(wscommon_cc_library)
   cmake_parse_arguments(WSCOMMON_CC_LIB
@@ -25,119 +83,17 @@ function(wscommon_cc_library)
     set(_NAME "wscommon_${WSCOMMON_CC_LIB_NAME}")
   endif()
 
-  set(WSCOMMON_CC_SRCS "${WSCOMMON_CC_LIB_SRCS}")
-  foreach(src_file IN LISTS WSCOMMON_CC_SRCS)
-    if(${src_file} MATCHES ".*\\.(h|inc)$")
-      list(REMOVE_ITEM WSCOMMON_CC_SRCS "${src_file}")
-    endif()
-  endforeach()
+  set(_srcs ${WSCOMMON_CC_LIB_SRCS})
+  list(FILTER _srcs EXCLUDE REGEX ".*\\.(h|inc)$")
+  list(LENGTH _srcs _n)
 
-  if(WSCOMMON_CC_SRCS STREQUAL "")
-    set(WSCOMMON_CC_LIB_IS_INTERFACE 1)
-  else()
-    set(WSCOMMON_CC_LIB_IS_INTERFACE 0)
-  endif()
-
-  if(${WSCOMMON_BUILD_DLL})
-    if(WSCOMMON_ENABLE_INSTALL)
-      wscommon_internal_dll_contains(TARGET ${_NAME} OUTPUT _in_dll)
-    else()
-      wscommon_internal_dll_contains(TARGET ${WSCOMMON_CC_LIB_NAME} OUTPUT _in_dll)
-    endif()
-    if (${_in_dll})
-      set(_build_type "dll")
-      set(WSCOMMON_CC_LIB_IS_INTERFACE 1)
-    else()
-      set(_build_type "dll_dep")
-    endif()
-  elseif(BUILD_SHARED_LIBS)
-    set(_build_type "shared")
-  else()
-    set(_build_type "static")
-  endif()
-
-  if(NOT WSCOMMON_CC_LIB_IS_INTERFACE)
-    if(_build_type STREQUAL "dll_dep")
-      add_library(${_NAME} STATIC "")
-      target_sources(${_NAME} PRIVATE ${WSCOMMON_CC_LIB_SRCS} ${WSCOMMON_CC_LIB_HDRS})
-      wscommon_internal_dll_targets(
-        DEPS ${WSCOMMON_CC_LIB_DEPS}
-        OUTPUT _dll_deps
-      )
-      target_link_libraries(${_NAME}
-        PUBLIC ${_dll_deps}
-        PRIVATE
-          ${WSCOMMON_CC_LIB_LINKOPTS}
-          ${WSCOMMON_DEFAULT_LINKOPTS}
-      )
-
-      if (WSCOMMON_CC_LIB_TESTONLY)
-        set(_gtest_link_define "GTEST_LINKED_AS_SHARED_LIBRARY=1")
-      else()
-        set(_gtest_link_define)
-      endif()
-
-      target_compile_definitions(${_NAME}
-        PUBLIC
-          WSCOMMON_CONSUME_DLL
-          "${_gtest_link_define}"
-      )
-    elseif(_build_type STREQUAL "static" OR _build_type STREQUAL "shared")
-      add_library(${_NAME} "")
-      target_sources(${_NAME} PRIVATE ${WSCOMMON_CC_LIB_SRCS} ${WSCOMMON_CC_LIB_HDRS})
-      if(APPLE)
-        set_target_properties(${_NAME} PROPERTIES
-          INSTALL_RPATH "@loader_path")
-      elseif(UNIX)
-        set_target_properties(${_NAME} PROPERTIES
-          INSTALL_RPATH "$ORIGIN")
-      endif()
-      target_link_libraries(${_NAME}
-      PUBLIC ${WSCOMMON_CC_LIB_DEPS}
-      PRIVATE
-        ${WSCOMMON_CC_LIB_LINKOPTS}
-        ${WSCOMMON_DEFAULT_LINKOPTS}
-      )
-    else()
-      message(FATAL_ERROR "Invalid build type: ${_build_type}")
-    endif()
-
-    set_property(TARGET ${_NAME} PROPERTY LINKER_LANGUAGE "CXX")
-    target_include_directories(${_NAME} ${WSCOMMON_INTERNAL_INCLUDE_WARNING_GUARD}
-      PUBLIC
-        "$<BUILD_INTERFACE:${WSCOMMON_INCLUDE_DIRS}>"
+  if(_n EQUAL 0)
+    add_library(${_NAME} INTERFACE)
+    target_include_directories(${_NAME}
+      INTERFACE
+        $<BUILD_INTERFACE:${WSCOMMON_INCLUDE_DIRS}>
         $<INSTALL_INTERFACE:${WSCOMMON_INSTALL_INCLUDEDIR}>
     )
-    target_compile_options(${_NAME}
-      PRIVATE ${WSCOMMON_CC_LIB_COPTS})
-    target_compile_definitions(${_NAME} PUBLIC ${WSCOMMON_CC_LIB_DEFINES})
-
-    if(WSCOMMON_CC_LIB_PUBLIC)
-      set_property(TARGET ${_NAME} PROPERTY FOLDER ${WSCOMMON_IDE_FOLDER})
-    elseif(WSCOMMON_CC_LIB_TESTONLY)
-      set_property(TARGET ${_NAME} PROPERTY FOLDER ${WSCOMMON_IDE_FOLDER}/test)
-    else()
-      set_property(TARGET ${_NAME} PROPERTY FOLDER ${WSCOMMON_IDE_FOLDER}/internal)
-    endif()
-
-    if(WSCOMMON_ENABLE_INSTALL)
-      set_target_properties(${_NAME} PROPERTIES
-        OUTPUT_NAME "wscommon_${_NAME}"
-        SOVERSION "${WSCOMMON_SOVERSION}"
-      )
-    endif()
-  else()
-    add_library(${_NAME} INTERFACE)
-    target_include_directories(${_NAME} ${WSCOMMON_INTERNAL_INCLUDE_WARNING_GUARD}
-      INTERFACE
-        "$<BUILD_INTERFACE:${WSCOMMON_INCLUDE_DIRS}>"
-        $<INSTALL_INTERFACE:${WSCOMMON_INSTALL_INCLUDEDIR}>
-      )
-
-    if (_build_type STREQUAL "dll")
-        set(WSCOMMON_CC_LIB_DEPS wscommon_dll)
-    endif()
-
     target_link_libraries(${_NAME}
       INTERFACE
         ${WSCOMMON_CC_LIB_DEPS}
@@ -145,76 +101,90 @@ function(wscommon_cc_library)
         ${WSCOMMON_DEFAULT_LINKOPTS}
     )
     target_compile_definitions(${_NAME} INTERFACE ${WSCOMMON_CC_LIB_DEFINES})
-  endif()
 
-  if(WSCOMMON_BUILD_DLL AND _build_type STREQUAL "dll")
-    set(_dll_sources "")
-    foreach(_src IN LISTS WSCOMMON_CC_SRCS)
-      if(IS_ABSOLUTE ${_src})
-        list(APPEND _dll_sources ${_src})
-      else()
-        file(RELATIVE_PATH _rel_path "${WSCOMMON_COMMON_INCLUDEDIR}" "${CMAKE_CURRENT_SOURCE_DIR}")
-        list(APPEND _dll_sources "${_rel_path}/${_src}")
+    if(WSCOMMON_PROPAGATE_CXX_STD)
+      target_compile_features(${_NAME} INTERFACE ${WSCOMMON_INTERNAL_CXX_STD_FEATURE})
+    endif()
+  else()
+    if(WSCOMMON_BUILD_DLL)
+      set(_build_type OBJECT)
+    elseif(BUILD_SHARED_LIBS)
+      set(_build_type SHARED)
+    else()
+      set(_build_type STATIC)
+    endif()
+
+    add_library(${_NAME} ${_build_type} ${WSCOMMON_CC_LIB_SRCS})
+    target_include_directories(${_NAME}
+      PRIVATE ${WSCOMMON_INTERNAL_INCLUDE_WARNING_GUARD}
+      PUBLIC
+        $<BUILD_INTERFACE:${WSCOMMON_INCLUDE_DIRS}>
+        $<INSTALL_INTERFACE:${WSCOMMON_INSTALL_INCLUDEDIR}>
+    )
+    target_compile_options(${_NAME} PRIVATE ${WSCOMMON_CC_LIB_COPTS})
+    target_compile_definitions(${_NAME} PUBLIC ${WSCOMMON_CC_LIB_DEFINES})
+
+    if(_build_type STREQUAL "OBJECT")
+      target_sources(${_NAME}
+        PRIVATE
+          ${WSCOMMON_CC_LIB_HDRS}
+          ${WSCOMMON_CC_LIB_INHDRS}
+      )
+      target_link_libraries(${_NAME} PUBLIC ${WSCOMMON_CC_LIB_DEPS})
+
+      set_property(TARGET ${_NAME} PROPERTY FOLDER ${WSCOMMON_IDE_FOLDER}/internal/objects)
+
+      wscommon_add_dll_library(${_NAME})
+    else()
+      target_sources(${_NAME}
+        PUBLIC
+          ${WSCOMMON_CC_LIB_HDRS}
+        PRIVATE
+          ${WSCOMMON_CC_LIB_INHDRS}
+      )
+      set_target_properties(${_NAME} PROPERTIES LINKER_LANGUAGE "CXX")
+
+      if(_build_type STREQUAL "SHARED")
+        if(APPLE)
+          set_target_properties(${_NAME} PROPERTIES INSTALL_RPATH "@loader_path")
+        elseif(UNIX)
+          set_target_properties(${_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN")
+        endif()
       endif()
-    endforeach()
-    wscommon_add_dll_sources(SOURCES ${_dll_sources})
+
+      target_compile_definitions(${_NAME} PUBLIC
+        $<$<BOOL:${WSCOMMON_CC_LIB_TESTONLY}>:GTEST_LINKED_AS_SHARED_LIBRARY=1>
+        WSCOMMON_CONSUME_DLL
+      )
+
+      target_link_libraries(${_NAME}
+        PUBLIC  ${WSCOMMON_CC_LIB_DEPS}
+        PRIVATE ${WSCOMMON_CC_LIB_LINKOPTS} ${WSCOMMON_DEFAULT_LINKOPTS}
+      )
+
+      if(WSCOMMON_CC_LIB_PUBLIC)
+        set_property(TARGET ${_NAME} PROPERTY FOLDER ${WSCOMMON_IDE_FOLDER})
+      elseif(WSCOMMON_CC_LIB_TESTONLY)
+        set_property(TARGET ${_NAME} PROPERTY FOLDER ${WSCOMMON_IDE_FOLDER}/test)
+      else()
+        set_property(TARGET ${_NAME} PROPERTY FOLDER ${WSCOMMON_IDE_FOLDER}/internal)
+      endif()
+
+      if(WSCOMMON_ENABLE_INSTALL)
+        set_target_properties(${_NAME} PROPERTIES
+          OUTPUT_NAME "wscommon_${_NAME}"
+          SOVERSION "${WSCOMMON_SOVERSION}"
+        )
+      endif()
+    endif()
+
+    if(WSCOMMON_PROPAGATE_CXX_STD)
+      target_compile_features(${_NAME} PUBLIC ${WSCOMMON_INTERNAL_CXX_STD_FEATURE})
+    endif()
   endif()
 
   if(WSCOMMON_ENABLE_INSTALL)
-    if(WSCOMMON_VERSION)
-      set(PC_VERSION "${WSCOMMON_VERSION}")
-    else()
-      set(PC_VERSION "head")
-    endif()
-    if(NOT _build_type STREQUAL "dll")
-      set(LNK_LIB "${LNK_LIB} -lwscommon_${_NAME}")
-    endif()
-    foreach(dep ${WSCOMMON_CC_LIB_DEPS})
-      if(${dep} MATCHES "^ws::(.*)")
-        if(_build_type STREQUAL "dll")
-          if(NOT PC_DEPS MATCHES "wscommon_dll")
-            if(PC_DEPS)
-              set(PC_DEPS "${PC_DEPS},")
-            endif()
-            set(PC_DEPS "${PC_DEPS} wscommon_dll = ${PC_VERSION}")
-            set(LNK_LIB "${LNK_LIB} -lwscommon_dll")
-          endif()
-        else()
-          if(PC_DEPS)
-            set(PC_DEPS "${PC_DEPS},")
-          endif()
-          set(PC_DEPS "${PC_DEPS} wscommon_${CMAKE_MATCH_1} = ${PC_VERSION}")
-        endif()
-      endif()
-    endforeach()
-    foreach(cflag ${WSCOMMON_CC_LIB_COPTS})
-      string(REGEX REPLACE "^SHELL:" "" cflag "${cflag}")
-      if(${cflag} MATCHES "^-Xarch_")
-      elseif(${cflag} MATCHES "^(-Wno-|/wd)")
-        set(PC_CFLAGS "${PC_CFLAGS} ${cflag}")
-      elseif(${cflag} MATCHES "^(-W|/w[1234eo])")
-      elseif(${cflag} MATCHES "^-m")
-      else()
-        set(PC_CFLAGS "${PC_CFLAGS} ${cflag}")
-      endif()
-    endforeach()
-    string(REPLACE ";" " " PC_LINKOPTS "${WSCOMMON_CC_LIB_LINKOPTS}")
-
-    FILE(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/lib/pkgconfig/wscommon_${_NAME}.pc" CONTENT "\
-prefix=${CMAKE_INSTALL_PREFIX}\n\
-exec_prefix=\${prefix}\n\
-libdir=${CMAKE_INSTALL_FULL_LIBDIR}\n\
-includedir=${CMAKE_INSTALL_FULL_INCLUDEDIR}\n\
-\n\
-Name: wscommon_${_NAME}\n\
-Description: ${PROJECT_NAME} ${_NAME} library\n\
-URL: https://wildsentinel.io/\n\
-Version: ${PC_VERSION}\n\
-Requires:${PC_DEPS}\n\
-Libs: -L\${libdir} $<$<NOT:$<BOOL:${WSCOMMON_CC_LIB_IS_INTERFACE}>>:${LNK_LIB}> ${PC_LINKOPTS}\n\
-Cflags: -I\${includedir}${PC_CFLAGS}\n")
-    INSTALL(FILES "${CMAKE_BINARY_DIR}/lib/pkgconfig/wscommon_${_NAME}.pc"
-            DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+    wscommon_generate_pc_file(${_NAME})
 
     install(TARGETS ${_NAME} EXPORT ${PROJECT_NAME}Targets
       RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

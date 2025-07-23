@@ -47,6 +47,15 @@ set(CMAKE_INSTALL_RPATH "$ORIGIN")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
 
+option(WSCOMMON_PROPAGATE_CXX_STD
+  "Use CMake C++ standard meta features (e.g. cxx_std_17) that propagate to targets that link to WsCommon"
+  ON)
+
+option(WSCOMMON_USE_SYSTEM_INCLUDES
+  "Silence warnings in WsCommon headers by marking them as SYSTEM includes"
+  OFF)
+
+
 list(APPEND CMAKE_MODULE_PATH
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake
   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/copts
