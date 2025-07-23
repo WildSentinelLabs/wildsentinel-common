@@ -11,7 +11,7 @@ function(wscommon_cc_library)
   cmake_parse_arguments(WSCOMMON_CC_LIB
     "DISABLE_INSTALL;PUBLIC;TESTONLY"
     "NAME"
-    "HDRS;SRCS;COPTS;DEFINES;LINKOPTS;DEPS"
+    "HDRS;INHDRS;SRCS;COPTS;DEFINES;LINKOPTS;DEPS"
     ${ARGN}
   )
 
@@ -54,63 +54,6 @@ function(wscommon_cc_library)
     set(_build_type "shared")
   else()
     set(_build_type "static")
-  endif()
-
-  if(WSCOMMON_ENABLE_INSTALL)
-    if(WSCOMMON_VERSION)
-      set(PC_VERSION "${WSCOMMON_VERSION}")
-    else()
-      set(PC_VERSION "head")
-    endif()
-    if(NOT _build_type STREQUAL "dll")
-      set(LNK_LIB "${LNK_LIB} -lwscommon_${_NAME}")
-    endif()
-    foreach(dep ${WSCOMMON_CC_LIB_DEPS})
-      if(${dep} MATCHES "^ws::(.*)")
-        if(_build_type STREQUAL "dll")
-          if(NOT PC_DEPS MATCHES "wscommon_dll")
-            if(PC_DEPS)
-              set(PC_DEPS "${PC_DEPS},")
-            endif()
-            set(PC_DEPS "${PC_DEPS} wscommon_dll = ${PC_VERSION}")
-            set(LNK_LIB "${LNK_LIB} -lwscommon_dll")
-          endif()
-        else()
-          if(PC_DEPS)
-            set(PC_DEPS "${PC_DEPS},")
-          endif()
-          set(PC_DEPS "${PC_DEPS} wscommon_${CMAKE_MATCH_1} = ${PC_VERSION}")
-        endif()
-      endif()
-    endforeach()
-    foreach(cflag ${WSCOMMON_CC_LIB_COPTS})
-      string(REGEX REPLACE "^SHELL:" "" cflag "${cflag}")
-      if(${cflag} MATCHES "^-Xarch_")
-      elseif(${cflag} MATCHES "^(-Wno-|/wd)")
-        set(PC_CFLAGS "${PC_CFLAGS} ${cflag}")
-      elseif(${cflag} MATCHES "^(-W|/w[1234eo])")
-      elseif(${cflag} MATCHES "^-m")
-      else()
-        set(PC_CFLAGS "${PC_CFLAGS} ${cflag}")
-      endif()
-    endforeach()
-    string(REPLACE ";" " " PC_LINKOPTS "${WSCOMMON_CC_LIB_LINKOPTS}")
-
-    FILE(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/lib/pkgconfig/wscommon_${_NAME}.pc" CONTENT "\
-prefix=${CMAKE_INSTALL_PREFIX}\n\
-exec_prefix=\${prefix}\n\
-libdir=${CMAKE_INSTALL_FULL_LIBDIR}\n\
-includedir=${CMAKE_INSTALL_FULL_INCLUDEDIR}\n\
-\n\
-Name: wscommon_${_NAME}\n\
-Description: ${PROJECT_NAME} ${_NAME} library\n\
-URL: https://wildsentinel.io/\n\
-Version: ${PC_VERSION}\n\
-Requires:${PC_DEPS}\n\
-Libs: -L\${libdir} $<$<NOT:$<BOOL:${WSCOMMON_CC_LIB_IS_INTERFACE}>>:${LNK_LIB}> ${PC_LINKOPTS}\n\
-Cflags: -I\${includedir}${PC_CFLAGS}\n")
-    INSTALL(FILES "${CMAKE_BINARY_DIR}/lib/pkgconfig/wscommon_${_NAME}.pc"
-            DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
   endif()
 
   if(NOT WSCOMMON_CC_LIB_IS_INTERFACE)
@@ -218,6 +161,61 @@ Cflags: -I\${includedir}${PC_CFLAGS}\n")
   endif()
 
   if(WSCOMMON_ENABLE_INSTALL)
+    if(WSCOMMON_VERSION)
+      set(PC_VERSION "${WSCOMMON_VERSION}")
+    else()
+      set(PC_VERSION "head")
+    endif()
+    if(NOT _build_type STREQUAL "dll")
+      set(LNK_LIB "${LNK_LIB} -lwscommon_${_NAME}")
+    endif()
+    foreach(dep ${WSCOMMON_CC_LIB_DEPS})
+      if(${dep} MATCHES "^ws::(.*)")
+        if(_build_type STREQUAL "dll")
+          if(NOT PC_DEPS MATCHES "wscommon_dll")
+            if(PC_DEPS)
+              set(PC_DEPS "${PC_DEPS},")
+            endif()
+            set(PC_DEPS "${PC_DEPS} wscommon_dll = ${PC_VERSION}")
+            set(LNK_LIB "${LNK_LIB} -lwscommon_dll")
+          endif()
+        else()
+          if(PC_DEPS)
+            set(PC_DEPS "${PC_DEPS},")
+          endif()
+          set(PC_DEPS "${PC_DEPS} wscommon_${CMAKE_MATCH_1} = ${PC_VERSION}")
+        endif()
+      endif()
+    endforeach()
+    foreach(cflag ${WSCOMMON_CC_LIB_COPTS})
+      string(REGEX REPLACE "^SHELL:" "" cflag "${cflag}")
+      if(${cflag} MATCHES "^-Xarch_")
+      elseif(${cflag} MATCHES "^(-Wno-|/wd)")
+        set(PC_CFLAGS "${PC_CFLAGS} ${cflag}")
+      elseif(${cflag} MATCHES "^(-W|/w[1234eo])")
+      elseif(${cflag} MATCHES "^-m")
+      else()
+        set(PC_CFLAGS "${PC_CFLAGS} ${cflag}")
+      endif()
+    endforeach()
+    string(REPLACE ";" " " PC_LINKOPTS "${WSCOMMON_CC_LIB_LINKOPTS}")
+
+    FILE(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/lib/pkgconfig/wscommon_${_NAME}.pc" CONTENT "\
+prefix=${CMAKE_INSTALL_PREFIX}\n\
+exec_prefix=\${prefix}\n\
+libdir=${CMAKE_INSTALL_FULL_LIBDIR}\n\
+includedir=${CMAKE_INSTALL_FULL_INCLUDEDIR}\n\
+\n\
+Name: wscommon_${_NAME}\n\
+Description: ${PROJECT_NAME} ${_NAME} library\n\
+URL: https://wildsentinel.io/\n\
+Version: ${PC_VERSION}\n\
+Requires:${PC_DEPS}\n\
+Libs: -L\${libdir} $<$<NOT:$<BOOL:${WSCOMMON_CC_LIB_IS_INTERFACE}>>:${LNK_LIB}> ${PC_LINKOPTS}\n\
+Cflags: -I\${includedir}${PC_CFLAGS}\n")
+    INSTALL(FILES "${CMAKE_BINARY_DIR}/lib/pkgconfig/wscommon_${_NAME}.pc"
+            DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+
     install(TARGETS ${_NAME} EXPORT ${PROJECT_NAME}Targets
       RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
       LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

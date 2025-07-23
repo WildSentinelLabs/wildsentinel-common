@@ -114,6 +114,18 @@ function(wscommon_make_dll)
       ${WSCOMMON_DEFAULT_COPTS}
   )
 
+  target_compile_definitions(
+    ${_dll_name}
+    PUBLIC
+      ${_dll_compile_definitions}
+    PRIVATE
+      ${_dll_build}
+      NOMINMAX
+    INTERFACE
+      ${WSCOMMON_CC_LIB_DEFINES}
+      ${_dll_consume}
+  )
+
   foreach(cflag ${WSCOMMON_CC_LIB_COPTS})
     if(${cflag} MATCHES "^(-Wno|/wd)")
       set(PC_CFLAGS "${PC_CFLAGS} ${cflag}")
@@ -122,6 +134,7 @@ function(wscommon_make_dll)
       set(PC_CFLAGS "${PC_CFLAGS} ${cflag}")
     endif()
   endforeach()
+
   string(REPLACE ";" " " PC_LINKOPTS "${WSCOMMON_CC_LIB_LINKOPTS}")
 
   FILE(GENERATE OUTPUT "${CMAKE_BINARY_DIR}/lib/pkgconfig/${_dll_name}.pc" CONTENT "\
@@ -138,18 +151,6 @@ Libs: -L\${libdir} $<$<NOT:$<BOOL:${WSCOMMON_CC_LIB_IS_INTERFACE}>>:-l${_dll_nam
 Cflags: -I\${includedir}${PC_CFLAGS}\n")
   INSTALL(FILES "${CMAKE_BINARY_DIR}/lib/pkgconfig/${_dll_name}.pc"
     DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
-
-  target_compile_definitions(
-    ${_dll_name}
-    PUBLIC
-      ${_dll_compile_definitions}
-    PRIVATE
-      ${_dll_build}
-      NOMINMAX
-    INTERFACE
-      ${WSCOMMON_CC_LIB_DEFINES}
-      ${_dll_consume}
-  )
 
   install(TARGETS ${_dll_name} EXPORT ${PROJECT_NAME}Targets
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

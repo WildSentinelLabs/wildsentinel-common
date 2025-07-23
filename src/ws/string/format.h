@@ -76,6 +76,8 @@ constexpr const char* IntFmt() {
     return "%llu";
   else
     static_assert(std::is_integral_v<T>, "Unsupported integral type");
+
+  return nullptr;
 }
 
 template <typename T>
