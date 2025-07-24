@@ -77,12 +77,7 @@ function(wscommon_cc_library)
     return()
   endif()
 
-  if(WSCOMMON_ENABLE_INSTALL)
-    set(_NAME "${WSCOMMON_CC_LIB_NAME}")
-  else()
-    set(_NAME "wscommon_${WSCOMMON_CC_LIB_NAME}")
-  endif()
-
+  set(_NAME "wscommon_${WSCOMMON_CC_LIB_NAME}")
   set(_srcs ${WSCOMMON_CC_LIB_SRCS})
   list(FILTER _srcs EXCLUDE REGEX ".*\\.(h|inc)$")
   list(LENGTH _srcs _n)
@@ -91,8 +86,8 @@ function(wscommon_cc_library)
     add_library(${_NAME} INTERFACE)
     target_include_directories(${_NAME}
       INTERFACE
-        $<BUILD_INTERFACE:${WSCOMMON_INCLUDE_DIRS}>
-        $<INSTALL_INTERFACE:${WSCOMMON_INSTALL_INCLUDEDIR}>
+        "$<BUILD_INTERFACE:${WSCOMMON_INCLUDE_DIRS}>"
+        "$<INSTALL_INTERFACE:${WSCOMMON_INSTALL_INCLUDEDIR}>"
     )
     target_link_libraries(${_NAME}
       INTERFACE
@@ -118,8 +113,8 @@ function(wscommon_cc_library)
     target_include_directories(${_NAME}
       PRIVATE ${WSCOMMON_INTERNAL_INCLUDE_WARNING_GUARD}
       PUBLIC
-        $<BUILD_INTERFACE:${WSCOMMON_INCLUDE_DIRS}>
-        $<INSTALL_INTERFACE:${WSCOMMON_INSTALL_INCLUDEDIR}>
+        "$<BUILD_INTERFACE:${WSCOMMON_INCLUDE_DIRS}>"
+        "$<INSTALL_INTERFACE:${WSCOMMON_INSTALL_INCLUDEDIR}>"
     )
     target_compile_options(${_NAME} PRIVATE ${WSCOMMON_CC_LIB_COPTS})
     target_compile_definitions(${_NAME} PUBLIC ${WSCOMMON_CC_LIB_DEFINES})
@@ -172,7 +167,7 @@ function(wscommon_cc_library)
 
       if(WSCOMMON_ENABLE_INSTALL)
         set_target_properties(${_NAME} PROPERTIES
-          OUTPUT_NAME "wscommon_${_NAME}"
+          OUTPUT_NAME "${_NAME}"
           SOVERSION "${WSCOMMON_SOVERSION}"
         )
       endif()
