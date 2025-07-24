@@ -86,10 +86,10 @@ inline std::string FormatPadded(T value, int width, char fill) {
   // build e.g. "%05ld" or "%*d"
   char fmt[16];
   if (fill == '0') {
-    std::snprintf(fmt, sizeof(fmt), "%%0%d%s", width, IntFmt<T>());
+    std::snprintf(fmt, sizeof(fmt), "%%0%d%s", width, IntFmt<T>() + 1);
     std::snprintf(buffer, sizeof(buffer), fmt, value);
   } else {
-    std::snprintf(fmt, sizeof(fmt), "%%*%s", IntFmt<T>());
+    std::snprintf(fmt, sizeof(fmt), "%%*%s", IntFmt<T>() + 1);
     std::snprintf(buffer, sizeof(buffer), fmt, width, value);
   }
   return buffer;
