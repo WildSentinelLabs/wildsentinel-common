@@ -152,7 +152,8 @@
       "description": "Inherits environment from base configurePreset",
       "configurePreset": "base",
       "hidden": true,
-      "inheritConfigureEnvironment": true
+      "inheritConfigureEnvironment": true,
+      "jobs": 12
     },
     {
       "name": "windows-build-debug",
@@ -212,7 +213,8 @@
       "configurePreset": "base",
       "hidden": true,
       "inheritConfigureEnvironment": true,
-      "targets": ["install"]
+      "targets": ["install"],
+      "jobs": 12
     },
     {
       "name": "windows-install-debug",
