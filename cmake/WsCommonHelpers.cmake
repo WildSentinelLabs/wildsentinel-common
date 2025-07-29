@@ -65,11 +65,30 @@ Cflags: ${pc_cflags}\n")
             DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 endfunction()
 
+function(wscommon_install_target target_name)
+  install(TARGETS ${target_name} EXPORT ${PROJECT_NAME}Targets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  )
+
+  get_target_property(_target_type ${target_name} TYPE)
+  if(_target_type STREQUAL "EXECUTABLE" OR
+     _target_type STREQUAL "SHARED_LIBRARY" OR
+     _target_type STREQUAL "MODULE_LIBRARY")
+    install(FILES
+      $<TARGET_RUNTIME_DLLS:${target_name}>
+      DESTINATION ${CMAKE_INSTALL_BINDIR}
+      OPTIONAL
+    )
+  endif()
+endfunction()
+
 function(wscommon_cc_library)
   cmake_parse_arguments(WSCOMMON_CC_LIB
     "DISABLE_INSTALL;PUBLIC;TESTONLY"
     "NAME"
-    "HDRS;INHDRS;SRCS;COPTS;DEFINES;LINKOPTS;DEPS"
+    "HDRS;SRCS;COPTS;DEFINES;LINKOPTS;DEPS"
     ${ARGN}
   )
 
@@ -116,27 +135,20 @@ function(wscommon_cc_library)
         "$<BUILD_INTERFACE:${WSCOMMON_INCLUDE_DIRS}>"
         "$<INSTALL_INTERFACE:${WSCOMMON_INSTALL_INCLUDEDIR}>"
     )
+    target_sources(${_NAME}
+      PRIVATE
+        ${WSCOMMON_CC_LIB_HDRS}
+    )
     target_compile_options(${_NAME} PRIVATE ${WSCOMMON_CC_LIB_COPTS})
     target_compile_definitions(${_NAME} PUBLIC ${WSCOMMON_CC_LIB_DEFINES})
 
     if(_build_type STREQUAL "OBJECT")
-      target_sources(${_NAME}
-        PRIVATE
-          ${WSCOMMON_CC_LIB_HDRS}
-          ${WSCOMMON_CC_LIB_INHDRS}
-      )
       target_link_libraries(${_NAME} PUBLIC ${WSCOMMON_CC_LIB_DEPS})
 
       set_property(TARGET ${_NAME} PROPERTY FOLDER ${WSCOMMON_IDE_FOLDER}/internal/objects)
 
       wscommon_add_dll_library(${_NAME})
     else()
-      target_sources(${_NAME}
-        PUBLIC
-          ${WSCOMMON_CC_LIB_HDRS}
-        PRIVATE
-          ${WSCOMMON_CC_LIB_INHDRS}
-      )
       set_target_properties(${_NAME} PROPERTIES LINKER_LANGUAGE "CXX")
 
       if(_build_type STREQUAL "SHARED")
@@ -179,13 +191,7 @@ function(wscommon_cc_library)
   endif()
 
   if(WSCOMMON_ENABLE_INSTALL)
-    wscommon_generate_pc_file(${_NAME})
-
-    install(TARGETS ${_NAME} EXPORT ${PROJECT_NAME}Targets
-      RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    )
+    wscommon_install_target(${_NAME})
   endif()
 
   add_library(ws::${WSCOMMON_CC_LIB_NAME} ALIAS ${_NAME})

@@ -8,7 +8,6 @@ wscommon_cc_library(
     collections/concurrent_unordered_map.h
     collections/concurrent_unordered_set.h
     collections/synchronized_queue.h
-  INHDRS
     internal/aligned_space.h
     internal/allocator_traits.h
     internal/atomic_backoff.h

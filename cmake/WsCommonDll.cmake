@@ -60,13 +60,7 @@ function(wscommon_make_dll)
       ${_dll_consume}
   )
 
-  wscommon_generate_pc_file(${_dll_name})
-
-  install(TARGETS ${_dll_name} EXPORT ${PROJECT_NAME}Targets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  )
+  wscommon_install_target(${_dll_name})
 
   add_library(ws::${_dll_name} ALIAS ${_dll_name})
 endfunction()
