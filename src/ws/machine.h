@@ -8,10 +8,10 @@
 #undef KEEP_WIN_ORDER
 #include <windows.h>
 #else
-#include <fcntl.h>
 #define KEEP_LINUX_ORDER
 #include <sys/types.h>
 #undef KEEP_LINUX_ORDER
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #endif
