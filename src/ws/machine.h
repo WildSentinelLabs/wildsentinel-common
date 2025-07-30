@@ -10,6 +10,9 @@
 #else
 extern "C" {
 #include <fcntl.h>
+#define KEEP_LINUX_ORDER
+#include <sys/types.h>
+#undef KEEP_LINUX_ORDER
 #include <sys/stat.h>
 #include <unistd.h>
 }
@@ -62,8 +65,12 @@ inline std::size_t CpuLineSize() {
   // TODO: FIX IN APPLE
   return kMaxNfsSize;
 #else
+#ifdef _SC_LEVEL1_DCACHE_LINESIZE
   long value = sysconf(_SC_LEVEL1_DCACHE_LINESIZE);
   return (value > 0) ? static_cast<std::size_t>(value) : kMaxNfsSize;
+#else
+  return kMaxNfsSize;
+#endif
 #endif
 }
 

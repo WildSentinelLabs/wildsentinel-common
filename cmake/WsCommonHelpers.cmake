@@ -145,6 +145,11 @@ function(wscommon_cc_library)
     if(_build_type STREQUAL "OBJECT")
       target_link_libraries(${_NAME} PUBLIC ${WSCOMMON_CC_LIB_DEPS})
 
+      target_compile_definitions(${_NAME} PUBLIC
+        $<$<BOOL:${WSCOMMON_CC_LIB_TESTONLY}>:GTEST_LINKED_AS_SHARED_LIBRARY=1>
+        WSCOMMON_CONSUME_DLL
+      )
+
       set_property(TARGET ${_NAME} PROPERTY FOLDER ${WSCOMMON_IDE_FOLDER}/internal/objects)
 
       wscommon_add_dll_library(${_NAME})
@@ -158,11 +163,6 @@ function(wscommon_cc_library)
           set_target_properties(${_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN")
         endif()
       endif()
-
-      target_compile_definitions(${_NAME} PUBLIC
-        $<$<BOOL:${WSCOMMON_CC_LIB_TESTONLY}>:GTEST_LINKED_AS_SHARED_LIBRARY=1>
-        WSCOMMON_CONSUME_DLL
-      )
 
       target_link_libraries(${_NAME}
         PUBLIC  ${WSCOMMON_CC_LIB_DEPS}
