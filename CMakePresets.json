@@ -234,7 +234,6 @@
       "displayName": "Linux Install Debug",
       "description": "Install linux debug version",
       "inherits": ["core-install"],
-      "hidden": true,
       "configurePreset": "linux-debug"
     },
     {
@@ -242,7 +241,6 @@
       "displayName": "Linux Install Release",
       "description": "Install linux release version",
       "inherits": ["core-install"],
-      "hidden": true,
       "configurePreset": "linux-release"
     }
   ],
