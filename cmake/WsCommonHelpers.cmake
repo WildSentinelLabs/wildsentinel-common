@@ -1,5 +1,6 @@
 include(CMakeParseArguments)
 include(CMakePackageConfigHelpers)
+include(WsCommonConfigureCopts)
 
 if(NOT DEFINED WSCOMMON_IDE_FOLDER)
   set(WSCOMMON_IDE_FOLDER WsCommon)
