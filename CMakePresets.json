@@ -13,6 +13,7 @@
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
+        "BUILD_SHARED_LIBS": "ON",
         "CMAKE_CXX_STANDARD": "23"
       }
     },
