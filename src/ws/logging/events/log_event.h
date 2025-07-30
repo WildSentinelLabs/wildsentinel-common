@@ -1,5 +1,6 @@
 #pragma once
 #include <chrono>
+#include <optional>
 
 #include "ws/concurrency/collections/concurrent_unordered_map.h"
 #include "ws/logging/log_level.h"
