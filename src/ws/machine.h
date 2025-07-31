@@ -9,8 +9,6 @@
 #include <windows.h>
 #else
 #if defined(__linux__) && !defined(__GLIBC__)
-#pragma message( \
-    ">> Including <bits/alltypes.h> for musl-based systems like Alpine")
 #include <bits/alltypes.h>
 #endif
 #include <fcntl.h>
