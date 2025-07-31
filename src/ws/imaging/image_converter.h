@@ -3,9 +3,7 @@
 
 #include "ws/imaging/image.h"
 #include "ws/imaging/image_traits.h"
-#include "ws/logging/enrichers/thread_id_enricher.h"
 #include "ws/logging/ilogger.h"
-#include "ws/logging/logger_configuration.h"
 
 namespace ws {
 namespace imaging {

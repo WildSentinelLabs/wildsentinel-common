@@ -4,9 +4,7 @@
 #include "ws/imaging/image_compression_options.h"
 #include "ws/imaging/image_format.h"
 #include "ws/io/stream.h"
-#include "ws/logging/enrichers/thread_id_enricher.h"
 #include "ws/logging/ilogger.h"
-#include "ws/logging/logger_configuration.h"
 #include "ws/status/status.h"
 
 namespace ws {
