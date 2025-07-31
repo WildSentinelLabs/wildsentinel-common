@@ -8,12 +8,15 @@
 #undef KEEP_WIN_ORDER
 #include <windows.h>
 #else
+#if defined(__linux__) && !defined(__GLIBC__)
+#include <bits/alltypes.h>
+#endif
+#include <fcntl.h>
+#include <unistd.h>
 #define KEEP_LINUX_ORDER
 #include <sys/types.h>
 #undef KEEP_LINUX_ORDER
-#include <fcntl.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #endif
 
 #include <cstdint>
