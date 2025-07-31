@@ -1,9 +1,11 @@
 #pragma once
 
-#include <type_traits>
-
 #include "ws/config.h"
+#define KEEP_LINUX_ORDER
 #include "ws/machine.h"
+#undef KEEP_LINUX_ORDER
+
+#include <type_traits>
 
 namespace ws {
 namespace concurrency {
