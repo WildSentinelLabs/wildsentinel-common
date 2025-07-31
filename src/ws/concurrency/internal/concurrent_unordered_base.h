@@ -1491,8 +1491,8 @@ bool operator==(const ConcurrentUnorderedBase<TTraits>& lhs,
 
 #if !_CPP20_COMPARISONS_PRESENT
 template <typename Traits>
-bool operator!=(const concurrent_unordered_base<Traits>& lhs,
-                const concurrent_unordered_base<Traits>& rhs) {
+bool operator!=(const ConcurrentUnorderedBase<Traits>& lhs,
+                const ConcurrentUnorderedBase<Traits>& rhs) {
   return !(lhs == rhs);
 }
 #endif

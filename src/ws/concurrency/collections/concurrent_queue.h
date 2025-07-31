@@ -175,8 +175,8 @@ class ConcurrentQueue {
   }
 
 #if !_CPP20_COMPARISONS_PRESENT
-  friend bool operator!=(const concurrent_queue& lhs,
-                         const concurrent_queue& rhs) {
+  friend bool operator!=(const ConcurrentQueue& lhs,
+                         const ConcurrentQueue& rhs) {
     return !(lhs == rhs);
   }
 #endif
