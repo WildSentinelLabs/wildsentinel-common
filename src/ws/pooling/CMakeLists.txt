@@ -1,0 +1,13 @@
+wscommon_cc_library(
+  NAME
+    pooling
+  HDRS
+    blocking_object_pool.h
+    iobject_pool.h
+    object_pool.h
+  DEPS
+    ws::concurrency
+    ws::status
+    ws::core
+  PUBLIC
+)

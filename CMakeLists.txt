@@ -1,81 +1,138 @@
-# root
-cmake_minimum_required(VERSION 3.22)
-project("WildSentinel Common" VERSION 0.1.0 LANGUAGES C CXX)
+cmake_minimum_required(VERSION 3.21)
 
-# Set CMake policies
 cmake_policy(VERSION ${CMAKE_VERSION})
 if(POLICY CMP0021)
-    cmake_policy(SET CMP0021 NEW)
+  cmake_policy(SET CMP0021 NEW)
 endif()
 
 if(POLICY CMP0077)
-    cmake_policy(SET CMP0077 NEW)
+  cmake_policy(SET CMP0077 NEW)
 endif()
 
 if(POLICY CMP0156)
-    cmake_policy(SET CMP0156 NEW)
+  cmake_policy(SET CMP0156 NEW)
 endif()
 
 if(POLICY CMP0179)
-    cmake_policy(SET CMP0179 NEW)
+  cmake_policy(SET CMP0179 NEW)
 endif()
 
-option(WSCOMMON_BUILD_IMAGING "Build imaging and pixel modules" ON)
-option(WSCOMMON_BUILD_LOGGING "Build logging module" ON)
-option(WSCOMMON_BUILD_POOLING "Build pooling module" ON)
+project(WsCommon VERSION 1.0.0 LANGUAGES CXX)
+set(WSCOMMON_SOVERSION ${PROJECT_VERSION})
+set(WSCOMMON_VERSION ${PROJECT_VERSION})
+include(CTest)
 
-if(WSCOMMON_BUILD_IMAGING)
-    set(WSCOMMON_BUILD_LOGGING ON)
-endif()
-
-# Set default build type if not specified
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type (Debug, Release)" FORCE)
-endif()
-
-# Set installation prefix
-if(NOT CMAKE_INSTALL_PREFIX)
-    set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/install" CACHE PATH "Default installation prefix" FORCE)
-endif()
-
-# Confirm the installation prefix
-message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
-
-# Global position independent code setting
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-# Configure flags based on build type
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    message(STATUS "Using Debug configuration")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
-elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
-    message(STATUS "Using Release configuration")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -DNDEBUG -flto -march=native")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--strip-all")
-endif()
-
-# Global settings
-set(BUILD_THIRDPARTY ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/)
-set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/install/)
-set(WSCOMMON_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(WSCOMMON_LIB_DIR ${WSCOMMON_SOURCE_DIR}/lib/)
-set(WSCOMMON_BIN_DIR ${WSCOMMON_SOURCE_DIR}/bin/)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-message(STATUS "PROJECT_NAME ${PROJECT_NAME}")
-message(STATUS "CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
-message(STATUS "CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
-message(STATUS "CMAKE_GENERATOR: ${CMAKE_GENERATOR}")
-message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
-message(STATUS "CMAKE_RUNTIME_OUTPUT_DIRECTORY: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+if(NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+  option(WSCOMMON_ENABLE_INSTALL "Enable install" OFF)
+else()
+  option(WSCOMMON_ENABLE_INSTALL "Enable install" ON)
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 
-# Set RPATH
-set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
-set(CMAKE_BUILD_RPATH "$ORIGIN/../lib")
+  message(STATUS "PROJECT_NAME ${PROJECT_NAME}")
+  message(STATUS "BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
+  message(STATUS "CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
+  message(STATUS "CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
+  message(STATUS "CMAKE_GENERATOR: ${CMAKE_GENERATOR}")
+  message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
+  message(STATUS "CMAKE_ARCHIVE_OUTPUT_DIRECTORY: ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}")
+  message(STATUS "CMAKE_LIBRARY_OUTPUT_DIRECTORY: ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+  message(STATUS "CMAKE_RUNTIME_OUTPUT_DIRECTORY: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+endif()
 
-# Build the library (src)
+set(CMAKE_INSTALL_RPATH "$ORIGIN")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
+set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
+
+option(WSCOMMON_PROPAGATE_CXX_STD
+  "Use CMake C++ standard meta features (e.g. cxx_std_17) that propagate to targets that link to WsCommon"
+  ON)
+
+option(WSCOMMON_USE_SYSTEM_INCLUDES
+  "Silence warnings in WsCommon headers by marking them as SYSTEM includes"
+  OFF)
+
+list(APPEND CMAKE_MODULE_PATH
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmake
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/copts
+)
+
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+include(WsCommonDll)
+include(WsCommonHelpers)
+
+option(WSCOMMON_BUILD_IMAGING "Build imaging and pixel modules" ON)
+option(WSCOMMON_BUILD_IO "Build IO module" ON)
+option(WSCOMMON_BUILD_LOGGING "Build logging module" ON)
+option(WSCOMMON_BUILD_POOLING "Build pooling module" ON)
+option(WSCOMMON_BUILD_THREADING "Build threading module" ON)
+
+set(WSCOMMON_COMMON_INCLUDEDIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(WSCOMMON_INSTALL_INCLUDEDIR ${CMAKE_INSTALL_INCLUDEDIR})
+list(APPEND WSCOMMON_INCLUDE_DIRS
+  ${WSCOMMON_COMMON_INCLUDEDIR}
+)
+
+if("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+  set(WSCOMMON_USING_CLANG ON)
+else()
+  set(WSCOMMON_USING_CLANG OFF)
+endif()
+
+find_package(Threads REQUIRED)
+
+include(CMakeDependentOption)
+
+option(WSCOMMON_BUILD_TESTING
+  "If ON, WsCommon will build all of WsCommon's own tests." OFF)
+
+option(WSCOMMON_BUILD_MONOLITHIC_SHARED_LIBS
+  "Build WsCommon as a single shared library (always enabled for Windows)"
+  OFF
+)
+if(NOT BUILD_SHARED_LIBS AND WSCOMMON_BUILD_MONOLITHIC_SHARED_LIBS)
+  message(WARNING "Not building a shared library because BUILD_SHARED_LIBS is not set. Ignoring WSCOMMON_BUILD_MONOLITHIC_SHARED_LIBS.")
+endif()
+
 add_subdirectory(src)
+
+if(WSCOMMON_ENABLE_INSTALL)
+  install(EXPORT ${PROJECT_NAME}Targets
+    NAMESPACE ws::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+  )
+
+  configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/wsConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+  )
+
+  install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+  )
+
+  if(WSCOMMON_VERSION)
+    write_basic_package_version_file(
+      "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+      VERSION ${PROJECT_VERSION}
+      COMPATIBILITY SameMajorVersion
+    )
+
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+    )
+  endif()
+
+  install(DIRECTORY ${WSCOMMON_COMMON_INCLUDEDIR}/
+  DESTINATION ${WSCOMMON_INSTALL_INCLUDEDIR}
+  FILES_MATCHING
+    PATTERN "*.h"
+  )
+endif()

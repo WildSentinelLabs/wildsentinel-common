@@ -34,6 +34,9 @@
 # ThirdParty
 thirdparty/**/
 
+# Libs
+lib/
+**/lib/
 
 # Build files
 bin/

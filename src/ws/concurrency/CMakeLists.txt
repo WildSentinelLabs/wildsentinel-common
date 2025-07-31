@@ -1,0 +1,25 @@
+wscommon_cc_library(
+  NAME
+    concurrency
+  HDRS
+    spin_mutex.h
+    collections/blocking_queue.h
+    collections/concurrent_queue.h
+    collections/concurrent_unordered_map.h
+    collections/concurrent_unordered_set.h
+    collections/synchronized_queue.h
+    internal/aligned_space.h
+    internal/allocator_traits.h
+    internal/atomic_backoff.h
+    internal/concurrent_monitor.h
+    internal/concurrent_monitor_mutex.h
+    internal/concurrent_queue_base.h
+    internal/concurrent_unordered_base.h
+    internal/hash_compare.h
+    internal/helpers.h
+    internal/node_handle.h
+    internal/segment_table.h
+  DEPS
+    ws::core
+  PUBLIC
+)

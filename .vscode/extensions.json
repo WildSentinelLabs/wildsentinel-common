@@ -2,8 +2,22 @@
   "recommendations": [
     "ms-vscode.cpptools",
     "ms-vscode.cmake-tools",
-    "twxs.cmake",
     "ms-vscode.hexeditor",
-    "donjayamanne.githistory"
+    "EditorConfig.EditorConfig",
+    "alefragnani.Bookmarks",
+    "Gruntfuggly.todo-tree",
+    "wayou.vscode-todo-highlight",
+    "aaron-bond.better-comments",
+    "usernamehw.errorlens",
+    "mhutchie.git-graph",
+    "donjayamanne.githistory",
+    "eamodio.gitlens",
+    "alefragnani.project-manager",
+    "tetradresearch.vscode-h2o",
+    "christian-kohler.path-intellisense",
+    "oderwat.indent-rainbow",
+    "tal7aouy.rainbow-bracket",
+    "mechatroner.rainbow-csv",
+    "adpyke.codesnap"
   ]
 }

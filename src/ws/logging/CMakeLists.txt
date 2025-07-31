@@ -1,0 +1,33 @@
+wscommon_cc_library(
+  NAME
+    logging
+  SRCS
+    log_level.cc
+    logger_configuration.cc
+    ilogger.cc
+    logger.cc
+    dispatchers/async_log_dispatcher.cc
+    events/log_event.cc
+    rendering/message_renderer.cc
+    sinks/console_log_sink.cc
+  HDRS
+    ilog_dispatcher.h
+    ilog_enricher.h
+    ilog_sink.h
+    ilogger.h
+    log_context.h
+    log_level.h
+    logger_configuration.h
+    logger.h
+    dispatchers/async_log_dispatcher.h
+    dispatchers/sync_log_dispatcher.h
+    enrichers/process_id_enricher.h
+    enrichers/thread_id_enricher.h
+    events/log_event.h
+    rendering/message_renderer.h
+    sinks/console_log_sink.h
+  DEPS
+    ws::concurrency
+    ws::core
+  PUBLIC
+)
