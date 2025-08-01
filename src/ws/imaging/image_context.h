@@ -21,7 +21,7 @@ class ImageContext {
   //   using map_type = ws::concurrency::stl::concurrent_unordered_map<
   //   key_type, mapped_type, TransparentHash,
   //   TransparentEqual>;
-  // TODO: Use concurrent unordered map when available
+  // FIXME: Use concurrent unordered map when available
   using map_type = std::unordered_map<key_type, mapped_type, TransparentHash,
                                       TransparentEqual>;
 

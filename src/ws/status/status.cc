@@ -1,3 +1,6 @@
+// Based on Abseil (https://github.com/abseil/abseil-cpp)
+// See THIRD-PARTY-NOTICES
+
 #include "ws/status/status.h"
 
 namespace ws {

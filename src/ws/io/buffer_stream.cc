@@ -25,13 +25,13 @@ bool BufferStream::CanRead() const { return is_open_; }
 
 bool BufferStream::CanWrite() const { return writable_; }
 
-offset_t BufferStream::Length() {
-  EnsureNotClosed();
+StatusOr<offset_t> BufferStream::Length() {
+  RETURN_IF_ERROR(EnsureNotClosed());
   return length_ - origin_;
 }
 
-offset_t BufferStream::Position() {
-  EnsureNotClosed();
+StatusOr<offset_t> BufferStream::Position() {
+  RETURN_IF_ERROR(EnsureNotClosed());
   return position_ - origin_;
 }
 
@@ -45,18 +45,20 @@ bool BufferStream::TryGetBuffer(Span<unsigned char>& buffer) const {
   return true;
 }
 
-void BufferStream::SetPosition(offset_t value) {
-  EnsureNotClosed();
+Status BufferStream::SetPosition(offset_t value) {
+  RETURN_IF_ERROR(EnsureNotClosed());
   if (value < 0)
-    WsException::UnderflowError("Negative position not allowed").Throw();
-  if (value > length_ - origin_) ThrowStreamTooLong();
+    return Status(StatusCode::kBadRequest, "Negative position not allowed");
+
+  if (value > length_ - origin_) STREAM_THROW_TOO_LONG();
   position_ = origin_ + value;
+  return Status();
 }
 
-offset_t BufferStream::Read(Span<unsigned char> buffer, offset_t offset,
-                            offset_t count) {
-  ValidateBufferArguments(buffer, offset, count);
-  EnsureNotClosed();
+StatusOr<offset_t> BufferStream::Read(Span<unsigned char> buffer,
+                                      offset_t offset, offset_t count) {
+  RETURN_IF_ERROR(ValidateBufferArguments(buffer, offset, count));
+  RETURN_IF_ERROR(EnsureNotClosed());
   offset_t n = length_ - position_;
   if (n > count) n = count;
   if (n <= 0) return 0;
@@ -66,8 +68,8 @@ offset_t BufferStream::Read(Span<unsigned char> buffer, offset_t offset,
   return n;
 }
 
-offset_t BufferStream::Read(Span<unsigned char> buffer) {
-  EnsureNotClosed();
+StatusOr<offset_t> BufferStream::Read(Span<unsigned char> buffer) {
+  RETURN_IF_ERROR(EnsureNotClosed());
   offset_t n =
       std::min(static_cast<offset_t>(buffer.Length()), length_ - position_);
   if (n <= 0) return 0;
@@ -76,29 +78,32 @@ offset_t BufferStream::Read(Span<unsigned char> buffer) {
   return n;
 }
 
-int16_t BufferStream::ReadByte() {
-  EnsureNotClosed();
+StatusOr<int16_t> BufferStream::ReadByte() {
+  RETURN_IF_ERROR(EnsureNotClosed());
   if (position_ >= length_) return -1;
   return static_cast<int16_t>(buffer_[static_cast<size_t>(position_++)]);
 }
 
-offset_t BufferStream::Seek(offset_t offset, SeekOrigin origin) {
-  EnsureNotClosed();
+StatusOr<offset_t> BufferStream::Seek(offset_t offset, SeekOrigin origin) {
+  RETURN_IF_ERROR(EnsureNotClosed());
   switch (origin) {
     case SeekOrigin::kBegin:
       if (offset < 0 || offset > length_ - origin_)
-        WsException::IOError("IO SeekBeforeBegin OutOfRange").Throw();
+        return Status(StatusCode::kOutOfRange,
+                      "IO Error: SeekBeforeBegin OutOfRange");
       position_ = offset;
       break;
     case SeekOrigin::kEnd:
       if (offset > 0 || offset < origin_ - length_)
-        WsException::IOError("IO SeekBeforeEnd OutOfRange").Throw();
+        return Status(StatusCode::kOutOfRange,
+                      "IO Error: SeekAfterEnd OutOfRange");
       position_ = length_ + offset;
       break;
     case SeekOrigin::kCurrent:
     default:
       if (offset > length_ - position_ || offset < origin_ - position_)
-        WsException::IOError("IO SeekBeforeCurrent OutOfRange").Throw();
+        return Status(StatusCode::kOutOfRange,
+                      "IO Error: SeekCurrent OutOfRange");
       position_ = position_ + offset;
       break;
   }
@@ -107,38 +112,42 @@ offset_t BufferStream::Seek(offset_t offset, SeekOrigin origin) {
   return position_;
 }
 
-void BufferStream::Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
-                         offset_t count) {
-  ValidateBufferArguments(buffer, offset, count);
-  EnsureNotClosed();
-  EnsureWriteable();
-  if (count > length_ - position_) ThrowStreamTooLong();
+Status BufferStream::Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
+                           offset_t count) {
+  RETURN_IF_ERROR(ValidateBufferArguments(buffer, offset, count));
+  RETURN_IF_ERROR(EnsureNotClosed());
+  RETURN_IF_ERROR(EnsureWriteable());
+  if (count > length_ - position_) STREAM_THROW_TOO_LONG();
   std::memcpy(buffer_ + position_, buffer + offset, count);
   position_ += count;
+  return Status();
 }
 
-void BufferStream::Write(ReadOnlySpan<unsigned char> buffer) {
-  EnsureNotClosed();
-  EnsureWriteable();
-  if (buffer.Length() > length_ - position_) ThrowStreamTooLong();
+Status BufferStream::Write(ReadOnlySpan<unsigned char> buffer) {
+  RETURN_IF_ERROR(EnsureNotClosed());
+  RETURN_IF_ERROR(EnsureWriteable());
+  if (buffer.Length() > length_ - position_) STREAM_THROW_TOO_LONG();
   std::memcpy(buffer_ + position_, buffer, buffer.Length());
   position_ += buffer.Length();
+  return Status();
 }
 
-void BufferStream::WriteByte(unsigned char value) {
-  EnsureNotClosed();
-  EnsureWriteable();
-  if (position_ >= length_) ThrowStreamTooLong();
+Status BufferStream::WriteByte(unsigned char value) {
+  RETURN_IF_ERROR(EnsureNotClosed());
+  RETURN_IF_ERROR(EnsureWriteable());
+  if (position_ >= length_) STREAM_THROW_TOO_LONG();
   buffer_[static_cast<size_t>(position_++)] = value;
+  return Status();
 }
 
-void BufferStream::WriteTo(Stream& stream) {
-  EnsureNotClosed();
-  stream.Write(buffer_, origin_, length_ - origin_);
+Status BufferStream::WriteTo(Stream& stream) {
+  RETURN_IF_ERROR(EnsureNotClosed());
+  RETURN_IF_ERROR(stream.Write(buffer_, origin_, length_ - origin_));
+  return Status();
 }
 
-Array<unsigned char> BufferStream::ToArray() {
-  EnsureNotClosed();
+StatusOr<Array<unsigned char>> BufferStream::ToArray() {
+  RETURN_IF_ERROR(EnsureNotClosed());
   offset_t count = length_ - origin_;
   if (count == 0) return Array<unsigned char>();
   Array<unsigned char> array(count);
@@ -154,20 +163,25 @@ void BufferStream::Dispose() {
   exposable_ = false;
 }
 
-void BufferStream::CopyTo(Stream& stream, offset_t buffer_size) {
-  ValidateCopyToArguments(stream, buffer_size);
-  EnsureNotClosed();
+Status BufferStream::CopyTo(Stream& stream, offset_t buffer_size) {
+  RETURN_IF_ERROR(ValidateCopyToArguments(stream, buffer_size));
+  RETURN_IF_ERROR(EnsureNotClosed());
   offset_t original_pos = position_;
   offset_t remaining = Skip(length_ - original_pos);
-  if (remaining > 0) stream.Write(buffer_, position_, remaining);
+  if (remaining > 0)
+    RETURN_IF_ERROR(stream.Write(buffer_, position_, remaining));
+
+  return Status();
 }
 
-void BufferStream::EnsureNotClosed() const {
-  if (!is_open_) ThrowStreamClosed;
+Status BufferStream::EnsureNotClosed() const {
+  if (!is_open_) STREAM_THROW_CLOSED();
+  return Status();
 }
 
-void BufferStream::EnsureWriteable() const {
-  if (!CanWrite()) ThrowUnwritableStream();
+Status BufferStream::EnsureWriteable() const {
+  if (!CanWrite()) STREAM_THROW_UNWRITABLE();
+  return Status();
 }
 
 offset_t BufferStream::Skip(offset_t count) {

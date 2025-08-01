@@ -1,3 +1,6 @@
+// Based on oneTBB (https://github.com/uxlfoundation/oneTBB)
+// See THIRD-PARTY-NOTICES
+
 #pragma once
 
 #include "ws/config.h"

@@ -16,12 +16,13 @@ std::filesystem::path FileHandle::GetFullPath(const std::wstring& input) {
 std::filesystem::path FileHandle::Path() const { return path_; }
 
 #ifdef _WIN32
-static DWORD ParseCreationDisposition(FileMode mode, bool exists);
+static StatusOr<DWORD> ParseCreationDisposition(FileMode mode, bool exists);
 static DWORD ParseDesiredAccess(FileAccess access);
 static DWORD ParseShareMode(FileShare share);
 static OVERLAPPED OverlappedForSyncHandle(FileHandle& handle,
                                           offset_t file_offset);
-static bool IsEndOfFileForNoBuffering(FileHandle& handle, offset_t file_offset);
+static StatusOr<bool> IsEndOfFileForNoBuffering(FileHandle& handle,
+                                                offset_t file_offset);
 
 FileHandle::FileHandle() : FileHandle(INVALID_HANDLE_VALUE) {}
 FileHandle::FileHandle(void* fd)
@@ -31,12 +32,15 @@ FileHandle::FileHandle(void* fd)
       length_can_be_cached_(false),
       file_type_(-1) {}
 
-FileHandle FileHandle::Open(const std::filesystem::path& full_path,
-                            FileMode mode, FileAccess access, FileShare share,
-                            offset_t preallocation_size) {
+StatusOr<FileHandle> FileHandle::Open(const std::filesystem::path& full_path,
+                                      FileMode mode, FileAccess access,
+                                      FileShare share,
+                                      offset_t preallocation_size) {
   DWORD attributes = GetFileAttributesW(full_path.c_str());
   bool exists = (attributes != INVALID_FILE_ATTRIBUTES);
-  DWORD creation_disposition = ParseCreationDisposition(mode, exists);
+  DWORD creation_disposition;
+  ASSIGN_OR_RETURN(creation_disposition,
+                   ParseCreationDisposition(mode, exists));
   DWORD desired_access = ParseDesiredAccess(access);
   DWORD share_mode = ParseShareMode(share);
   DWORD flags_and_attributes = FILE_ATTRIBUTE_NORMAL;
@@ -45,9 +49,10 @@ FileHandle FileHandle::Open(const std::filesystem::path& full_path,
   HANDLE h = CreateFileW(full_path.c_str(), desired_access, share_mode, nullptr,
                          creation_disposition, flags_and_attributes, nullptr);
   if (h == nullptr || h == INVALID_HANDLE_VALUE) {
-    WsException::IOError(
-        "Failed to open file: CreateFileW returned INVALID_HANDLE_VALUE.")
-        .Throw();
+    return Status(
+        StatusCode::kRuntimeError,
+        "IO Error: Failed to open file. CreateFileW returned nullptr or "
+        "INVALID_HANDLE_VALUE.");
   }
 
   FileHandle handle(h);
@@ -65,9 +70,11 @@ FileHandle FileHandle::Open(const std::filesystem::path& full_path,
         DWORD err = GetLastError();
         CloseHandle(h);
         DeleteFileW(full_path.c_str());
-        WsException::IOError("Failed to preallocate file space. Error code: " +
-                             std::to_string(err))
-            .Throw();
+        return Status(StatusCode::kRuntimeError,
+                      "IO Error: Failed to preallocate file space. "
+                      "SetFileInformationByHandle "
+                      "failed with error code: " +
+                          std::to_string(err));
       }
     }
   }
@@ -75,25 +82,28 @@ FileHandle FileHandle::Open(const std::filesystem::path& full_path,
   return handle;
 }
 
-void FileHandle::SetFileLength(FileHandle& handle, offset_t length) {
+Status FileHandle::SetFileLength(FileHandle& handle, offset_t length) {
   FILE_END_OF_FILE_INFO eof_info = {};
   eof_info.EndOfFile.QuadPart = length;
   if (!SetFileInformationByHandle(handle.fd_, FileEndOfFileInfo, &eof_info,
                                   sizeof(eof_info))) {
     DWORD error_code = GetLastError();
     if (error_code == ERROR_INVALID_PARAMETER) {
-      WsException::OutOfRange("File length is too big.").Throw();
+      return Status(StatusCode::kOutOfRange,
+                    "IO Error: File length is too big.");
     } else {
-      WsException::IOError("Error setting file length. Error code: " +
-                           std::to_string(error_code))
-          .Throw();
+      return Status(StatusCode::kRuntimeError,
+                    "IO Error: Error setting file length. Error code: " +
+                        std::to_string(error_code));
     }
   }
+
+  return Status();
 }
 
-offset_t FileHandle::ReadAtOffset(FileHandle& handle,
-                                  Span<unsigned char> buffer,
-                                  offset_t file_offset) {
+StatusOr<offset_t> FileHandle::ReadAtOffset(FileHandle& handle,
+                                            Span<unsigned char> buffer,
+                                            offset_t file_offset) {
   OVERLAPPED overlapped = OverlappedForSyncHandle(handle, file_offset);
   DWORD num_bytes_read = 0;
   if (ReadFile(
@@ -107,68 +117,74 @@ offset_t FileHandle::ReadAtOffset(FileHandle& handle,
   if (error_code == ERROR_HANDLE_EOF)
     return static_cast<offset_t>(num_bytes_read);
 
-  if (IsEndOfFile(error_code, handle, file_offset)) return 0;
-  WsException::IOError("ReadFile failed with error " +
-                       std::to_string(error_code))
-      .Throw();
+  bool is_end_of_file;
+  ASSIGN_OR_RETURN(is_end_of_file,
+                   IsEndOfFile(error_code, handle, file_offset));
+  if (!is_end_of_file)
+    return Status(StatusCode::kRuntimeError,
+                  "IO Error: ReadFile failed with error code: " +
+                      std::to_string(error_code));
+
+  return 0;
 }
 
-offset_t FileHandle::Seek(FileHandle& handle, offset_t offset,
-                          SeekOrigin origin, bool close_invalid_handle) {
+StatusOr<offset_t> FileHandle::Seek(FileHandle& handle, offset_t offset,
+                                    SeekOrigin origin,
+                                    bool close_invalid_handle) {
   LARGE_INTEGER li_distance_to_move = {};
   li_distance_to_move.QuadPart = offset;
   LARGE_INTEGER li_new_file_pointer = {};
   if (!SetFilePointerEx(static_cast<HANDLE>(handle.fd_), li_distance_to_move,
                         &li_new_file_pointer, static_cast<DWORD>(origin))) {
     DWORD error_code = GetLastError();
-    if (close_invalid_handle) {
-      handle.Dispose();
-    }
-
-    WsException::IOError("SetFilePointerEx failed with error " +
-                         std::to_string(error_code))
-        .Throw();
+    if (close_invalid_handle) handle.Dispose();
+    return Status(StatusCode::kRuntimeError,
+                  "IO Error: SetFilePointerEx failed with error code: " +
+                      std::to_string(error_code));
   }
 
   return li_new_file_pointer.QuadPart;
 }
 
-void FileHandle::WriteAtOffset(FileHandle& handle,
-                               ReadOnlySpan<unsigned char> buffer,
-                               offset_t file_offset) {
-  if (buffer.Empty()) return;
-
+Status FileHandle::WriteAtOffset(FileHandle& handle,
+                                 ReadOnlySpan<unsigned char> buffer,
+                                 offset_t file_offset) {
+  if (buffer.Empty()) return Status();
   OVERLAPPED overlapped = OverlappedForSyncHandle(handle, file_offset);
   DWORD num_bytes_written = 0;
-  if (WriteFile(static_cast<HANDLE>(handle.fd_),
-                static_cast<const unsigned char*>(buffer),
-                static_cast<DWORD>(buffer.Length()), &num_bytes_written,
-                &overlapped)) {
-    if (num_bytes_written != buffer.Length())
-      WsException::IOError("WriteFile wrote fewer bytes than expected.")
-          .Throw();
-    return;
-  } else {
+  if (!WriteFile(static_cast<HANDLE>(handle.fd_),
+                 static_cast<const unsigned char*>(buffer),
+                 static_cast<DWORD>(buffer.Length()), &num_bytes_written,
+                 &overlapped)) {
     DWORD error_code = GetLastError();
-    WsException::IOError("WriteFile failed with error " +
-                         std::to_string(error_code))
-        .Throw();
+    return Status(StatusCode::kRuntimeError,
+                  "IO Error: WriteFile failed with error code: " +
+                      std::to_string(error_code));
   }
+
+  if (num_bytes_written != buffer.Length())
+    return Status(StatusCode::kRuntimeError,
+                  "IO Error: WriteFile wrote fewer bytes than expected.");
+
+  return Status();
 }
 
-bool FileHandle::IsEndOfFile(offset_t error_code, FileHandle& handle,
-                             offset_t file_offset) {
+StatusOr<bool> FileHandle::IsEndOfFile(offset_t error_code, FileHandle& handle,
+                                       offset_t file_offset) {
   switch (error_code) {
     case ERROR_HANDLE_EOF:
     case ERROR_BROKEN_PIPE:
     case ERROR_PIPE_NOT_CONNECTED:
       return true;
     case ERROR_INVALID_PARAMETER:
-      if (IsEndOfFileForNoBuffering(handle, file_offset)) return true;
-      break;
+      bool is_end_of_file;
+      ASSIGN_OR_RETURN(is_end_of_file,
+                       IsEndOfFileForNoBuffering(handle, file_offset));
+      return is_end_of_file;
     default:
       break;
   }
+
   return false;
 }
 
@@ -177,7 +193,10 @@ bool FileHandle::IsClosed() const {
 }
 
 bool FileHandle::CanSeek() {
-  return !IsClosed() && (FileType() == static_cast<DWORD>(FILE_TYPE_DISK));
+  StatusOr<offset_t> file_type_result = FileType();
+  if (!file_type_result.Ok()) return false;
+  return !IsClosed() &&
+         (file_type_result.Value() == static_cast<DWORD>(FILE_TYPE_DISK));
 }
 
 bool FileHandle::TryGetCachedLength(offset_t& cached_length) {
@@ -185,21 +204,34 @@ bool FileHandle::TryGetCachedLength(offset_t& cached_length) {
   return length_can_be_cached_ && cached_length >= 0;
 }
 
-offset_t FileHandle::FileType() {
-  offset_t file_type = file_type_;
-  if (file_type == -1) file_type_ = file_type = GetFileType(fd_);
-  return file_type;
+StatusOr<offset_t> FileHandle::FileType() {
+  if (file_type_ == -1) {
+    DWORD file_type = GetFileType(static_cast<HANDLE>(fd_));
+    if (file_type == FILE_TYPE_UNKNOWN) {
+      DWORD error = GetLastError();
+      if (error != NO_ERROR) {
+        return Status(StatusCode::kRuntimeError,
+                      "IO Error: GetFileType failed with error code: " +
+                          std::to_string(error));
+      }
+    }
+
+    file_type_ = static_cast<offset_t>(file_type);
+  }
+  return file_type_;
 }
 
-offset_t FileHandle::FileLength() {
+StatusOr<offset_t> FileHandle::FileLength() {
   if (length_can_be_cached_ && length_ >= 0) return length_;
 
   LARGE_INTEGER file_size = {};
   if (!GetFileSizeEx(fd_, &file_size)) {
     DWORD err = GetLastError();
-    WsException::IOError("Error obtaining file size. Error code: " +
-                         std::to_string(err))
-        .Throw();
+    return Status(
+        StatusCode::kRuntimeError,
+        "IO Error: Failed to get file size. GetFileSizeEx failed with "
+        "error code: " +
+            std::to_string(err));
   }
 
   length_ = file_size.QuadPart;
@@ -215,29 +247,26 @@ void FileHandle::Dispose() {
   length_can_be_cached_ = false;
 }
 
-DWORD ParseCreationDisposition(FileMode mode, bool exists) {
+StatusOr<DWORD> ParseCreationDisposition(FileMode mode, bool exists) {
   switch (mode) {
     case FileMode::kCreateNew:
       if (exists)
-        WsException::InvalidArgument("File already exists (CreateNew)").Throw();
+        return Status(StatusCode::kConflict,
+                      "IO Error: File already exists (CreateNew).");
       return CREATE_NEW;
-      break;
     case FileMode::kCreate:
       return CREATE_ALWAYS;
-      break;
     case FileMode::kOpen:
       if (!exists)
-        WsException::InvalidArgument("File does not exist (Open)").Throw();
+        return Status(StatusCode::kNotFound,
+                      "IO Error: File does not exist (Open).");
       return OPEN_EXISTING;
-      break;
     case FileMode::kOpenOrCreate:
       return exists ? OPEN_EXISTING : CREATE_NEW;
-      break;
     case FileMode::kAppend:
       return OPEN_ALWAYS;
-      break;
     default:
-      WsException::InvalidArgument("Unsupported file mode").Throw();
+      return Status(StatusCode::kBadRequest, "IO Error: Unsupported file mode");
   }
 }
 
@@ -286,14 +315,17 @@ OVERLAPPED OverlappedForSyncHandle(FileHandle& handle, offset_t file_offset) {
   return overlapped;
 }
 
-bool IsEndOfFileForNoBuffering(FileHandle& handle, offset_t file_offset) {
+StatusOr<bool> IsEndOfFileForNoBuffering(FileHandle& handle,
+                                         offset_t file_offset) {
   if (!handle.CanSeek()) return false;
-  return file_offset >= handle.FileLength();
+  offset_t length;
+  ASSIGN_OR_RETURN(length, handle.FileLength());
+  return file_offset >= length;
 }
 
 #else
-static int ParseCreationDisposition(FileMode mode, bool exists);
-static int ParseDesiredAccess(FileAccess access);
+static StatusOr<int> ParseCreationDisposition(FileMode mode, bool exists);
+static StatusOr<int> ParseDesiredAccess(FileAccess access);
 static int ParseShareMode(FileShare share);
 
 FileHandle::FileHandle() : FileHandle(-1) {}
@@ -305,17 +337,22 @@ FileHandle::FileHandle(int fd)
       length_can_be_cached_(false),
       file_type_(-1) {}
 
-FileHandle FileHandle::Open(const std::filesystem::path& full_path,
-                            FileMode mode, FileAccess access, FileShare share,
-                            offset_t preallocation_size) {
+StatusOr<FileHandle> FileHandle::Open(const std::filesystem::path& full_path,
+                                      FileMode mode, FileAccess access,
+                                      FileShare share,
+                                      offset_t preallocation_size) {
   bool exists = std::filesystem::exists(full_path);
-  int flags = ParseCreationDisposition(mode, exists) |
-              ParseDesiredAccess(access) | ParseShareMode(share);
+  int creation_disposition;
+  int desired_access;
+  ASSIGN_OR_RETURN(creation_disposition,
+                   ParseCreationDisposition(mode, exists));
+  ASSIGN_OR_RETURN(desired_access, ParseDesiredAccess(access));
+
+  int flags = creation_disposition | desired_access | ParseShareMode(share);
   int fd = ::open(full_path.c_str(), flags, 0666);
   if (fd == -1)
-    WsException::IOError("Error opening file: " +
-                         std::string(std::strerror(errno)))
-        .Throw();
+    return Status(StatusCode::kRuntimeError,
+                  "IO Error: Failed to open file. open() returned -1.");
 
   if (preallocation_size > 0) {
 #ifdef __APPLE__
@@ -410,9 +447,10 @@ void FileHandle::WriteAtOffset(FileHandle& handle,
     WsException::IOError("Wrote fewer bytes than expected.").Throw();
 }
 
-bool FileHandle::IsEndOfFile(offset_t error_code, FileHandle& handle,
-                             offset_t file_offset) {
-  offset_t length = handle.FileLength();
+StatusOr<bool> FileHandle::IsEndOfFile(offset_t error_code, FileHandle& handle,
+                                       offset_t file_offset) {
+  offset_t length;
+  ASSIGN_OR_RETURN(length, handle.FileLength());
   return file_offset >= length;
 }
 
@@ -420,9 +458,9 @@ bool FileHandle::IsClosed() const { return fd_ == -1; }
 
 bool FileHandle::CanSeek() {
   if (IsClosed()) return false;
-  struct stat st;
-  if (fstat(fd_, &st) == -1) return false;
-  return S_ISREG(st.st_mode);
+  StatusOr<offset_t> file_type_result = FileType();
+  if (!file_type_result.Ok()) return false;
+  return S_ISREG(file_type_result.Value());
 }
 
 bool FileHandle::TryGetCachedLength(offset_t& cached_length) {
@@ -430,26 +468,28 @@ bool FileHandle::TryGetCachedLength(offset_t& cached_length) {
   return length_can_be_cached_ && length_ >= 0;
 }
 
-offset_t FileHandle::FileType() {
+StatusOr<offset_t> FileHandle::FileType() {
   if (file_type_ == -1) {
     struct stat st;
-    if (fstat(fd_, &st) == -1)
-      WsException::IOError("Error obtaining file type: " +
-                           std::string(std::strerror(errno)))
-          .Throw();
+    if (fstat(fd_, &st) == -1) {
+      return Status(
+          StatusCode::kRuntimeError,
+          "IO Error: fstat failed with error code: " + std::to_string(errno));
+    }
 
     file_type_ = st.st_mode;
   }
   return file_type_;
 }
 
-offset_t FileHandle::FileLength() {
+StatusOr<offset_t> FileHandle::FileLength() {
   if (length_can_be_cached_ && length_ >= 0) return length_;
   struct stat st;
   if (fstat(fd_, &st) == -1)
-    WsException::IOError("Error obtaining file size: " +
-                         std::string(std::strerror(errno)))
-        .Throw();
+    return Status(StatusCode::kRuntimeError,
+                  "IO Error: Failed to get file size. fstat failed with "
+                  "error code: " +
+                      std::to_string(errno));
 
   length_ = st.st_size;
   length_can_be_cached_ = true;
@@ -465,28 +505,30 @@ void FileHandle::Dispose() {
   length_can_be_cached_ = false;
 }
 
-int ParseCreationDisposition(FileMode mode, bool exists) {
+StatusOr<int> ParseCreationDisposition(FileMode mode, bool exists) {
   switch (mode) {
     case FileMode::kCreateNew:
       if (exists)
-        WsException::InvalidArgument("File already exists (CreateNew)").Throw();
+        return Status(StatusCode::kConflict,
+                      "IO Error: File already exists (CreateNew).");
       return O_CREAT | O_EXCL;
     case FileMode::kCreate:
       return O_CREAT | O_TRUNC;
     case FileMode::kOpen:
       if (!exists)
-        WsException::InvalidArgument("File does not exist (Open)").Throw();
+        return Status(StatusCode::kNotFound,
+                      "IO Error: File does not exist (Open).");
       return 0;
     case FileMode::kOpenOrCreate:
       return exists ? 0 : O_CREAT;
     case FileMode::kAppend:
       return O_CREAT | O_APPEND;
     default:
-      WsException::InvalidArgument("Unsupported file mode").Throw();
+      return Status(StatusCode::kBadRequest, "IO Error: Unsupported file mode");
   }
 }
 
-int ParseDesiredAccess(FileAccess access) {
+StatusOr<int> ParseDesiredAccess(FileAccess access) {
   int accessInt = static_cast<int>(access);
   bool canRead = (accessInt & static_cast<int>(FileAccess::kRead)) != 0;
   bool canWrite = (accessInt & static_cast<int>(FileAccess::kWrite)) != 0;
@@ -498,7 +540,8 @@ int ParseDesiredAccess(FileAccess access) {
   else if (canWrite)
     return O_WRONLY;
   else
-    WsException::InvalidArgument("Unsupported file access mode").Throw();
+    return Status(StatusCode::kBadRequest,
+                  "IO Error: Unsupported file access mode");
 }
 
 int ParseShareMode(FileShare /*share*/) { return 0; }

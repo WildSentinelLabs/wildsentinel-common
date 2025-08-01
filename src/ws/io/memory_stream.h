@@ -6,6 +6,8 @@
 #include <stdexcept>
 
 #include "ws/io/stream.h"
+#include "ws/status/status_or.h"
+
 namespace ws {
 namespace io {
 class MemoryStream : public Stream {
@@ -27,33 +29,33 @@ class MemoryStream : public Stream {
   bool CanSeek() override;
   bool CanRead() const override;
   bool CanWrite() const override;
-  offset_t Length() override;
-  offset_t Position() override;
-  offset_t Capacity() const;
+  StatusOr<offset_t> Length() override;
+  StatusOr<offset_t> Position() override;
+  StatusOr<offset_t> Capacity() const;
   bool TryGetBuffer(Span<unsigned char>& buffer) const;
-  void SetPosition(offset_t value) override;
-  void SetLength(offset_t value);
-  void SetCapacity(offset_t value);
-  offset_t Read(Span<unsigned char> buffer, offset_t offset,
-                offset_t count) override;
-  offset_t Read(Span<unsigned char> buffer) override;
-  int16_t ReadByte() override;
-  offset_t Seek(offset_t offset, SeekOrigin origin) override;
-  void Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
-             offset_t count) override;
-  void Write(ReadOnlySpan<unsigned char> buffer) override;
-  void WriteByte(unsigned char value) override;
-  Array<unsigned char> ToArray() override;
+  Status SetPosition(offset_t value) override;
+  Status SetLength(offset_t value);
+  Status SetCapacity(offset_t value);
+  StatusOr<offset_t> Read(Span<unsigned char> buffer, offset_t offset,
+                          offset_t count) override;
+  StatusOr<offset_t> Read(Span<unsigned char> buffer) override;
+  StatusOr<int16_t> ReadByte() override;
+  StatusOr<offset_t> Seek(offset_t offset, SeekOrigin origin) override;
+  Status Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
+               offset_t count) override;
+  Status Write(ReadOnlySpan<unsigned char> buffer) override;
+  Status WriteByte(unsigned char value) override;
+  StatusOr<Array<unsigned char>> ToArray() override;
   void Close() override;
   void Dispose() override;
 
  protected:
-  void CopyTo(Stream& stream, offset_t buffer_size) override;
+  Status CopyTo(Stream& stream, offset_t buffer_size) override;
 
  private:
-  void EnsureNotClosed() const;
-  void EnsureWriteable() const;
-  bool EnsureCapacity(offset_t value);
+  Status EnsureNotClosed() const;
+  Status EnsureWriteable() const;
+  StatusOr<bool> EnsureCapacity(offset_t value);
   offset_t Skip(offset_t count);
 
   Array<unsigned char> buffer_;

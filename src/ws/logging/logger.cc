@@ -16,14 +16,8 @@ void Logger::Log(LogLevel level, const std::string& message) const {
     enricher->Enrich(event);
   }
 
-  std::vector<std::thread> sink_threads;
   for (auto& sink : config_.sinks_) {
-    sink_threads.push_back(
-        std::thread([sink = sink.get(), event]() { sink->Display(event); }));
-  }
-
-  for (auto& sink_thread : sink_threads) {
-    sink_thread.join();
+    sink->Display(event);
   }
 }
 }  // namespace logging

@@ -6,8 +6,36 @@
 #include "ws/array.h"
 #include "ws/io/seek_origin.h"
 #include "ws/span.h"
+#include "ws/status/status_or.h"
 #include "ws/types.h"
-#include "ws/wsexception.h"
+
+// Macros for throwing exceptions
+#define STREAM_THROW_UNREADABLE()                                        \
+  do {                                                                   \
+    return Status(StatusCode::kConflict, "IO Error: Unreadable Stream"); \
+  } while (0)
+
+#define STREAM_THROW_UNWRITABLE()                                        \
+  do {                                                                   \
+    return Status(StatusCode::kConflict, "IO Error: Unwritable Stream"); \
+  } while (0)
+
+#define STREAM_THROW_CLOSED()                                        \
+  do {                                                               \
+    return Status(StatusCode::kConflict, "IO Error: Stream Closed"); \
+  } while (0)
+
+#define STREAM_THROW_TOO_LONG()                                               \
+  do {                                                                        \
+    return Status(StatusCode::kPayloadTooLarge, "IO Error: Stream Too Long"); \
+  } while (0)
+
+#define STREAM_THROW_NOT_EXPANDABLE()                 \
+  do {                                                \
+    return Status(StatusCode::kPayloadTooLarge,       \
+                  "IO Error: Stream Not Expandable"); \
+  } while (0)
+
 namespace ws {
 namespace io {
 class Stream {
@@ -17,21 +45,21 @@ class Stream {
   virtual bool CanSeek() = 0;
   virtual bool CanRead() const = 0;
   virtual bool CanWrite() const = 0;
-  virtual offset_t Length() = 0;
-  virtual offset_t Position() = 0;
-  virtual void SetPosition(offset_t value) = 0;
-  virtual offset_t Read(Span<unsigned char> buffer, offset_t offset,
-                        offset_t count) = 0;
-  virtual offset_t Read(Span<unsigned char> buffer) = 0;
-  virtual int16_t ReadByte() = 0;
-  virtual offset_t Seek(offset_t offset, SeekOrigin origin) = 0;
-  virtual void Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
-                     offset_t count) = 0;
-  virtual void Write(ReadOnlySpan<unsigned char> buffer) = 0;
-  virtual void WriteByte(unsigned char value) = 0;
-  virtual Array<unsigned char> ToArray() = 0;
+  virtual StatusOr<offset_t> Length() = 0;
+  virtual StatusOr<offset_t> Position() = 0;
+  virtual Status SetPosition(offset_t value) = 0;
+  virtual StatusOr<offset_t> Read(Span<unsigned char> buffer, offset_t offset,
+                                  offset_t count) = 0;
+  virtual StatusOr<offset_t> Read(Span<unsigned char> buffer) = 0;
+  virtual StatusOr<int16_t> ReadByte() = 0;
+  virtual StatusOr<offset_t> Seek(offset_t offset, SeekOrigin origin) = 0;
+  virtual Status Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
+                       offset_t count) = 0;
+  virtual Status Write(ReadOnlySpan<unsigned char> buffer) = 0;
+  virtual Status WriteByte(unsigned char value) = 0;
+  virtual StatusOr<Array<unsigned char>> ToArray() = 0;
+  virtual Status CopyTo(Stream& stream);
   virtual void Close() = 0;
-  virtual void CopyTo(Stream& stream);
   virtual void Dispose() = 0;
 
  protected:
@@ -57,16 +85,11 @@ class Stream {
   static constexpr offset_t kMaxLength = 1ULL << 31;  // Default
 #endif
 
-  static void ValidateBufferArguments(ReadOnlySpan<unsigned char> buffer,
-                                      offset_t offset, offset_t count);
-  static void ValidateSeekArguments(offset_t offset, SeekOrigin origin);
-  static void ValidateCopyToArguments(Stream& stream, offset_t buffer_size);
-  static void ThrowUnreadableStream();
-  static void ThrowUnwritableStream();
-  static void ThrowStreamClosed();
-  static void ThrowStreamTooLong();
-
-  virtual void CopyTo(Stream& stream, offset_t buffer_size);
+  static Status ValidateBufferArguments(ReadOnlySpan<unsigned char> buffer,
+                                        offset_t offset, offset_t count);
+  static Status ValidateSeekArguments(offset_t offset, SeekOrigin origin);
+  static Status ValidateCopyToArguments(Stream& stream, offset_t buffer_size);
+  virtual Status CopyTo(Stream& stream, offset_t buffer_size);
 
  private:
   static constexpr const offset_t kDefaultCopyBufferSize = 81920;

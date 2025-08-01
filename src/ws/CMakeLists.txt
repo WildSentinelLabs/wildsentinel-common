@@ -7,8 +7,6 @@ wscommon_cc_library(
     delegate.h
     machine.h
     types.h
-    idisposable.h
-    wsexception.h
   PUBLIC
 )
 
