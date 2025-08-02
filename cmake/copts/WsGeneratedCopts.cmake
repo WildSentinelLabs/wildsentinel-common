@@ -1,3 +1,6 @@
+# Based on Abseil (https://github.com/abseil/abseil-cpp)
+# See THIRD-PARTY-NOTICES
+
 # Clang-CL (Windows Clang) flags
 list(APPEND WSCOMMON_CLANG_CL_FLAGS
     "/W3"

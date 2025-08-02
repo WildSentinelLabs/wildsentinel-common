@@ -5,6 +5,7 @@ wscommon_cc_library(
     buffer_stream.cc
     file_handle.cc
     file_stream.cc
+    file.cc
     memory_stream.cc
     stream.cc
   HDRS
@@ -16,6 +17,7 @@ wscommon_cc_library(
     file_mode.h
     file_share.h
     file_stream.h
+    file.h
     memory_stream.h
     seek_origin.h
     stream.h

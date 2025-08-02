@@ -1,3 +1,6 @@
+// Based on Abseil (https://github.com/abseil/abseil-cpp)
+// See THIRD-PARTY-NOTICES
+
 #pragma once
 #include "ws/status/status_code.h"
 

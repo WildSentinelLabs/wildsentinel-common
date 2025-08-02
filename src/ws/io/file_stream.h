@@ -11,20 +11,25 @@
 #include "ws/io/file_handle.h"
 #include "ws/io/file_mode.h"
 #include "ws/io/stream.h"
+#include "ws/status/status_or.h"
 
 namespace ws {
 namespace io {
 
 class FileStream : public Stream {
  public:
+  static StatusOr<FileStream> Create(const std::string& path, FileMode mode,
+                                     FileAccess access, FileShare share);
+  static StatusOr<FileStream> Create(const std::string& path, FileMode mode,
+                                     FileAccess access, FileShare share,
+                                     offset_t buffer_size);
+  static StatusOr<FileStream> Create(const std::string& path, FileMode mode,
+                                     FileAccess access, FileShare share,
+                                     offset_t buffer_size,
+                                     offset_t preallocation_size);
+
   FileStream();
-  FileStream(const std::string& path);
-  FileStream(const std::string& path, FileMode mode);
-  FileStream(const std::string& path, FileMode mode, FileAccess access);
-  FileStream(const std::string& path, FileMode mode, FileAccess access,
-             FileShare share);
-  FileStream(const std::string& path, FileMode mode, FileAccess access,
-             FileShare share, offset_t buffer_size);
+
   FileStream(FileStream&&) noexcept;
   FileStream(const FileStream&) = delete;
 
@@ -39,28 +44,26 @@ class FileStream : public Stream {
   bool CanWrite() const override;
   offset_t Length() override;
   offset_t Position() override;
-  void SetPosition(offset_t value) override;
-  void SetLength(offset_t value);
-  offset_t Read(Span<unsigned char> buffer, offset_t offset,
-                offset_t count) override;
-  offset_t Read(Span<unsigned char> buffer) override;
-  int16_t ReadByte() override;
-  offset_t Seek(offset_t offset, SeekOrigin origin) override;
-  void Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
-             offset_t count) override;
-  void Write(ReadOnlySpan<unsigned char> buffer) override;
-  void WriteByte(unsigned char value) override;
-  Array<unsigned char> ToArray() override;
+  Status SetPosition(offset_t value) override;
+  Status SetLength(offset_t value);
+  StatusOr<offset_t> Read(Span<unsigned char> buffer, offset_t offset,
+                          offset_t count) override;
+  StatusOr<offset_t> Read(Span<unsigned char> buffer) override;
+  StatusOr<int16_t> ReadByte() override;
+  StatusOr<offset_t> Seek(offset_t offset, SeekOrigin origin) override;
+  Status Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
+               offset_t count) override;
+  Status Write(ReadOnlySpan<unsigned char> buffer) override;
+  Status WriteByte(unsigned char value) override;
+  StatusOr<Array<unsigned char>> ToArray() override;
   void Close() override;
   void Dispose() override;
 
  private:
-  static constexpr offset_t kDefaultBufferSize = 4096;
-  static constexpr FileShare kDefaultShare = FileShare::kRead;
+  FileStream(FileHandle file_handle, offset_t position, offset_t append_start,
+             FileAccess access);
 
-  FileStream(const std::string& path, FileMode mode, FileAccess access,
-             FileShare share, offset_t buffer_size,
-             offset_t preallocation_size);
+  static constexpr offset_t kDefaultBufferSize = 4096;
 
   FileHandle file_handle_;
   offset_t position_;

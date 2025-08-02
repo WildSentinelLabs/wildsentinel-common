@@ -6,6 +6,7 @@
 #include <cstring>
 
 #include "ws/io/stream.h"
+#include "ws/status/status_or.h"
 
 namespace ws {
 namespace io {
@@ -24,27 +25,27 @@ class BufferStream : public Stream {
   offset_t Length() override;
   offset_t Position() override;
   bool TryGetBuffer(Span<unsigned char>& buffer) const;
-  void SetPosition(offset_t value) override;
-  offset_t Read(Span<unsigned char> buffer, offset_t offset,
-                offset_t count) override;
-  offset_t Read(Span<unsigned char> buffer) override;
-  int16_t ReadByte() override;
-  offset_t Seek(offset_t offset, SeekOrigin origin) override;
-  void Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
-             offset_t count) override;
-  void Write(ReadOnlySpan<unsigned char> buffer) override;
-  void WriteByte(unsigned char value) override;
-  void WriteTo(Stream& stream);
-  Array<unsigned char> ToArray() override;
+  Status SetPosition(offset_t value) override;
+  StatusOr<offset_t> Read(Span<unsigned char> buffer, offset_t offset,
+                          offset_t count) override;
+  StatusOr<offset_t> Read(Span<unsigned char> buffer) override;
+  StatusOr<int16_t> ReadByte() override;
+  StatusOr<offset_t> Seek(offset_t offset, SeekOrigin origin) override;
+  Status Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
+               offset_t count) override;
+  Status Write(ReadOnlySpan<unsigned char> buffer) override;
+  Status WriteByte(unsigned char value) override;
+  Status WriteTo(Stream& stream);
+  StatusOr<Array<unsigned char>> ToArray() override;
   void Close() override;
   void Dispose() override;
 
  protected:
-  void CopyTo(Stream& stream, offset_t buffer_size) override;
+  Status CopyTo(Stream& stream, offset_t buffer_size) override;
 
  private:
-  void EnsureNotClosed() const;
-  void EnsureWriteable() const;
+  Status EnsureNotClosed() const;
+  Status EnsureWriteable() const;
   offset_t Skip(offset_t count);
 
   Span<unsigned char> buffer_;

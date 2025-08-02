@@ -6,6 +6,8 @@
 #include <string_view>
 #include <vector>
 
+#include "ws/array.h"
+
 namespace ws {
 
 inline std::string ToUpper(std::string s) {
@@ -52,18 +54,101 @@ inline bool Contains(std::string_view str, std::string_view substr) {
   return str.find(substr) != std::string_view::npos;
 }
 
-inline std::vector<std::string> Split(std::string_view str, char delimiter) {
-  std::vector<std::string> tokens;
+inline std::string NormalizeLineEndings(std::string str) {
+  if (str.find('\r') == std::string::npos) return str;
+  std::string result;
+  result.reserve(str.length());
+  for (std::size_t i = 0; i < str.length(); ++i) {
+    if (str[i] == '\r') {
+      if (i + 1 < str.length() && str[i + 1] == '\n') {
+        result.push_back('\n');
+        ++i;
+      } else {
+        result.push_back(str[i]);
+      }
+    } else {
+      result.push_back(str[i]);
+    }
+  }
+
+  return result;
+}
+
+inline void NormalizeLineEndingsInPlace(std::string& str) {
+  if (str.find('\r') == std::string::npos) return;
+  std::size_t write_pos = 0;
+  for (std::size_t read_pos = 0; read_pos < str.length(); ++read_pos) {
+    if (str[read_pos] == '\r') {
+      if (read_pos + 1 < str.length() && str[read_pos + 1] == '\n') {
+        str[write_pos++] = '\n';
+        ++read_pos;
+      } else {
+        str[write_pos++] = str[read_pos];
+      }
+    } else {
+      str[write_pos++] = str[read_pos];
+    }
+  }
+
+  str.resize(write_pos);
+}
+
+inline std::string DetectLineEnding(std::string_view str) {
+  for (std::size_t i = 0; i < str.length(); ++i) {
+    if (str[i] == '\r') {
+      if (i + 1 < str.length() && str[i + 1] == '\n') {
+        return "\r\n";
+      }
+    } else if (str[i] == '\n') {
+      return "\n";
+    }
+  }
+  return "\n";
+}
+
+inline Array<std::string> Split(std::string_view str, char delimiter) {
+  std::size_t estimated_count = 1;
+  for (char c : str) {
+    if (c == delimiter) ++estimated_count;
+  }
+
+  Array<std::string> tokens(estimated_count);
+  std::size_t index = 0;
   std::string::size_type start = 0;
   std::string::size_type end = str.find(delimiter);
-
   while (end != std::string::npos) {
-    tokens.emplace_back(str.substr(start, end - start));
+    tokens[index++] = std::string(str.substr(start, end - start));
     start = end + 1;
     end = str.find(delimiter, start);
   }
 
-  tokens.emplace_back(str.substr(start));
+  tokens[index] = std::string(str.substr(start));
+  return tokens;
+}
+
+inline std::vector<std::string> Split(std::string_view str,
+                                      std::string_view delimiters) {
+  std::vector<std::string> tokens;
+  std::size_t estimated_count = 1;
+  for (char c : str) {
+    if (delimiters.find(c) != std::string_view::npos) ++estimated_count;
+  }
+
+  tokens.reserve(estimated_count / 2 + 1);
+  std::string::size_type start = 0;
+  std::string::size_type end = str.find_first_of(delimiters);
+  while (end != std::string::npos) {
+    if (end != start) {
+      tokens.emplace_back(str.substr(start, end - start));
+    }
+    start = end + 1;
+    end = str.find_first_of(delimiters, start);
+  }
+
+  if (start < str.length()) {
+    tokens.emplace_back(str.substr(start));
+  }
+
   return tokens;
 }
 

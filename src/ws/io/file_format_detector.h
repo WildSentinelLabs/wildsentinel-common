@@ -13,7 +13,7 @@ class FileFormatDetector {
 
   virtual const FileFormat& Format() const = 0;
   virtual uint16_t HeaderSize() const = 0;
-  virtual bool Detect(Stream& stream) const = 0;
+  virtual StatusOr<bool> Detect(Stream& stream) const = 0;
   virtual bool Detect(ReadOnlySpan<unsigned char> header) const = 0;
 };
 }  // namespace io

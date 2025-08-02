@@ -62,6 +62,7 @@ install/
 .vscode/BROWSE.VC.DB
 .vscode/BROWSE.VC.DB-shm
 .vscode/BROWSE.VC.DB-wal
+.vscode/c_cpp_properties.json
 
 # Visual Studio generated files
 *.csproj.user

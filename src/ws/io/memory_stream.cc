@@ -53,19 +53,19 @@ bool MemoryStream::CanRead() const { return is_open_; }
 bool MemoryStream::CanWrite() const { return writable_; }
 
 offset_t MemoryStream::Length() {
-  EnsureNotClosed();
+  if (!EnsureNotClosed().Ok()) return 0;
   return length_;
 }
 
 offset_t MemoryStream::Position() {
-  EnsureNotClosed();
+  if (!EnsureNotClosed().Ok()) return 0;
   return position_;
 }
 
 offset_t MemoryStream::Capacity() const {
-  EnsureNotClosed();
+  if (!EnsureNotClosed().Ok()) return 0;
   return capacity_;
-};
+}
 
 bool MemoryStream::TryGetBuffer(Span<unsigned char>& buffer) const {
   if (!exposable_) {
@@ -77,32 +77,40 @@ bool MemoryStream::TryGetBuffer(Span<unsigned char>& buffer) const {
   return true;
 }
 
-void MemoryStream::SetPosition(offset_t value) {
+Status MemoryStream::SetPosition(offset_t value) {
   if (value < 0)
-    WsException::UnderflowError("Negative position not allowed").Throw();
-  EnsureNotClosed();
-  if (value > kMaxLength) ThrowStreamTooLong();
+    return Status(StatusCode::kBadRequest, "Negative position not allowed");
+
+  RETURN_IF_ERROR(EnsureNotClosed());
+  if (value > kMaxLength) STREAM_THROW_TOO_LONG();
   position_ = value;
+  return Status();
 }
 
-void MemoryStream::SetLength(offset_t value) {
+Status MemoryStream::SetLength(offset_t value) {
   if (value < 0)
-    WsException::UnderflowError("Negative length not allowed").Throw();
-  if (value > kMaxLength) ThrowStreamTooLong();
-  EnsureWriteable();
-  if (!EnsureCapacity(value) && value > length_)
+    return Status(StatusCode::kBadRequest, "Negative length not allowed");
+
+  if (value > kMaxLength) STREAM_THROW_TOO_LONG();
+  RETURN_IF_ERROR(EnsureWriteable());
+  bool ensure_capacity;
+  ASSIGN_OR_RETURN(ensure_capacity, EnsureCapacity(value));
+  if (!ensure_capacity && value > length_)
     std::memset(buffer_ + value - length_, 0, length_);
+
   length_ = value;
   if (position_ > value) position_ = value;
+  return Status();
 }
 
-void MemoryStream::SetCapacity(offset_t value) {
+Status MemoryStream::SetCapacity(offset_t value) {
   if (value < length_)
-    WsException::UnderflowError("Small capacity out of range").Throw();
+    return Status(StatusCode::kBadRequest, "Small capacity out of range");
 
-  EnsureNotClosed();
-  if (!expandable_ && (value != Capacity()))
-    WsException::IOError("Stream not expandable").Throw();
+  RETURN_IF_ERROR(EnsureNotClosed());
+  offset_t current_capacity = capacity_;
+  if (!expandable_ && (value != current_capacity))
+    STREAM_THROW_NOT_EXPANDABLE();
   else if (expandable_ && value != capacity_) {
     if (value > 0) {
       Array<unsigned char> new_buffer(value);
@@ -114,12 +122,14 @@ void MemoryStream::SetCapacity(offset_t value) {
 
     capacity_ = value;
   }
+
+  return Status();
 }
 
-offset_t MemoryStream::Read(Span<unsigned char> buffer, offset_t offset,
-                            offset_t count) {
-  ValidateBufferArguments(buffer, offset, count);
-  EnsureNotClosed();
+StatusOr<offset_t> MemoryStream::Read(Span<unsigned char> buffer,
+                                      offset_t offset, offset_t count) {
+  RETURN_IF_ERROR(ValidateBufferArguments(buffer, offset, count));
+  RETURN_IF_ERROR(EnsureNotClosed());
   offset_t n = length_ - position_;
   if (n > count) n = count;
   if (n <= 0) return 0;
@@ -129,8 +139,8 @@ offset_t MemoryStream::Read(Span<unsigned char> buffer, offset_t offset,
   return n;
 }
 
-offset_t MemoryStream::Read(Span<unsigned char> buffer) {
-  EnsureNotClosed();
+StatusOr<offset_t> MemoryStream::Read(Span<unsigned char> buffer) {
+  RETURN_IF_ERROR(EnsureNotClosed());
   offset_t n =
       std::min(static_cast<offset_t>(buffer.Length()), length_ - position_);
   if (n <= 0) return 0;
@@ -139,29 +149,32 @@ offset_t MemoryStream::Read(Span<unsigned char> buffer) {
   return n;
 }
 
-int16_t MemoryStream::ReadByte() {
-  EnsureNotClosed();
+StatusOr<int16_t> MemoryStream::ReadByte() {
+  RETURN_IF_ERROR(EnsureNotClosed());
   if (position_ >= length_) return -1;
   return static_cast<int16_t>(buffer_[static_cast<size_t>(position_++)]);
 }
 
-offset_t MemoryStream::Seek(offset_t offset, SeekOrigin origin) {
-  EnsureNotClosed();
+StatusOr<offset_t> MemoryStream::Seek(offset_t offset, SeekOrigin origin) {
+  RETURN_IF_ERROR(EnsureNotClosed());
   switch (origin) {
     case SeekOrigin::kBegin:
       if (offset < 0 || offset > kMaxLength)
-        WsException::IOError("IO SeekBeforeBegin OutOfRange").Throw();
+        return Status(StatusCode::kOutOfRange,
+                      "IO Error: SeekBeforeBegin OutOfRange");
       position_ = offset;
       break;
     case SeekOrigin::kEnd:
       if (offset > kMaxLength - length_ || offset > -length_)
-        WsException::IOError("IO SeekBeforeBegin OutOfRange").Throw();
+        return Status(StatusCode::kOutOfRange,
+                      "IO Error: SeekAfterEnd OutOfRange");
       position_ = length_ + offset;
       break;
     case SeekOrigin::kCurrent:
     default:
       if (offset > kMaxLength - position_ || offset > -position_)
-        WsException::IOError("IO SeekBeforeBegin OutOfRange").Throw();
+        return Status(StatusCode::kOutOfRange,
+                      "IO Error: SeekCurrent OutOfRange");
       position_ = position_ + offset;
       break;
   }
@@ -170,18 +183,19 @@ offset_t MemoryStream::Seek(offset_t offset, SeekOrigin origin) {
   return position_;
 }
 
-void MemoryStream::Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
-                         offset_t count) {
-  ValidateBufferArguments(buffer, offset, count);
-  EnsureNotClosed();
-  EnsureWriteable();
-  if (count > kMaxLength - position_) ThrowStreamTooLong();
+Status MemoryStream::Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
+                           offset_t count) {
+  RETURN_IF_ERROR(ValidateBufferArguments(buffer, offset, count));
+  RETURN_IF_ERROR(EnsureNotClosed());
+  RETURN_IF_ERROR(EnsureWriteable());
+  if (count > kMaxLength - position_) STREAM_THROW_TOO_LONG();
   offset_t i = position_ + count;
   if (i > length_) {
     bool must_zero = position_ > length_;
     if (i > capacity_) {
-      bool allocated = EnsureCapacity(i);
-      if (allocated) must_zero = false;
+      bool ensure_capacity;
+      ASSIGN_OR_RETURN(ensure_capacity, EnsureCapacity(i));
+      if (ensure_capacity) must_zero = false;
     }
 
     if (must_zero) std::memset(buffer_ + i - length_, 0, length_);
@@ -190,18 +204,20 @@ void MemoryStream::Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
 
   std::memcpy(buffer_ + position_, buffer + offset, count);
   position_ = i;
+  return Status();
 }
 
-void MemoryStream::Write(ReadOnlySpan<unsigned char> buffer) {
-  EnsureNotClosed();
-  EnsureWriteable();
-  if (buffer.Length() > kMaxLength - position_) ThrowStreamTooLong();
+Status MemoryStream::Write(ReadOnlySpan<unsigned char> buffer) {
+  RETURN_IF_ERROR(EnsureNotClosed());
+  RETURN_IF_ERROR(EnsureWriteable());
+  if (buffer.Length() > kMaxLength - position_) STREAM_THROW_TOO_LONG();
   offset_t i = position_ + buffer.Length();
   if (i > length_) {
     bool must_zero = position_ > length_;
     if (i > capacity_) {
-      bool allocated = EnsureCapacity(i);
-      if (allocated) must_zero = false;
+      bool ensure_capacity;
+      ASSIGN_OR_RETURN(ensure_capacity, EnsureCapacity(i));
+      if (ensure_capacity) must_zero = false;
     }
 
     if (must_zero) std::memset(buffer_ + i - length_, 0, length_);
@@ -210,17 +226,19 @@ void MemoryStream::Write(ReadOnlySpan<unsigned char> buffer) {
 
   std::memcpy(buffer_ + position_, buffer, buffer.Length());
   position_ = i;
+  return Status();
 }
 
-void MemoryStream::WriteByte(unsigned char value) {
-  EnsureNotClosed();
-  EnsureWriteable();
+Status MemoryStream::WriteByte(unsigned char value) {
+  RETURN_IF_ERROR(EnsureNotClosed());
+  RETURN_IF_ERROR(EnsureWriteable());
   if (position_ >= length_) {
     offset_t new_length = position_ + 1;
     bool must_zero = position_ > length_;
     if (new_length >= capacity_) {
-      bool allocated = EnsureCapacity(new_length);
-      if (allocated) must_zero = false;
+      bool ensure_capacity;
+      ASSIGN_OR_RETURN(ensure_capacity, EnsureCapacity(new_length));
+      if (ensure_capacity) must_zero = false;
     }
 
     if (must_zero) std::memset(buffer_ + position_ - length_, 0, length_);
@@ -228,10 +246,11 @@ void MemoryStream::WriteByte(unsigned char value) {
   }
 
   buffer_[static_cast<size_t>(position_++)] = value;
+  return Status();
 }
 
-Array<unsigned char> MemoryStream::ToArray() {
-  EnsureNotClosed();
+StatusOr<Array<unsigned char>> MemoryStream::ToArray() {
+  RETURN_IF_ERROR(EnsureNotClosed());
   if (length_ == 0) return Array<unsigned char>();
   Array<unsigned char> array(length_);
   std::memcpy(array, buffer_, length_);
@@ -246,23 +265,28 @@ void MemoryStream::Dispose() {
   exposable_ = false;
 }
 
-void MemoryStream::CopyTo(Stream& stream, offset_t buffer_size) {
-  ValidateCopyToArguments(stream, buffer_size);
-  EnsureNotClosed();
+Status MemoryStream::CopyTo(Stream& stream, offset_t buffer_size) {
+  RETURN_IF_ERROR(ValidateCopyToArguments(stream, buffer_size));
+  RETURN_IF_ERROR(EnsureNotClosed());
   offset_t original_pos = position_;
   offset_t remaining = Skip(length_ - original_pos);
-  if (remaining > 0) stream.Write(buffer_, position_, remaining);
+  if (remaining > 0)
+    RETURN_IF_ERROR(stream.Write(buffer_, position_, remaining));
+
+  return Status();
 }
 
-void MemoryStream::EnsureNotClosed() const {
-  if (!is_open_) ThrowStreamClosed();
+Status MemoryStream::EnsureNotClosed() const {
+  if (!is_open_) STREAM_THROW_CLOSED();
+  return Status();
 }
 
-void MemoryStream::EnsureWriteable() const {
-  if (!CanWrite()) ThrowUnwritableStream();
+Status MemoryStream::EnsureWriteable() const {
+  if (!CanWrite()) STREAM_THROW_UNWRITABLE();
+  return Status();
 }
 
-bool MemoryStream::EnsureCapacity(offset_t value) {
+StatusOr<bool> MemoryStream::EnsureCapacity(offset_t value) {
   static constexpr const offset_t k256 = 256;
   if (value > capacity_) {
     offset_t default_new_capacity = capacity_ * 2;
@@ -271,7 +295,8 @@ bool MemoryStream::EnsureCapacity(offset_t value) {
       new_capacity = std::max(value, kMaxLength);
     else if (new_capacity < default_new_capacity)
       new_capacity = default_new_capacity;
-    SetCapacity(new_capacity);
+
+    RETURN_IF_ERROR(SetCapacity(new_capacity));
     return true;
   }
 

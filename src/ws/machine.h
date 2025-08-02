@@ -63,7 +63,7 @@ inline std::size_t CpuLineSize() {
   }
   return (lineSize > 0) ? lineSize : kMaxNfsSize;
 #elif defined(__APPLE__)
-  // TODO: FIX IN APPLE
+  // TODO: APPLE IMPLEMENTATION
   return kMaxNfsSize;
 #else
 #ifdef _SC_LEVEL1_DCACHE_LINESIZE
