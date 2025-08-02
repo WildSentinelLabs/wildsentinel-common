@@ -18,34 +18,37 @@ StatusOr<FileStream> FileStream::Create(const std::string& path, FileMode mode,
                                         FileAccess access, FileShare share,
                                         offset_t buffer_size,
                                         offset_t preallocation_size) {
-  FileStream file_stream;
-  file_stream.position_ = 0;
   std::filesystem::path full_path = std::filesystem::absolute(path);
-  file_stream.access_ = access;
-  file_stream.file_handle_;
-  ASSIGN_OR_RETURN(
-      file_stream.file_handle_,
-      FileHandle::Open(full_path, mode, access, share, preallocation_size));
-  if (mode == FileMode::kAppend && file_stream.CanSeek()) {
+  offset_t position = 0;
+  offset_t append_start = -1;
+  FileHandle file_handle;
+  ASSIGN_OR_RETURN(file_handle, FileHandle::Open(full_path, mode, access, share,
+                                                 preallocation_size));
+  if (mode == FileMode::kAppend && file_handle.CanSeek()) {
     offset_t length;
-    ASSIGN_OR_CLEANUP(length, file_stream.file_handle_.FileLength(),
-                      { file_stream.file_handle_.Dispose(); });
-    file_stream.append_start_ = file_stream.position_ = length;
-  } else {
-    file_stream.append_start_ = -1;
+    ASSIGN_OR_CLEANUP(length, file_handle.FileLength(),
+                      { file_handle.Dispose(); });
+    append_start = position = length;
   }
 
-  return file_stream;
+  return FileStream(file_handle, position, append_start, access);
 }
 
 FileStream::FileStream()
     : file_handle_(FileHandle()),
       position_(-1),
-      append_start_(0),
+      append_start_(-1),
       access_(static_cast<FileAccess>(0)) {}
 
+FileStream::FileStream(FileHandle file_handle, offset_t position,
+                       offset_t append_start, FileAccess access)
+    : file_handle_(file_handle),
+      position_(position),
+      append_start_(append_start),
+      access_(access) {}
+
 FileStream::FileStream(FileStream&& other) noexcept
-    : file_handle_(std::move(file_handle_)),
+    : file_handle_(std::move(other.file_handle_)),
       position_(other.position_),
       append_start_(other.append_start_),
       access_(other.access_) {
@@ -188,8 +191,14 @@ StatusOr<Array<unsigned char>> FileStream::ToArray() {
   offset_t length = Length();
   Array<unsigned char> array(length);
   offset_t old_pos = position_;
-  RETURN_IF_ERROR(Write(array, 0, array.Length()));
+  RETURN_IF_ERROR(SetPosition(0));
+  offset_t bytes_read;
+  ASSIGN_OR_RETURN(bytes_read, Read(array, 0, array.Length()));
   position_ = old_pos;
+  if (bytes_read != array.Length())
+    return Status(StatusCode::kRuntimeError,
+                  "IO Error: Read did not read the expected number of bytes");
+
   return array;
 }
 
@@ -203,7 +212,7 @@ void FileStream::Dispose() {
 
 FileStream& FileStream::operator=(FileStream&& other) noexcept {
   if (this != &other) {
-    file_handle_ = std::move(file_handle_);
+    file_handle_ = std::move(other.file_handle_);
     position_ = other.position_;
     append_start_ = other.append_start_;
     access_ = other.access_;

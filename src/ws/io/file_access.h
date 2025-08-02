@@ -3,7 +3,7 @@
 #include <type_traits>
 namespace ws {
 namespace io {
-enum class FileAccess : uint8_t {
+enum class FileAccess : int8_t {
   kRead = 1 << 0,
   kWrite = 1 << 1,
 };

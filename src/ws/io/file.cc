@@ -12,46 +12,29 @@ namespace ws {
 namespace io {
 
 StatusOr<FileStream> File::Create(const std::string& path) {
-  FileStream stream;
-  ASSIGN_OR_RETURN(stream,
-                   FileStream::Create(path, FileMode::kCreate,
-                                      FileAccess::kRead | FileAccess::kWrite,
-                                      kDefaultShare));
-  return std::move(stream);
+  return File::Open(path, FileMode::kCreate);
 }
 
 StatusOr<FileStream> File::Open(const std::string& path) {
-  FileStream stream;
-  ASSIGN_OR_RETURN(stream,
-                   FileStream::Create(path, FileMode::kOpenOrCreate,
-                                      FileAccess::kRead | FileAccess::kWrite,
-                                      kDefaultShare));
-  return std::move(stream);
+  return File::Open(path, FileMode::kOpenOrCreate);
 }
 
 StatusOr<FileStream> File::Open(const std::string& path, FileMode mode) {
   FileAccess access = (mode == FileMode::kAppend)
                           ? FileAccess::kWrite
                           : FileAccess::kRead | FileAccess::kWrite;
-  FileStream stream;
-  ASSIGN_OR_RETURN(stream,
-                   FileStream::Create(path, mode, access, kDefaultShare));
-  return std::move(stream);
+
+  return File::Open(path, mode, access);
 }
 
 StatusOr<FileStream> File::Open(const std::string& path, FileMode mode,
                                 FileAccess access) {
-  FileStream stream;
-  ASSIGN_OR_RETURN(stream,
-                   FileStream::Create(path, mode, access, kDefaultShare));
-  return std::move(stream);
+  return File::Open(path, mode, access, kDefaultShare);
 }
 
 StatusOr<FileStream> File::Open(const std::string& path, FileMode mode,
                                 FileAccess access, FileShare share) {
-  FileStream stream;
-  ASSIGN_OR_RETURN(stream, FileStream::Create(path, mode, access, share));
-  return std::move(stream);
+  return FileStream::Create(path, mode, access, share);
 }
 
 StatusOr<std::string> File::ReadAllText(const std::string& path) {

@@ -60,6 +60,9 @@ class FileStream : public Stream {
   void Dispose() override;
 
  private:
+  FileStream(FileHandle file_handle, offset_t position, offset_t append_start,
+             FileAccess access);
+
   static constexpr offset_t kDefaultBufferSize = 4096;
 
   FileHandle file_handle_;
