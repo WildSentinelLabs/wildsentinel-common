@@ -29,9 +29,9 @@ class MemoryStream : public Stream {
   bool CanSeek() override;
   bool CanRead() const override;
   bool CanWrite() const override;
-  StatusOr<offset_t> Length() override;
-  StatusOr<offset_t> Position() override;
-  StatusOr<offset_t> Capacity() const;
+  offset_t Length() override;
+  offset_t Position() override;
+  offset_t Capacity() const;
   bool TryGetBuffer(Span<unsigned char>& buffer) const;
   Status SetPosition(offset_t value) override;
   Status SetLength(offset_t value);

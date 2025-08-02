@@ -22,8 +22,8 @@ class BufferStream : public Stream {
   bool CanSeek() override;
   bool CanRead() const override;
   bool CanWrite() const override;
-  StatusOr<offset_t> Length() override;
-  StatusOr<offset_t> Position() override;
+  offset_t Length() override;
+  offset_t Position() override;
   bool TryGetBuffer(Span<unsigned char>& buffer) const;
   Status SetPosition(offset_t value) override;
   StatusOr<offset_t> Read(Span<unsigned char> buffer, offset_t offset,

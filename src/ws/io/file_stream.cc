@@ -28,7 +28,7 @@ StatusOr<FileStream> FileStream::Create(const std::string& path, FileMode mode,
       FileHandle::Open(full_path, mode, access, share, preallocation_size));
   if (mode == FileMode::kAppend && file_stream.CanSeek()) {
     offset_t length;
-    ASSIGN_OR_CLEANUP(length, file_stream.Length(),
+    ASSIGN_OR_CLEANUP(length, file_stream.file_handle_.FileLength(),
                       { file_stream.file_handle_.Dispose(); });
     file_stream.append_start_ = file_stream.position_ = length;
   } else {
@@ -69,9 +69,13 @@ bool FileStream::CanWrite() const {
          (access_ & FileAccess::kWrite) != static_cast<FileAccess>(0);
 }
 
-StatusOr<offset_t> FileStream::Length() { return file_handle_.FileLength(); }
+offset_t FileStream::Length() {
+  auto length = file_handle_.FileLength();
+  if (!length.Ok()) return 0;
+  return length.Value();
+}
 
-StatusOr<offset_t> FileStream::Position() { return position_; }
+offset_t FileStream::Position() { return position_; }
 
 Status FileStream::SetPosition(offset_t value) {
   return Seek(value, SeekOrigin::kBegin).GetStatus();
@@ -132,7 +136,7 @@ StatusOr<offset_t> FileStream::Seek(offset_t offset, SeekOrigin origin) {
       pos = offset;
       break;
     case SeekOrigin::kEnd:
-      ASSIGN_OR_RETURN(pos, Length());
+      ASSIGN_OR_RETURN(pos, file_handle_.FileLength());
       pos += offset;
       break;
     case SeekOrigin::kCurrent:
@@ -181,8 +185,7 @@ Status FileStream::WriteByte(unsigned char value) {
 }
 
 StatusOr<Array<unsigned char>> FileStream::ToArray() {
-  offset_t length;
-  ASSIGN_OR_RETURN(length, Length());
+  offset_t length = Length();
   Array<unsigned char> array(length);
   offset_t old_pos = position_;
   RETURN_IF_ERROR(Write(array, 0, array.Length()));

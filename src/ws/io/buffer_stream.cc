@@ -25,13 +25,13 @@ bool BufferStream::CanRead() const { return is_open_; }
 
 bool BufferStream::CanWrite() const { return writable_; }
 
-StatusOr<offset_t> BufferStream::Length() {
-  RETURN_IF_ERROR(EnsureNotClosed());
+offset_t BufferStream::Length() {
+  if (!EnsureNotClosed().Ok()) return 0;
   return length_ - origin_;
 }
 
-StatusOr<offset_t> BufferStream::Position() {
-  RETURN_IF_ERROR(EnsureNotClosed());
+offset_t BufferStream::Position() {
+  if (!EnsureNotClosed().Ok()) return 0;
   return position_ - origin_;
 }
 

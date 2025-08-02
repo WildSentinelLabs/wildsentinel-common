@@ -42,8 +42,8 @@ class FileStream : public Stream {
   bool CanSeek() override;
   bool CanRead() const override;
   bool CanWrite() const override;
-  StatusOr<offset_t> Length() override;
-  StatusOr<offset_t> Position() override;
+  offset_t Length() override;
+  offset_t Position() override;
   Status SetPosition(offset_t value) override;
   Status SetLength(offset_t value);
   StatusOr<offset_t> Read(Span<unsigned char> buffer, offset_t offset,

@@ -52,18 +52,18 @@ bool MemoryStream::CanRead() const { return is_open_; }
 
 bool MemoryStream::CanWrite() const { return writable_; }
 
-StatusOr<offset_t> MemoryStream::Length() {
-  RETURN_IF_ERROR(EnsureNotClosed());
+offset_t MemoryStream::Length() {
+  if (!EnsureNotClosed().Ok()) return 0;
   return length_;
 }
 
-StatusOr<offset_t> MemoryStream::Position() {
-  RETURN_IF_ERROR(EnsureNotClosed());
+offset_t MemoryStream::Position() {
+  if (!EnsureNotClosed().Ok()) return 0;
   return position_;
 }
 
-StatusOr<offset_t> MemoryStream::Capacity() const {
-  RETURN_IF_ERROR(EnsureNotClosed());
+offset_t MemoryStream::Capacity() const {
+  if (!EnsureNotClosed().Ok()) return 0;
   return capacity_;
 }
 
@@ -108,8 +108,7 @@ Status MemoryStream::SetCapacity(offset_t value) {
     return Status(StatusCode::kBadRequest, "Small capacity out of range");
 
   RETURN_IF_ERROR(EnsureNotClosed());
-  offset_t current_capacity;
-  ASSIGN_OR_RETURN(current_capacity, Capacity());
+  offset_t current_capacity = capacity_;
   if (!expandable_ && (value != current_capacity))
     STREAM_THROW_NOT_EXPANDABLE();
   else if (expandable_ && value != capacity_) {

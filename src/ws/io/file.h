@@ -1,23 +1,31 @@
+#pragma once
 
-FileStream::FileStream(const std::string& path, FileMode mode)
-    : FileStream(path, mode,
-                 mode == FileMode::kAppend
-                     ? FileAccess::kWrite
-                     : FileAccess::kRead | FileAccess::kWrite,
-                 kDefaultShare) {}
+#include <string>
+#include <vector>
 
-FileStream::FileStream(const std::string& path, FileMode mode,
-                       FileAccess access)
-    : FileStream(path, mode, access, kDefaultShare, kDefaultBufferSize) {}
+#include "ws/io/file_access.h"
+#include "ws/io/file_mode.h"
+#include "ws/io/file_share.h"
+#include "ws/io/file_stream.h"
 
-FileStream::FileStream(const std::string& path, FileMode mode,
-                       FileAccess access, FileShare share)
-    : FileStream(path, mode, access, share, kDefaultBufferSize) {}
+namespace ws {
+namespace io {
+class File {
+ public:
+  static StatusOr<FileStream> Create(const std::string& path);
+  static StatusOr<FileStream> Open(const std::string& path);
+  static StatusOr<FileStream> Open(const std::string& path, FileMode mode);
+  static StatusOr<FileStream> Open(const std::string& path, FileMode mode,
+                                   FileAccess access);
+  static StatusOr<FileStream> Open(const std::string& path, FileMode mode,
+                                   FileAccess access, FileShare share);
 
-static constexpr FileShare kDefaultShare = FileShare::kRead;
+  static StatusOr<std::string> ReadAllText(const std::string& path);
+  static StatusOr<Array<std::string>> ReadAllLines(const std::string& path);
+  static StatusOr<Array<unsigned char>> ReadAllBytes(const std::string& path);
 
-FileStream(const std::string& path);
-FileStream(const std::string& path, FileMode mode);
-FileStream(const std::string& path, FileMode mode, FileAccess access);
-FileStream(const std::string& path, FileMode mode, FileAccess access,
-           FileShare share);
+ private:
+  static constexpr FileShare kDefaultShare = FileShare::kRead;
+};
+}  // namespace io
+}  // namespace ws

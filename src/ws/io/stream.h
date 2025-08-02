@@ -45,8 +45,8 @@ class Stream {
   virtual bool CanSeek() = 0;
   virtual bool CanRead() const = 0;
   virtual bool CanWrite() const = 0;
-  virtual StatusOr<offset_t> Length() = 0;
-  virtual StatusOr<offset_t> Position() = 0;
+  virtual offset_t Length() = 0;
+  virtual offset_t Position() = 0;
   virtual Status SetPosition(offset_t value) = 0;
   virtual StatusOr<offset_t> Read(Span<unsigned char> buffer, offset_t offset,
                                   offset_t count) = 0;
