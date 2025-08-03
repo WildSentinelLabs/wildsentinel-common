@@ -1,6 +1,5 @@
 #include "ws/logging/rendering/message_renderer.h"
 
-#include <stdexcept>
 namespace ws {
 namespace logging {
 MessageRenderer::MessageRenderer(const std::string& template_format) {

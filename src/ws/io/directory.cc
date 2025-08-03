@@ -3,59 +3,12 @@
 namespace ws {
 namespace io {
 
-namespace {
-#ifdef _WIN32
-
-bool IsDirectory(const std::string& path) {
-  DWORD attrs = GetFileAttributesA(path.c_str());
-  return (attrs != INVALID_FILE_ATTRIBUTES) &&
-         (attrs & FILE_ATTRIBUTE_DIRECTORY);
-}
-
-bool IsRegularFile(const std::string& path) {
-  DWORD attrs = GetFileAttributesA(path.c_str());
-  return (attrs != INVALID_FILE_ATTRIBUTES) &&
-         !(attrs & FILE_ATTRIBUTE_DIRECTORY);
-}
-#else
-
-bool IsDirectory(const std::string& path) {
-  struct stat statbuf;
-  if (stat(path.c_str(), &statbuf) != 0) {
-    return false;
-  }
-  return S_ISDIR(statbuf.st_mode);
-}
-
-bool IsRegularFile(const std::string& path) {
-  struct stat statbuf;
-  if (stat(path.c_str(), &statbuf) != 0) {
-    return false;
-  }
-  return S_ISREG(statbuf.st_mode);
-}
-#endif
-
-std::string NormalizePath(const std::string& path) {
-  std::string normalized = path;
-  if (!normalized.empty() && normalized.back() != '/' &&
-      normalized.back() != '\\') {
-#ifdef _WIN32
-    normalized += "\\";
-#else
-    normalized += "/";
-#endif
-  }
-  return normalized;
-}
-}  // namespace
-
 StatusOr<std::vector<std::string>> Directory::GetFiles(
     const std::string& path) {
   std::vector<std::string> files;
 
 #ifdef _WIN32
-  std::string searchPath = NormalizePath(path) + "*";
+  std::string searchPath = Path::NormalizePath(path) + "*";
   WIN32_FIND_DATAA findData;
   HANDLE hFind = FindFirstFileA(searchPath.c_str(), &findData);
 
@@ -89,7 +42,8 @@ StatusOr<std::vector<std::string>> Directory::GetFiles(
   while ((entry = readdir(dir)) != nullptr) {
     if (entry->d_type == DT_REG ||
         (entry->d_type == DT_UNKNOWN &&
-         IsRegularFile(NormalizePath(path) + entry->d_name))) {
+         Path::IsRegularFile(Path::NormalizePath(path) + entry->d_name)
+             .ValueOr(false))) {
       files.push_back(std::string(entry->d_name));
     }
   }
@@ -106,7 +60,7 @@ StatusOr<std::vector<std::string>> Directory::GetDirectories(
   std::vector<std::string> directories;
 
 #ifdef _WIN32
-  std::string searchPath = NormalizePath(path) + "*";
+  std::string searchPath = Path::NormalizePath(path) + "*";
   WIN32_FIND_DATAA findData;
   HANDLE hFind = FindFirstFileA(searchPath.c_str(), &findData);
 
@@ -146,7 +100,8 @@ StatusOr<std::vector<std::string>> Directory::GetDirectories(
 
     if (entry->d_type == DT_DIR ||
         (entry->d_type == DT_UNKNOWN &&
-         IsDirectory(NormalizePath(path) + entry->d_name))) {
+         Path::IsDirectory(Path::NormalizePath(path) + entry->d_name)
+             .ValueOr(false))) {
       directories.push_back(std::string(entry->d_name));
     }
   }
@@ -159,41 +114,20 @@ StatusOr<std::vector<std::string>> Directory::GetDirectories(
 }
 
 StatusOr<bool> Directory::Exists(const std::string& path) {
-#ifdef _WIN32
-  DWORD attrs = GetFileAttributesA(path.c_str());
-  if (attrs == INVALID_FILE_ATTRIBUTES) {
-    DWORD error = GetLastError();
-    if (error == ERROR_FILE_NOT_FOUND || error == ERROR_PATH_NOT_FOUND) {
-      return false;
-    }
-    return Status(
-        StatusCode::kInternalError,
-        "Failed to check directory existence: " + GetLastErrorMessage());
-  }
-  return (attrs & FILE_ATTRIBUTE_DIRECTORY) != 0;
-#else
-  struct stat statbuf;
-  if (stat(path.c_str(), &statbuf) != 0) {
-    if (errno == ENOENT) {
-      return false;
-    }
-    return Status(
-        StatusCode::kInternalError,
-        "Failed to check directory existence: " + GetLastErrorMessage());
-  }
-  return S_ISDIR(statbuf.st_mode);
-#endif
+  return Path::IsDirectory(path);
 }
 
-StatusOr<void> Directory::Create(const std::string& path) {
+Status Directory::Create(const std::string& path) {
 #ifdef _WIN32
   if (!CreateDirectoryA(path.c_str(), nullptr)) {
     DWORD error = GetLastError();
     if (error == ERROR_ALREADY_EXISTS) {
-      // Check if it's actually a directory
-      if (IsDirectory(path)) {
-        return Status();  // Success - directory already exists
+      bool is_directory;
+      ASSIGN_OR_RETURN(is_directory, Path::IsDirectory(path));
+      if (is_directory) {
+        return Status();
       }
+
       return Status(StatusCode::kConflict,
                     "Path exists but is not a directory: " + path);
     }
@@ -207,9 +141,8 @@ StatusOr<void> Directory::Create(const std::string& path) {
 #else
   if (mkdir(path.c_str(), kDefaultPermissions) != 0) {
     if (errno == EEXIST) {
-      // Check if it's actually a directory
-      if (IsDirectory(path)) {
-        return Status();  // Success - directory already exists
+      if (Path::IsDirectory(path).ValueOr(false)) {
+        return Status();
       }
       return Status(StatusCode::kConflict,
                     "Path exists but is not a directory: " + path);
@@ -223,11 +156,10 @@ StatusOr<void> Directory::Create(const std::string& path) {
   }
 #endif
 
-  return Status();  // Success
+  return Status();
 }
 
-StatusOr<void> Directory::Delete(const std::string& path, bool recursive) {
-  // First check if directory exists
+Status Directory::Delete(const std::string& path, bool recursive) {
   auto existsResult = Exists(path);
   if (!existsResult.Ok()) {
     return existsResult.GetStatus();
@@ -237,7 +169,6 @@ StatusOr<void> Directory::Delete(const std::string& path, bool recursive) {
   }
 
   if (recursive) {
-    // Get all files and directories first
     auto filesResult = GetFiles(path);
     if (!filesResult.Ok()) {
       return filesResult.GetStatus();
@@ -248,9 +179,8 @@ StatusOr<void> Directory::Delete(const std::string& path, bool recursive) {
       return dirsResult.GetStatus();
     }
 
-    // Delete all files
     for (const auto& file : filesResult.Value()) {
-      std::string filePath = NormalizePath(path) + file;
+      std::string filePath = Path::NormalizePath(path) + file;
 #ifdef _WIN32
       if (!DeleteFileA(filePath.c_str())) {
         return Status(StatusCode::kInternalError,
@@ -266,9 +196,8 @@ StatusOr<void> Directory::Delete(const std::string& path, bool recursive) {
 #endif
     }
 
-    // Recursively delete all subdirectories
     for (const auto& dir : dirsResult.Value()) {
-      std::string dirPath = NormalizePath(path) + dir;
+      std::string dirPath = Path::NormalizePath(path) + dir;
       auto deleteResult = Delete(dirPath, true);
       if (!deleteResult.Ok()) {
         return deleteResult;
@@ -276,7 +205,6 @@ StatusOr<void> Directory::Delete(const std::string& path, bool recursive) {
     }
   }
 
-  // Finally delete the directory itself
 #ifdef _WIN32
   if (!RemoveDirectoryA(path.c_str())) {
     DWORD error = GetLastError();
@@ -293,6 +221,7 @@ StatusOr<void> Directory::Delete(const std::string& path, bool recursive) {
       return Status(StatusCode::kFailedDependency,
                     "Directory not empty (use recursive=true): " + path);
     }
+
     return Status(StatusCode::kInternalError,
                   "Failed to delete directory: " + GetLastErrorMessage());
   }

@@ -3,10 +3,15 @@
 #include <string>
 #include <vector>
 
+#include "ws/array.h"
 #include "ws/io/file_access.h"
 #include "ws/io/file_mode.h"
 #include "ws/io/file_share.h"
 #include "ws/io/file_stream.h"
+#include "ws/machine.h"
+#include "ws/span.h"
+#include "ws/string/string_helpers.h"
+#include "ws/types.h"
 
 namespace ws {
 namespace io {
