@@ -21,6 +21,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #ifdef __APPLE__
+#include <sys/fcntl.h>
 #include <sys/mount.h>
 #include <sys/param.h>
 #else

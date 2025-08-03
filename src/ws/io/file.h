@@ -24,7 +24,10 @@ class File {
                                    FileAccess access);
   static StatusOr<FileStream> Open(const std::string& path, FileMode mode,
                                    FileAccess access, FileShare share);
-
+  static StatusOr<bool> Exists(const std::string& path);
+  static Status Move(const std::string& sourcePath,
+                     const std::string& destinationPath);
+  static Status Delete(const std::string& path);
   static StatusOr<std::string> ReadAllText(const std::string& path);
   static StatusOr<Array<std::string>> ReadAllLines(const std::string& path);
   static StatusOr<Array<unsigned char>> ReadAllBytes(const std::string& path);

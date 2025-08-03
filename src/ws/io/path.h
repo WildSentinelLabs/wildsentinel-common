@@ -12,7 +12,6 @@ class Path {
  public:
   static StatusOr<bool> IsFile(const std::string& path);
   static StatusOr<bool> IsDirectory(const std::string& path);
-  static StatusOr<bool> IsRegularFile(const std::string& path);
   static StatusOr<bool> IsSpecialFile(const std::string& path);
   static StatusOr<bool> IsSymbolicLink(const std::string& path);
   static std::string NormalizePath(const std::string& path);

@@ -49,10 +49,9 @@ StatusOr<FileHandle> FileHandle::Open(const std::filesystem::path& full_path,
   HANDLE h = CreateFileW(full_path.c_str(), desired_access, share_mode, nullptr,
                          creation_disposition, flags_and_attributes, nullptr);
   if (h == nullptr || h == INVALID_HANDLE_VALUE) {
-    return Status(
-        StatusCode::kRuntimeError,
-        "IO Error: Failed to open file. CreateFileW returned nullptr or "
-        "INVALID_HANDLE_VALUE.");
+    return Status(StatusCode::kRuntimeError,
+                  "IO Error: Failed to open file. CreateFileW failed: " +
+                      GetLastErrorMessage());
   }
 
   FileHandle handle(h);
@@ -72,9 +71,8 @@ StatusOr<FileHandle> FileHandle::Open(const std::filesystem::path& full_path,
         DeleteFileW(full_path.c_str());
         return Status(StatusCode::kRuntimeError,
                       "IO Error: Failed to preallocate file space. "
-                      "SetFileInformationByHandle "
-                      "failed with error code: " +
-                          std::to_string(err));
+                      "SetFileInformationByHandle failed: " +
+                          GetLastErrorMessage());
       }
     }
   }
@@ -92,9 +90,9 @@ Status FileHandle::SetFileLength(FileHandle& handle, offset_t length) {
       return Status(StatusCode::kOutOfRange,
                     "IO Error: File length is too big.");
     } else {
-      return Status(StatusCode::kRuntimeError,
-                    "IO Error: Error setting file length. Error code: " +
-                        std::to_string(error_code));
+      return Status(
+          StatusCode::kRuntimeError,
+          "IO Error: Error setting file length: " + GetLastErrorMessage());
     }
   }
 
@@ -122,8 +120,7 @@ StatusOr<offset_t> FileHandle::ReadAtOffset(FileHandle& handle,
                    IsEndOfFile(error_code, handle, file_offset));
   if (!is_end_of_file)
     return Status(StatusCode::kRuntimeError,
-                  "IO Error: ReadFile failed with error code: " +
-                      std::to_string(error_code));
+                  "IO Error: ReadFile failed: " + GetLastErrorMessage());
 
   return 0;
 }
@@ -138,9 +135,9 @@ StatusOr<offset_t> FileHandle::Seek(FileHandle& handle, offset_t offset,
                         &li_new_file_pointer, static_cast<DWORD>(origin))) {
     DWORD error_code = GetLastError();
     if (close_invalid_handle) handle.Dispose();
-    return Status(StatusCode::kRuntimeError,
-                  "IO Error: SetFilePointerEx failed with error code: " +
-                      std::to_string(error_code));
+    return Status(
+        StatusCode::kRuntimeError,
+        "IO Error: SetFilePointerEx failed: " + GetLastErrorMessage());
   }
 
   return li_new_file_pointer.QuadPart;
@@ -158,8 +155,7 @@ Status FileHandle::WriteAtOffset(FileHandle& handle,
                  &overlapped)) {
     DWORD error_code = GetLastError();
     return Status(StatusCode::kRuntimeError,
-                  "IO Error: WriteFile failed with error code: " +
-                      std::to_string(error_code));
+                  "IO Error: WriteFile failed: " + GetLastErrorMessage());
   }
 
   if (num_bytes_written != buffer.Length())
@@ -211,8 +207,7 @@ StatusOr<offset_t> FileHandle::FileType() {
       DWORD error = GetLastError();
       if (error != NO_ERROR) {
         return Status(StatusCode::kRuntimeError,
-                      "IO Error: GetFileType failed with error code: " +
-                          std::to_string(error));
+                      "IO Error: GetFileType failed: " + GetLastErrorMessage());
       }
     }
 
@@ -227,11 +222,9 @@ StatusOr<offset_t> FileHandle::FileLength() {
   LARGE_INTEGER file_size = {};
   if (!GetFileSizeEx(fd_, &file_size)) {
     DWORD err = GetLastError();
-    return Status(
-        StatusCode::kRuntimeError,
-        "IO Error: Failed to get file size. GetFileSizeEx failed with "
-        "error code: " +
-            std::to_string(err));
+    return Status(StatusCode::kRuntimeError,
+                  "IO Error: Failed to get file size. GetFileSizeEx failed: " +
+                      GetLastErrorMessage());
   }
 
   length_ = file_size.QuadPart;

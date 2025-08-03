@@ -211,6 +211,22 @@ if (result.ok()) {
 }
 ```
 
+Or
+
+```cpp
+#include "ws/imaging/image.h"
+#include "ws/status/status_or.h"
+
+using namespace ws;
+
+Status ProcessImage(Args) {
+  imaging::Image image;
+  ASSIGN_OR_RETURN(image, imaging::Image::Create(std::move(components), width, height,
+                                     ColorSpace::kRGB, ChromaSubsampling::k444))
+  // Process image...
+}
+```
+
 ## Contributing
 
 1. Fork the repository
