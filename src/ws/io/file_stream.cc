@@ -18,7 +18,7 @@ StatusOr<FileStream> FileStream::Create(const std::string& path, FileMode mode,
                                         FileAccess access, FileShare share,
                                         offset_t buffer_size,
                                         offset_t preallocation_size) {
-  std::filesystem::path full_path = std::filesystem::absolute(path);
+  std::filesystem::path full_path = Path::GetFullPath(path);
   offset_t position = 0;
   offset_t append_start = -1;
   FileHandle file_handle;

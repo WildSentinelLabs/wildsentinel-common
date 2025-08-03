@@ -2,17 +2,6 @@
 
 namespace ws {
 namespace io {
-
-std::filesystem::path FileHandle::GetFullPath(const std::string& input) {
-  std::filesystem::path user_path(input);
-  return std::filesystem::absolute(user_path);
-}
-
-std::filesystem::path FileHandle::GetFullPath(const std::wstring& input) {
-  std::filesystem::path user_path(input);
-  return std::filesystem::absolute(user_path);
-}
-
 std::filesystem::path FileHandle::Path() const { return path_; }
 
 #ifdef _WIN32

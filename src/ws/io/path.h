@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <string>
 
 #include "ws/machine.h"
@@ -16,6 +17,8 @@ class Path {
   static StatusOr<bool> IsSymbolicLink(const std::string& path);
   static std::string NormalizePath(const std::string& path);
   static StatusOr<std::string> GetParent(const std::string& path);
+  static std::filesystem::path GetFullPath(const std::string& input);
+  static std::filesystem::path GetFullPath(const std::wstring& input);
 
  private:
   static constexpr int kDefaultPermissions = 0755;

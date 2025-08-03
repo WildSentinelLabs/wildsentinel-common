@@ -38,8 +38,6 @@ class FileHandle {
                               offset_t file_offset);
   static StatusOr<bool> IsEndOfFile(offset_t error_code, FileHandle& handle,
                                     offset_t file_offset);
-  static std::filesystem::path GetFullPath(const std::string& input);
-  static std::filesystem::path GetFullPath(const std::wstring& input);
 
   std::filesystem::path Path() const;
   bool IsClosed() const;
