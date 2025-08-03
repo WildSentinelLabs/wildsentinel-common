@@ -3,6 +3,7 @@ wscommon_cc_library(
     io
   SRCS
     buffer_stream.cc
+    directory.cc
     file_handle.cc
     file_stream.cc
     file.cc
@@ -11,6 +12,7 @@ wscommon_cc_library(
     stream.cc
   HDRS
     buffer_stream.h
+    directory.h
     file_access.h
     file_format.h
     file_format_detector.h
