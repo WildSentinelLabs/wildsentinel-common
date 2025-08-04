@@ -38,11 +38,11 @@ StatusOr<std::vector<std::string>> Directory::GetFiles(
 
   struct dirent* entry;
   while ((entry = readdir(dir)) != nullptr) {
-    if (entry->d_type == DT_REG ||
-        (entry->d_type == DT_UNKNOWN &&
-         Path::IsRegularFile(Path::NormalizePath(path) + entry->d_name)
-             .ValueOr(false))) {
-      files.push_back(std::string(entry->d_name));
+    if (entry->d_type == DT_REG || (entry->d_type == DT_UNKNOWN)) {
+      bool is_file;
+      ASSIGN_OR_RETURN(is_file,
+                       Path::IsFile(Path::NormalizePath(path) + entry->d_name));
+      if (is_file) files.push_back(std::string(entry->d_name));
     }
   }
 
@@ -92,11 +92,11 @@ StatusOr<std::vector<std::string>> Directory::GetDirectories(
     if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
       continue;
 
-    if (entry->d_type == DT_DIR ||
-        (entry->d_type == DT_UNKNOWN &&
-         Path::IsDirectory(Path::NormalizePath(path) + entry->d_name)
-             .ValueOr(false))) {
-      directories.push_back(std::string(entry->d_name));
+    if (entry->d_type == DT_DIR || (entry->d_type == DT_UNKNOWN)) {
+      bool is_dir;
+      ASSIGN_OR_RETURN(
+          is_dir, Path::IsDirectory(Path::NormalizePath(path) + entry->d_name));
+      if (is_dir) directories.push_back(std::string(entry->d_name));
     }
   }
 
@@ -132,9 +132,13 @@ Status Directory::Create(const std::string& path) {
 #else
   if (mkdir(path.c_str(), kDefaultPermissions) != 0) {
     if (errno == EEXIST) {
-      if (Path::IsDirectory(path).ValueOr(false)) return Status();
-      return Status(StatusCode::kConflict,
-                    "Path exists but is not a directory: " + path);
+      bool is_dir;
+      ASSIGN_OR_RETURN(is_dir, Path::IsDirectory(path));
+      if (!is_dir)
+        return Status(StatusCode::kConflict,
+                      "Path exists but is not a directory: " + path);
+
+      return Status();
     }
 
     if (errno == ENOENT)
