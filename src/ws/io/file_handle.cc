@@ -103,10 +103,7 @@ StatusOr<offset_t> FileHandle::ReadAtOffset(FileHandle& handle,
   if (error_code == ERROR_HANDLE_EOF)
     return static_cast<offset_t>(num_bytes_read);
 
-  bool is_end_of_file;
-  ASSIGN_OR_RETURN(is_end_of_file,
-                   IsEndOfFile(error_code, handle, file_offset));
-  if (!is_end_of_file)
+  if (!IsEndOfFile(error_code, handle, file_offset).ValueOr(false))
     return Status(StatusCode::kRuntimeError,
                   "IO Error: ReadFile failed: " + GetLastErrorMessage());
 
@@ -161,10 +158,7 @@ StatusOr<bool> FileHandle::IsEndOfFile(offset_t error_code, FileHandle& handle,
     case ERROR_PIPE_NOT_CONNECTED:
       return true;
     case ERROR_INVALID_PARAMETER:
-      bool is_end_of_file;
-      ASSIGN_OR_RETURN(is_end_of_file,
-                       IsEndOfFileForNoBuffering(handle, file_offset));
-      return is_end_of_file;
+      return IsEndOfFileForNoBuffering(handle, file_offset).ValueOr(false);
     default:
       break;
   }

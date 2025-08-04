@@ -115,11 +115,11 @@ Status Directory::Create(const std::string& path) {
   if (!CreateDirectoryA(path.c_str(), nullptr)) {
     DWORD error = GetLastError();
     if (error == ERROR_ALREADY_EXISTS) {
-      bool is_directory;
-      ASSIGN_OR_RETURN(is_directory, Path::IsDirectory(path));
-      if (is_directory) return Status();
-      return Status(StatusCode::kConflict,
-                    "Path exists but is not a directory: " + path);
+      if (!Path::IsDirectory(path).ValueOr(false))
+        return Status(StatusCode::kConflict,
+                      "Path exists but is not a directory: " + path);
+
+      return Status();
     }
 
     if (error == ERROR_PATH_NOT_FOUND)
@@ -132,9 +132,7 @@ Status Directory::Create(const std::string& path) {
 #else
   if (mkdir(path.c_str(), kDefaultPermissions) != 0) {
     if (errno == EEXIST) {
-      bool is_dir;
-      ASSIGN_OR_RETURN(is_dir, Path::IsDirectory(path));
-      if (!is_dir)
+      if (!Path::IsDirectory(path).ValueOr(false))
         return Status(StatusCode::kConflict,
                       "Path exists but is not a directory: " + path);
 
@@ -153,9 +151,7 @@ Status Directory::Create(const std::string& path) {
 }
 
 Status Directory::Delete(const std::string& path, bool recursive) {
-  bool exists;
-  ASSIGN_OR_RETURN(exists, Exists(path));
-  if (!exists)
+  if (!Exists(path).ValueOr(false))
     return Status(StatusCode::kNotFound, "Directory not found: " + path);
 
   if (recursive) {

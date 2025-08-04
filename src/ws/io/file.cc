@@ -193,7 +193,11 @@ StatusOr<Array<unsigned char>> File::ReadAllBytes(const std::string& path) {
   offset_t length = stream.Length();
   if (length == 0) return Array<unsigned char>(0);
   Array<unsigned char> buffer(length);
-  ASSIGN_OR_RETURN(length, stream.Read(buffer));
+  offset_t bytes_read;
+  ASSIGN_OR_RETURN(bytes_read, stream.Read(buffer));
+  if (bytes_read < length)
+    return Status(StatusCode::kInternalError, "Failed to read the entire file");
+
   return buffer;
 }
 }  // namespace io

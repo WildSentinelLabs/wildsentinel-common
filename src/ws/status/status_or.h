@@ -35,6 +35,10 @@ class StatusOr {
   T& Value() &;
   const T&& Value() const&&;
   T&& Value() &&;
+  template <typename U = T>
+  T ValueOr(U&& default_value) const&;
+  template <typename U = T>
+  T ValueOr(U&& default_value) &&;
 
   template <typename U>
   friend inline bool operator==(const StatusOr<U>&, const StatusOr<U>&);
@@ -117,6 +121,24 @@ template <typename T>
 inline T&& StatusOr<T>::Value() && {
   EnsureValue();
   return std::move(*value_);
+}
+
+template <typename T>
+template <typename U>
+inline T StatusOr<T>::ValueOr(U&& default_value) const& {
+  if (Ok() && value_.has_value()) {
+    return *value_;
+  }
+  return static_cast<T>(std::forward<U>(default_value));
+}
+
+template <typename T>
+template <typename U>
+inline T StatusOr<T>::ValueOr(U&& default_value) && {
+  if (Ok() && value_.has_value()) {
+    return std::move(*value_);
+  }
+  return static_cast<T>(std::forward<U>(default_value));
 }
 
 template <typename T>
