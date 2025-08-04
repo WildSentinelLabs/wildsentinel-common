@@ -100,7 +100,6 @@ StatusOr<offset_t> FileHandle::ReadAtOffset(FileHandle& handle,
   }
 
   DWORD error_code = GetLastError();
-
   if (error_code == ERROR_HANDLE_EOF)
     return static_cast<offset_t>(num_bytes_read);
 
@@ -194,10 +193,9 @@ StatusOr<offset_t> FileHandle::FileType() {
     DWORD file_type = GetFileType(static_cast<HANDLE>(fd_));
     if (file_type == FILE_TYPE_UNKNOWN) {
       DWORD error = GetLastError();
-      if (error != NO_ERROR) {
+      if (error != NO_ERROR)
         return Status(StatusCode::kRuntimeError,
                       "IO Error: GetFileType failed: " + GetLastErrorMessage());
-      }
     }
 
     file_type_ = static_cast<offset_t>(file_type);
@@ -207,7 +205,6 @@ StatusOr<offset_t> FileHandle::FileType() {
 
 StatusOr<offset_t> FileHandle::FileLength() {
   if (length_can_be_cached_ && length_ >= 0) return length_;
-
   LARGE_INTEGER file_size = {};
   if (!GetFileSizeEx(fd_, &file_size)) {
     DWORD err = GetLastError();
@@ -235,6 +232,7 @@ StatusOr<DWORD> ParseCreationDisposition(FileMode mode, bool exists) {
       if (exists)
         return Status(StatusCode::kConflict,
                       "IO Error: File already exists (CreateNew).");
+
       return CREATE_NEW;
     case FileMode::kCreate:
       return CREATE_ALWAYS;
@@ -242,6 +240,7 @@ StatusOr<DWORD> ParseCreationDisposition(FileMode mode, bool exists) {
       if (!exists)
         return Status(StatusCode::kNotFound,
                       "IO Error: File does not exist (Open).");
+
       return OPEN_EXISTING;
     case FileMode::kOpenOrCreate:
       return exists ? OPEN_EXISTING : CREATE_NEW;
@@ -329,7 +328,6 @@ StatusOr<FileHandle> FileHandle::Open(const std::filesystem::path& full_path,
   ASSIGN_OR_RETURN(creation_disposition,
                    ParseCreationDisposition(mode, exists));
   ASSIGN_OR_RETURN(desired_access, ParseDesiredAccess(access));
-
   int flags = creation_disposition | desired_access | ParseShareMode(share);
   int fd = ::open(full_path.c_str(), flags, 0666);
   if (fd == -1)
@@ -352,17 +350,16 @@ StatusOr<FileHandle> FileHandle::Open(const std::filesystem::path& full_path,
 
     if (ret == -1) {
       ::close(fd);
-      WsException::IOError("Error preallocating space (F_PREALLOCATE): " +
-                           std::string(std::strerror(errno)))
-          .Throw();
+      return Status(StatusCode::kRuntimeError,
+                    "IO Error preallocating space (F_PREALLOCATE): " +
+                        GetLastErrorMessage());
     }
 #else
     int ret = posix_fallocate(fd, 0, preallocation_size);
     if (ret != 0) {
       ::close(fd);
-      WsException::IOError("Error preallocating space: " +
-                           std::string(std::strerror(ret)))
-          .Throw();
+      return Status(StatusCode::kRuntimeError,
+                    "IO Error preallocating space: " + GetLastErrorMessage());
     }
 #endif
   }
@@ -373,60 +370,63 @@ StatusOr<FileHandle> FileHandle::Open(const std::filesystem::path& full_path,
   return handle;
 }
 
-void FileHandle::SetFileLength(FileHandle& handle, offset_t length) {
+Status FileHandle::SetFileLength(FileHandle& handle, offset_t length) {
   if (::ftruncate(handle.fd_, length) == -1) {
     if (errno == EFBIG || errno == EINVAL)
-      WsException::OutOfRange("File size is too large.").Throw();
+      return Status(StatusCode::kOutOfRange,
+                    "IO Error: File length is too big.");
     else
-      WsException::IOError("Error setting file length: " +
-                           std::string(std::strerror(errno)))
-          .Throw();
+      return Status(
+          StatusCode::kRuntimeError,
+          "IO Error: Failed to set file length: " + GetLastErrorMessage());
   }
 
   handle.length_ = length;
   handle.length_can_be_cached_ = true;
+  return Status();
 }
 
-offset_t FileHandle::ReadAtOffset(FileHandle& handle,
-                                  Span<unsigned char> buffer,
-                                  offset_t file_offset) {
+StatusOr<offset_t> FileHandle::ReadAtOffset(FileHandle& handle,
+                                            Span<unsigned char> buffer,
+                                            offset_t file_offset) {
   ssize_t bytes_read = pread(handle.fd_, static_cast<unsigned char*>(buffer),
                              buffer.Length(), file_offset);
   if (bytes_read == -1)
-    WsException::IOError("Error reading file: " +
-                         std::string(std::strerror(errno)))
-        .Throw();
+    return Status(StatusCode::kRuntimeError,
+                  "IO Error: Failed to read file: " + GetLastErrorMessage());
 
   return static_cast<offset_t>(bytes_read);
 }
 
-offset_t FileHandle::Seek(FileHandle& handle, offset_t offset,
-                          SeekOrigin origin, bool close_invalid_handle) {
+StatusOr<offset_t> FileHandle::Seek(FileHandle& handle, offset_t offset,
+                                    SeekOrigin origin,
+                                    bool close_invalid_handle) {
   off_t new_offset = lseek(handle.fd_, offset, static_cast<int>(origin));
   if (new_offset == (off_t)-1) {
     if (close_invalid_handle) handle.Dispose();
-    WsException::IOError("Error seeking file: " +
-                         std::string(std::strerror(errno)))
-        .Throw();
+    return Status(StatusCode::kRuntimeError,
+                  "IO Error: Failed to seek file: " + GetLastErrorMessage());
   }
 
   return new_offset;
 }
 
-void FileHandle::WriteAtOffset(FileHandle& handle,
-                               ReadOnlySpan<unsigned char> buffer,
-                               offset_t file_offset) {
-  if (buffer.Empty()) return;
+Status FileHandle::WriteAtOffset(FileHandle& handle,
+                                 ReadOnlySpan<unsigned char> buffer,
+                                 offset_t file_offset) {
+  if (buffer.Empty()) return Status();
   ssize_t bytes_written =
       pwrite(handle.fd_, static_cast<const unsigned char*>(buffer),
              buffer.Length(), file_offset);
   if (bytes_written == -1)
-    WsException::IOError("Error writing file: " +
-                         std::string(std::strerror(errno)))
-        .Throw();
+    return Status(StatusCode::kRuntimeError,
+                  "IO Error: Failed to write file: " + GetLastErrorMessage());
 
   if (static_cast<size_t>(bytes_written) != buffer.Length())
-    WsException::IOError("Wrote fewer bytes than expected.").Throw();
+    return Status(StatusCode::kRuntimeError,
+                  "IO Error: Wrote fewer bytes than expected.");
+
+  return Status();
 }
 
 StatusOr<bool> FileHandle::IsEndOfFile(offset_t error_code, FileHandle& handle,
@@ -461,6 +461,7 @@ StatusOr<offset_t> FileHandle::FileType() {
 
     file_type_ = st.st_mode;
   }
+
   return file_type_;
 }
 
@@ -493,6 +494,7 @@ StatusOr<int> ParseCreationDisposition(FileMode mode, bool exists) {
       if (exists)
         return Status(StatusCode::kConflict,
                       "IO Error: File already exists (CreateNew).");
+
       return O_CREAT | O_EXCL;
     case FileMode::kCreate:
       return O_CREAT | O_TRUNC;
@@ -500,6 +502,7 @@ StatusOr<int> ParseCreationDisposition(FileMode mode, bool exists) {
       if (!exists)
         return Status(StatusCode::kNotFound,
                       "IO Error: File does not exist (Open).");
+
       return 0;
     case FileMode::kOpenOrCreate:
       return exists ? 0 : O_CREAT;
