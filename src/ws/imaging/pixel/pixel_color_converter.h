@@ -19,7 +19,12 @@ class PixelColorConverter {
  public:
   virtual ~PixelColorConverter() = default;
 
+  enum class DigitalTvStudioEncodingRec { kBT601, kBT709, kBT2020, kBT2100 };
+
  protected:
+  static constexpr Rgb<double> GetEncodingCoefficients(
+      DigitalTvStudioEncodingRec rec);
+
   // BT.601 (SD)
   static constexpr Rgb<double> BT601Coefficients = {0.299, 0.587, 0.114};
   // BT.709 (HD)
@@ -34,5 +39,22 @@ class PixelColorConverter {
   T min_value_;
   T max_value_;
 };
+
+template <IsAllowedPixelNumericType T>
+inline constexpr Rgb<double> PixelColorConverter<T>::GetEncodingCoefficients(
+    DigitalTvStudioEncodingRec rec) {
+  switch (rec) {
+    case DigitalTvStudioEncodingRec::kBT601:
+      return BT601Coefficients;
+    case DigitalTvStudioEncodingRec::kBT709:
+      return BT709Coefficients;
+    case DigitalTvStudioEncodingRec::kBT2100:
+      return BT2100Coefficients;
+    case DigitalTvStudioEncodingRec::kBT2020:
+    default:
+      return BT2020Coefficients;
+  }
+}
+
 }  // namespace imaging
 }  // namespace ws

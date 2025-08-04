@@ -287,7 +287,6 @@ Status MemoryStream::EnsureWriteable() const {
 }
 
 StatusOr<bool> MemoryStream::EnsureCapacity(offset_t value) {
-  static constexpr const offset_t k256 = 256;
   if (value > capacity_) {
     offset_t default_new_capacity = capacity_ * 2;
     offset_t new_capacity = std::max(value, k256);

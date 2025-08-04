@@ -32,15 +32,15 @@ class ImageComponent {
 
   ~ImageComponent();
 
-  uint32_t Width() const;
-  size_t Length() const;
-  size_t Height() const;
-  uint8_t BitDepth() const;
-  bool IsAlpha() const;
-  bool Empty() const;
-  bool IsValid() const;
+  constexpr uint32_t Width() const;
+  constexpr size_t Length() const;
+  constexpr size_t Height() const;
+  constexpr uint8_t BitDepth() const;
+  constexpr bool IsAlpha() const;
+  constexpr bool Empty() const;
+  constexpr bool IsValid() const;
   std::string ToString() const;
-  ImageBufferType GetBufferType() const;
+  constexpr ImageBufferType GetBufferType() const;
   template <ws::imaging::IsAllowedPixelNumericType T>
   T* Buffer() const;
 
@@ -64,24 +64,26 @@ class ImageComponent {
 // Implementation details for ImageComponent
 // ============================================================================
 
-inline uint32_t ImageComponent::Width() const { return width_; }
+inline constexpr uint32_t ImageComponent::Width() const { return width_; }
 
-inline size_t ImageComponent::Length() const { return length_; }
+inline constexpr size_t ImageComponent::Length() const { return length_; }
 
-inline size_t ImageComponent::Height() const { return height_; }
+inline constexpr size_t ImageComponent::Height() const { return height_; }
 
-inline uint8_t ImageComponent::BitDepth() const { return bit_depth_; }
+inline constexpr uint8_t ImageComponent::BitDepth() const { return bit_depth_; }
 
-inline bool ImageComponent::IsAlpha() const { return is_alpha_; }
+inline constexpr bool ImageComponent::IsAlpha() const { return is_alpha_; }
 
-inline bool ImageComponent::Empty() const { return buffer_ == nullptr; }
+inline constexpr bool ImageComponent::Empty() const {
+  return buffer_ == nullptr;
+}
 
-inline bool ImageComponent::IsValid() const {
+inline constexpr bool ImageComponent::IsValid() const {
   return !Empty() && length_ != 0 && width_ != 0 && bit_depth_ != 0 &&
          buffer_type_ != ImageBufferType::kUnknown;
 }
 
-inline ImageBufferType ImageComponent::GetBufferType() const {
+inline constexpr ImageBufferType ImageComponent::GetBufferType() const {
   return buffer_type_;
 }
 

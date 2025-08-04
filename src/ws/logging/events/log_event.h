@@ -18,7 +18,7 @@ class LogEvent {
            const map_type& properties = map_type());
 
   std::string SourceContext() const;
-  LogLevel Level() const;
+  constexpr LogLevel Level() const;
   std::string Message() const;
   std::chrono::system_clock::time_point Timestamp() const;
   std::optional<mapped_type> GetProperty(const key_type& key) const;
@@ -38,7 +38,7 @@ class LogEvent {
 
 inline std::string LogEvent::SourceContext() const { return source_context_; }
 
-inline LogLevel LogEvent::Level() const { return level_; }
+inline constexpr LogLevel LogEvent::Level() const { return level_; }
 
 inline std::string LogEvent::Message() const { return message_; }
 

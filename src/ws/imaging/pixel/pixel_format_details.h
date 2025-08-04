@@ -20,13 +20,15 @@ struct PixelFormatDetails {
   PixelLayoutFlag layout;
   bool has_common_order;
 
-  bool HasAlpha() const;
+  constexpr bool HasAlpha() const;
 };
 
 // ============================================================================
 // Implementation details for PixelFormatDetails
 // ============================================================================
 
-inline bool PixelFormatDetails::HasAlpha() const { return alpha_index != -1; }
+inline constexpr bool PixelFormatDetails::HasAlpha() const {
+  return alpha_index != -1;
+}
 }  // namespace imaging
 }  // namespace ws

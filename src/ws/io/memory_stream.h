@@ -58,6 +58,8 @@ class MemoryStream : public Stream {
   StatusOr<bool> EnsureCapacity(offset_t value);
   offset_t Skip(offset_t count);
 
+  static constexpr const offset_t k256 = 256;
+
   Array<unsigned char> buffer_;
   offset_t position_;
   offset_t length_;

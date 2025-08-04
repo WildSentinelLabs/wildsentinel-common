@@ -9,7 +9,10 @@ namespace imaging {
 template <IsAllowedPixelNumericType T>
 class SYccToRgbConverter : public PixelColorConverter<T> {
  public:
-  explicit SYccToRgbConverter(uint8_t bit_depth);
+  explicit SYccToRgbConverter(
+      uint8_t bit_depth,
+      PixelColorConverter<T>::DigitalTvStudioEncodingRec rec =
+          PixelColorConverter<T>::DigitalTvStudioEncodingRec::kBT2020);
 
   void Convert(const Ycc<T>& ycc, Rgb<T>& rgb) const;
 

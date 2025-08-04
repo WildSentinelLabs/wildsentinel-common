@@ -6,17 +6,27 @@
 #define KEEP_WIN_ORDER
 #include <winsock2.h>
 #undef KEEP_WIN_ORDER
+#include <shlwapi.h>
 #include <windows.h>
 #else
+#include <dirent.h>
+#include <errno.h>
+#include <fcntl.h>
 #if defined(__linux__) && !defined(__GLIBC__)
 #include <bits/alltypes.h>
 #endif
-#include <fcntl.h>
-#include <unistd.h>
 #define KEEP_LINUX_ORDER
 #include <sys/types.h>
 #undef KEEP_LINUX_ORDER
 #include <sys/stat.h>
+#include <unistd.h>
+#ifdef __APPLE__
+#include <sys/fcntl.h>
+#include <sys/mount.h>
+#include <sys/param.h>
+#else
+#include <sys/statfs.h>
+#endif
 #endif
 
 #include <cstdint>
@@ -28,6 +38,7 @@
 #endif
 
 #include <cassert>
+#include <cstring>
 #include <mutex>
 #include <thread>
 
@@ -222,6 +233,25 @@ T CpuReverseBits(T src) {
 
 static std::mutex console_mutex;
 }  // namespace internal
+
+inline std::string GetLastErrorMessage() {
+#ifdef _WIN32
+  DWORD error = GetLastError();
+  if (error == 0) return "No error";
+  LPSTR messageBuffer = nullptr;
+  size_t size = FormatMessageA(
+      FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM |
+          FORMAT_MESSAGE_IGNORE_INSERTS,
+      nullptr, error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+      reinterpret_cast<LPSTR>(&messageBuffer), 0, nullptr);
+
+  std::string message(messageBuffer, size);
+  LocalFree(messageBuffer);
+  return message;
+#else
+  return std::string(strerror(errno));
+#endif
+}
 
 inline void FormatConsoleOutput() {
 #ifdef _WIN32

@@ -10,6 +10,7 @@
 #include "ws/io/file_access.h"
 #include "ws/io/file_handle.h"
 #include "ws/io/file_mode.h"
+#include "ws/io/path.h"
 #include "ws/io/stream.h"
 #include "ws/status/status_or.h"
 
