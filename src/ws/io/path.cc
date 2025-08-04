@@ -3,16 +3,6 @@
 namespace ws {
 namespace io {
 
-std::filesystem::path Path::GetFullPath(const std::string& input) {
-  std::filesystem::path user_path(input);
-  return std::filesystem::absolute(user_path);
-}
-
-std::filesystem::path Path::GetFullPath(const std::wstring& input) {
-  std::filesystem::path user_path(input);
-  return std::filesystem::absolute(user_path);
-}
-
 StatusOr<bool> Path::IsFile(const std::string& path) {
 #ifdef _WIN32
   DWORD attrs = GetFileAttributesA(path.c_str());
@@ -163,6 +153,25 @@ StatusOr<std::string> Path::GetParent(const std::string& path) {
   if (lastSeparator == 0) return std::string("/");
   return normalizedPath.substr(0, lastSeparator);
 #endif
+}
+
+StatusOr<std::string> Path::GetExtension(const std::string& path) {
+  if (path.empty())
+    return Status(StatusCode::kBadRequest, "Path cannot be empty");
+
+  std::filesystem::path fs_path(path);
+  std::string extension = fs_path.extension().string();
+  return extension;
+}
+
+std::filesystem::path Path::GetFullPath(const std::string& input) {
+  std::filesystem::path user_path(input);
+  return std::filesystem::absolute(user_path);
+}
+
+std::filesystem::path Path::GetFullPath(const std::wstring& input) {
+  std::filesystem::path user_path(input);
+  return std::filesystem::absolute(user_path);
 }
 }  // namespace io
 }  // namespace ws

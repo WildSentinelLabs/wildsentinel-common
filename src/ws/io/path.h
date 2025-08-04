@@ -17,6 +17,7 @@ class Path {
   static StatusOr<bool> IsSymbolicLink(const std::string& path);
   static std::string NormalizePath(const std::string& path);
   static StatusOr<std::string> GetParent(const std::string& path);
+  static StatusOr<std::string> GetExtension(const std::string& path);
   static std::filesystem::path GetFullPath(const std::string& input);
   static std::filesystem::path GetFullPath(const std::wstring& input);
 
