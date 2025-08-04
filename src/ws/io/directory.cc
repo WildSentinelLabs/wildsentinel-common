@@ -206,5 +206,3 @@ Status Directory::Delete(const std::string& path, bool recursive) {
 
 }  // namespace io
 }  // namespace ws
-
-// FIXME: TEST LINUX IMPLEMENTATION

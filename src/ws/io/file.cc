@@ -202,5 +202,3 @@ StatusOr<Array<unsigned char>> File::ReadAllBytes(const std::string& path) {
 }
 }  // namespace io
 }  // namespace ws
-
-// FIXME: TEST LINUX IMPLEMENTATION

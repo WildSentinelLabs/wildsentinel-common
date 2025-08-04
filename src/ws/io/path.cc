@@ -166,5 +166,3 @@ StatusOr<std::string> Path::GetParent(const std::string& path) {
 }
 }  // namespace io
 }  // namespace ws
-
-// FIXME: TEST LINUX IMPLEMENTATION
