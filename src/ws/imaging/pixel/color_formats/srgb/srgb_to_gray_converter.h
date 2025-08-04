@@ -9,7 +9,10 @@ namespace imaging {
 template <IsAllowedPixelNumericType T>
 class SRgbToGrayConverter : public PixelColorConverter<T> {
  public:
-  explicit SRgbToGrayConverter(uint8_t bit_depth);
+  explicit SRgbToGrayConverter(
+      uint8_t bit_depth,
+      PixelColorConverter<T>::DigitalTvStudioEncodingRec rec =
+          PixelColorConverter<T>::DigitalTvStudioEncodingRec::kBT2020);
 
   void Convert(const Rgb<T>& rgb, Gray<T>& gray) const;
   void ConvertWithAlpha(const Rgba<T>& rgba, Ya<T>& ya) const;

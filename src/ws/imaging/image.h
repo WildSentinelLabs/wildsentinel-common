@@ -33,10 +33,10 @@ class Image {
   uint8_t NumComponents() const;
   const ImageComponent& GetComponent(uint8_t comp_num) const;
   const Array<ImageComponent>& Components() const;
-  uint32_t Width() const;
-  uint32_t Height() const;
-  ColorSpace GetColorSpace() const;
-  ChromaSubsampling GetChromaSubsampling() const;
+  constexpr uint32_t Width() const;
+  constexpr uint32_t Height() const;
+  constexpr ColorSpace GetColorSpace() const;
+  constexpr ChromaSubsampling GetChromaSubsampling() const;
   bool HasAlpha() const;
   bool Empty() const;
   bool IsValid() const;
@@ -70,13 +70,15 @@ inline const Array<ImageComponent>& Image::Components() const {
   return components_;
 }
 
-inline uint32_t Image::Width() const { return width_; }
+inline constexpr uint32_t Image::Width() const { return width_; }
 
-inline uint32_t Image::Height() const { return height_; }
+inline constexpr uint32_t Image::Height() const { return height_; }
 
-inline ColorSpace Image::GetColorSpace() const { return color_space_; }
+inline constexpr ColorSpace Image::GetColorSpace() const {
+  return color_space_;
+}
 
-inline ChromaSubsampling Image::GetChromaSubsampling() const {
+inline constexpr ChromaSubsampling Image::GetChromaSubsampling() const {
   return chroma_subsampling_;
 }
 

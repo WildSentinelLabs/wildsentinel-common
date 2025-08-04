@@ -3,10 +3,10 @@ namespace ws {
 namespace imaging {
 
 template <IsAllowedPixelNumericType T>
-SYccToRgbConverter<T>::SYccToRgbConverter(uint8_t bit_depth)
-    : PixelColorConverter<T>(bit_depth) {
-  coeffs_ = PixelColorConverter<T>::BT2020Coefficients;
-}
+SYccToRgbConverter<T>::SYccToRgbConverter(
+    uint8_t bit_depth, PixelColorConverter<T>::DigitalTvStudioEncodingRec rec)
+    : PixelColorConverter<T>(bit_depth),
+      coeffs_(PixelColorConverter<T>::GetEncodingCoefficients(rec)) {}
 
 template <IsAllowedPixelNumericType T>
 void SYccToRgbConverter<T>::Convert(const Ycc<T>& ycc, Rgb<T>& rgb) const {
@@ -22,7 +22,6 @@ void SYccToRgbConverter<T>::Convert(const Ycc<T>& ycc, Rgb<T>& rgb) const {
   rgb.g = static_cast<T>(g * this->max_value_);
   rgb.b = static_cast<T>(b * this->max_value_);
 }
-// TODO: ADD ENUM FOR MethodSUPPORT
 
 template class SYccToRgbConverter<uint8_t>;
 template class SYccToRgbConverter<int8_t>;

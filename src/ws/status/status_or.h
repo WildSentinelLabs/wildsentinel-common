@@ -29,7 +29,7 @@ class StatusOr {
 
   ~StatusOr() = default;
 
-  bool Ok() const;
+  constexpr bool Ok() const;
   const Status& GetStatus() const;
   const T& Value() const&;
   T& Value() &;
@@ -90,7 +90,7 @@ inline StatusOr<T>& StatusOr<T>::operator=(StatusOr&& other) noexcept {
 }
 
 template <typename T>
-inline bool StatusOr<T>::Ok() const {
+inline constexpr bool StatusOr<T>::Ok() const {
   return status_.Ok();
 }
 
@@ -126,18 +126,14 @@ inline T&& StatusOr<T>::Value() && {
 template <typename T>
 template <typename U>
 inline T StatusOr<T>::ValueOr(U&& default_value) const& {
-  if (Ok() && value_.has_value()) {
-    return *value_;
-  }
+  if (Ok() && value_.has_value()) return *value_;
   return static_cast<T>(std::forward<U>(default_value));
 }
 
 template <typename T>
 template <typename U>
 inline T StatusOr<T>::ValueOr(U&& default_value) && {
-  if (Ok() && value_.has_value()) {
-    return std::move(*value_);
-  }
+  if (Ok() && value_.has_value()) return std::move(*value_);
   return static_cast<T>(std::forward<U>(default_value));
 }
 

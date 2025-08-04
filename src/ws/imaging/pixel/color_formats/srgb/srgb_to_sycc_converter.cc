@@ -3,9 +3,10 @@
 namespace ws {
 namespace imaging {
 template <IsAllowedPixelNumericType T>
-SRgbToSYccConverter<T>::SRgbToSYccConverter(uint8_t bit_depth)
+SRgbToSYccConverter<T>::SRgbToSYccConverter(
+    uint8_t bit_depth, PixelColorConverter<T>::DigitalTvStudioEncodingRec rec)
     : PixelColorConverter<T>(bit_depth),
-      coeffs_(PixelColorConverter<T>::BT2020Coefficients) {}
+      coeffs_(PixelColorConverter<T>::GetEncodingCoefficients(rec)) {}
 
 template <IsAllowedPixelNumericType T>
 void SRgbToSYccConverter<T>::Convert(const Rgb<T>& rgb, Ycc<T>& ycc) const {
@@ -21,7 +22,6 @@ void SRgbToSYccConverter<T>::Convert(const Rgb<T>& rgb, Ycc<T>& ycc) const {
   ycc.cb = this->max_value_ * cb;
   ycc.cr = this->max_value_ * cr;
 }
-// TODO: ADD ENUM FOR MethodSUPPORT
 
 template class SRgbToSYccConverter<uint8_t>;
 template class SRgbToSYccConverter<int8_t>;

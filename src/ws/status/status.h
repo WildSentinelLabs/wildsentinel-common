@@ -17,8 +17,8 @@ class Status {
 
   ~Status() = default;
 
-  bool Ok() const;
-  StatusCode Code() const;
+  constexpr bool Ok() const;
+  constexpr StatusCode Code() const;
   const std::string& Message() const;
   std::string ToString() const;
 
@@ -45,9 +45,9 @@ inline Status::Status(const Status& status)
 inline ws::Status::Status(Status&& other) noexcept
     : code_(other.code_), message_(std::move(other.message_)) {}
 
-inline bool Status::Ok() const { return code_ == StatusCode::kOk; }
+inline constexpr bool Status::Ok() const { return code_ == StatusCode::kOk; }
 
-inline StatusCode Status::Code() const { return code_; }
+inline constexpr StatusCode Status::Code() const { return code_; }
 
 inline const std::string& Status::Message() const { return message_; }
 

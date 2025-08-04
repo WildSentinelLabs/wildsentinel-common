@@ -3,9 +3,10 @@
 namespace ws {
 namespace imaging {
 template <IsAllowedPixelNumericType T>
-SRgbToGrayConverter<T>::SRgbToGrayConverter(uint8_t bit_depth)
+SRgbToGrayConverter<T>::SRgbToGrayConverter(
+    uint8_t bit_depth, PixelColorConverter<T>::DigitalTvStudioEncodingRec rec)
     : PixelColorConverter<T>(bit_depth),
-      coeffs_(PixelColorConverter<T>::BT2020Coefficients) {}
+      coeffs_(PixelColorConverter<T>::GetEncodingCoefficients(rec)) {}
 
 template <IsAllowedPixelNumericType T>
 void SRgbToGrayConverter<T>::Convert(const Rgb<T>& rgb, Gray<T>& gray) const {
@@ -20,7 +21,6 @@ void SRgbToGrayConverter<T>::ConvertWithAlpha(const Rgba<T>& rgba,
   ya.gray = gray.gray;
   ya.alpha = rgba.alpha;
 }
-// TODO: ADD ENUM FOR MethodSUPPORT
 
 template class SRgbToGrayConverter<uint8_t>;
 template class SRgbToGrayConverter<int8_t>;
