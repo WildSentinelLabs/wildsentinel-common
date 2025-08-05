@@ -151,6 +151,7 @@ template <typename U>
 inline bool operator!=(const StatusOr<U>& lhs, const StatusOr<U>& rhs) {
   return !(lhs == rhs);
 }
+}  // namespace ws
 
 #define ASSIGN_OR_RETURN(lhs, expr)                \
   do {                                             \
@@ -168,5 +169,3 @@ inline bool operator!=(const StatusOr<U>& lhs, const StatusOr<U>& rhs) {
     }                                         \
     lhs = std::move(_result.Value());         \
   } while (0)
-
-}  // namespace ws

@@ -9,7 +9,6 @@
 #include "ws/status/status_or.h"
 #include "ws/types.h"
 
-// Macros for throwing exceptions
 #define STREAM_THROW_UNREADABLE()                                        \
   do {                                                                   \
     return Status(StatusCode::kConflict, "IO Error: Unreadable Stream"); \

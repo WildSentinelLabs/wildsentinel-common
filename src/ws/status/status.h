@@ -58,6 +58,7 @@ inline bool operator==(const Status& lhs, const Status& rhs) {
 inline bool operator!=(const Status& lhs, const Status& rhs) {
   return !(lhs == rhs);
 }
+}  // namespace ws
 
 #define RETURN_IF_ERROR(expr)          \
   do {                                 \
@@ -73,5 +74,3 @@ inline bool operator!=(const Status& lhs, const Status& rhs) {
       return _status;                   \
     }                                   \
   } while (0)
-
-}  // namespace ws

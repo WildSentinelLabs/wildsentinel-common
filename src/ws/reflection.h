@@ -2,6 +2,7 @@
 
 #include <string>
 
+namespace ws {
 template <typename T>
 inline std::string ExtractClassName() {
   constexpr const char* full_name =
@@ -33,5 +34,6 @@ inline std::string ExtractClassName() {
 
   return name;
 }
+}  // namespace ws
 
-#define EXTRACT_CLASS_NAME(T) ExtractClassName<T>()
+#define EXTRACT_CLASS_NAME(T) ws::ExtractClassName<T>()
