@@ -52,7 +52,7 @@ class LoggerOf : public Logger {
 // ============================================================================
 
 template <typename T>
-LoggerOf<T>::LoggerOf(LoggerConfiguration& config)
+inline LoggerOf<T>::LoggerOf(LoggerConfiguration& config)
     : Logger(config, EXTRACT_CLASS_NAME(T)) {}
 
 }  // namespace logging

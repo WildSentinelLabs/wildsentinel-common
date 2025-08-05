@@ -44,14 +44,15 @@ class LoggerConfiguration {
 // ============================================================================
 // Implementation details for LoggerConfiguration
 // ============================================================================
+
 template <IsEnricher T>
-LoggerConfiguration&& LoggerConfiguration::AddEnricher() {
+inline LoggerConfiguration&& LoggerConfiguration::AddEnricher() {
   enrichers_.push_back(std::make_unique<T>());
   return std::move(*this);
 }
 
 template <typename T>
-std::unique_ptr<ILoggerOf<T>> LoggerConfiguration::Create() {
+inline std::unique_ptr<ILoggerOf<T>> LoggerConfiguration::Create() {
   return std::make_unique<LoggerOf<T>>(*this);
 }
 }  // namespace logging
