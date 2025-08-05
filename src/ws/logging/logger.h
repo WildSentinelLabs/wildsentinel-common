@@ -11,10 +11,12 @@
 #include "ws/logging/ilogger.h"
 #include "ws/logging/log_context.h"
 #include "ws/logging/log_level.h"
+#include "ws/reflection.h"
+
 namespace ws {
 namespace logging {
 class LoggerConfiguration;
-class Logger : public ILogger {
+class Logger : public virtual ILogger {
  public:
   explicit Logger(LoggerConfiguration& config,
                   const std::string& source_context = "");
@@ -27,5 +29,21 @@ class Logger : public ILogger {
   LoggerConfiguration& config_;
   std::string source_context_;
 };
+
+template <typename T>
+class LoggerOf : public Logger, public virtual ILoggerOf<T> {
+ public:
+  explicit LoggerOf(LoggerConfiguration& config);
+
+  ~LoggerOf() override = default;
+};
+// ============================================================================
+// Implementation details for Logger
+// ============================================================================
+
+template <typename T>
+inline LoggerOf<T>::LoggerOf(LoggerConfiguration& config)
+    : Logger(config, EXTRACT_CLASS_NAME(T)) {}
+
 }  // namespace logging
 }  // namespace ws

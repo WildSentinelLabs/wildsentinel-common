@@ -3,9 +3,11 @@ wscommon_cc_library(
     core
   HDRS
     array.h
-    span.h
+    config.h
     delegate.h
     machine.h
+    reflection.h
+    span.h
     types.h
   PUBLIC
 )
