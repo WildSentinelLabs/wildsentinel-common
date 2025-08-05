@@ -11,10 +11,12 @@
 #include "ws/logging/ilogger.h"
 #include "ws/logging/log_context.h"
 #include "ws/logging/log_level.h"
+#include "ws/reflection.h"
+
 namespace ws {
 namespace logging {
 class LoggerConfiguration;
-class Logger : public ILogger {
+class Logger : public virtual ILogger {
  public:
   explicit Logger(LoggerConfiguration& config,
                   const std::string& source_context = "");
@@ -28,20 +30,8 @@ class Logger : public ILogger {
   std::string source_context_;
 };
 
-#define EXTRACT_CLASS_NAME(T)                   \
-  []() constexpr -> const char* {               \
-    constexpr const char* full_name = #T;       \
-    const char* last_colon = nullptr;           \
-    for (const char* p = full_name; *p; ++p) {  \
-      if (*p == ':' && *(p + 1) == ':') {       \
-        last_colon = p + 2;                     \
-      }                                         \
-    }                                           \
-    return last_colon ? last_colon : full_name; \
-  }()
-
 template <typename T>
-class LoggerOf : public Logger {
+class LoggerOf : public Logger, public virtual ILoggerOf<T> {
  public:
   explicit LoggerOf(LoggerConfiguration& config);
 

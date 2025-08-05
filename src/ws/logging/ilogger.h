@@ -39,7 +39,7 @@ template <typename T>
 concept IsLoggerType = std::is_class_v<T>;
 
 template <IsLoggerType T>
-class ILoggerOf : public ILogger {};
+class ILoggerOf : public virtual ILogger {};
 
 // ============================================================================
 // Implementation details for ILogger
