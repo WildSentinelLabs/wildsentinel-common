@@ -2,10 +2,10 @@
 namespace ws {
 namespace imaging {
 
-ImageConverter::ImageConverter(ColorSpace color_space,
-                               ChromaSubsampling chroma_subsampling,
-                               uint8_t num_components,
-                               std::unique_ptr<ws::logging::ILogger>&& logger)
+ImageConverter::ImageConverter(
+    ColorSpace color_space, ChromaSubsampling chroma_subsampling,
+    uint8_t num_components,
+    std::unique_ptr<ws::logging::ILoggerOf<ImageConverter>>&& logger)
     : color_space_(color_space),
       chroma_subsampling_(chroma_subsampling),
       num_components_(num_components),
@@ -36,7 +36,8 @@ ImageConverter& ImageConverter::operator=(ImageConverter&& other) noexcept {
   return *this;
 }
 
-void ImageConverter::SetLogger(std::unique_ptr<ws::logging::ILogger>&& logger) {
+void ImageConverter::SetLogger(
+    std::unique_ptr<ws::logging::ILoggerOf<ImageConverter>>&& logger) {
   logger_ = std::move(logger);
 }
 }  // namespace imaging

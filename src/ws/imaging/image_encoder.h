@@ -20,17 +20,19 @@ class ImageEncoder {
   virtual ~ImageEncoder() = default;
 
   ImageCompressionOptions Options() const;
-  void SetLogger(std::unique_ptr<ws::logging::ILogger>&& logger);
+  void SetLogger(
+      std::unique_ptr<ws::logging::ILoggerOf<ImageEncoder>>&& logger);
   virtual void SetOptions(const ImageCompressionOptions& options);
   virtual const ImageFormat& Format() const = 0;
   virtual Status Encode(const Image& image, ws::io::Stream& stream) const = 0;
 
  protected:
-  ImageEncoder(const ImageContext& context,
-               const ImageCompressionOptions& compression_options = {},
-               std::unique_ptr<ws::logging::ILogger>&& logger = nullptr);
+  ImageEncoder(
+      const ImageContext& context,
+      const ImageCompressionOptions& compression_options = {},
+      std::unique_ptr<ws::logging::ILoggerOf<ImageEncoder>>&& logger = nullptr);
 
-  std::unique_ptr<ws::logging::ILogger> logger_;
+  std::unique_ptr<ws::logging::ILoggerOf<ImageEncoder>> logger_;
   ImageCompressionOptions compression_options_;
   ImageContext context_;
 };

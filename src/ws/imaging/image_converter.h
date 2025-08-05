@@ -21,15 +21,17 @@ class ImageConverter {
   constexpr uint8_t NumComponents() const;
   constexpr ColorSpace GetColorSpace() const;
   constexpr ChromaSubsampling GetChromaSubsampling() const;
-  void SetLogger(std::unique_ptr<ws::logging::ILogger>&& logger);
+  void SetLogger(
+      std::unique_ptr<ws::logging::ILoggerOf<ImageConverter>>&& logger);
   virtual StatusOr<Image> Convert(const Image& source) const = 0;
 
  protected:
   ImageConverter(ColorSpace color_space, ChromaSubsampling chroma_subsampling,
                  uint8_t num_components,
-                 std::unique_ptr<ws::logging::ILogger>&& logger = nullptr);
+                 std::unique_ptr<ws::logging::ILoggerOf<ImageConverter>>&&
+                     logger = nullptr);
 
-  std::unique_ptr<ws::logging::ILogger> logger_;
+  std::unique_ptr<ws::logging::ILoggerOf<ImageConverter>> logger_;
   ColorSpace color_space_;
   ChromaSubsampling chroma_subsampling_;
   uint8_t num_components_;

@@ -2,9 +2,10 @@
 namespace ws {
 namespace imaging {
 
-ImageEncoder::ImageEncoder(const ImageContext& context,
-                           const ImageCompressionOptions& compression_options,
-                           std::unique_ptr<ws::logging::ILogger>&& logger)
+ImageEncoder::ImageEncoder(
+    const ImageContext& context,
+    const ImageCompressionOptions& compression_options,
+    std::unique_ptr<ws::logging::ILoggerOf<ImageEncoder>>&& logger)
     : context_(context),
       compression_options_(compression_options),
       logger_(std::move(logger)) {}
@@ -30,7 +31,8 @@ void ImageEncoder::SetOptions(const ImageCompressionOptions& options) {
   compression_options_ = options;
 }
 
-void ImageEncoder::SetLogger(std::unique_ptr<ws::logging::ILogger>&& logger) {
+void ImageEncoder::SetLogger(
+    std::unique_ptr<ws::logging::ILoggerOf<ImageEncoder>>&& logger) {
   logger_ = std::move(logger);
 }
 }  // namespace imaging

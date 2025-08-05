@@ -53,7 +53,7 @@ LoggerConfiguration&& LoggerConfiguration::AddEnricher(
   return std::move(*this);
 }
 
-std::unique_ptr<Logger> LoggerConfiguration::CreateLogger(
+std::unique_ptr<Logger> LoggerConfiguration::Create(
     const std::string& source_context) {
   return std::make_unique<Logger>(*this, source_context);
 }

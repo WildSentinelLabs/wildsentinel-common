@@ -35,6 +35,12 @@ class ILogger {
   void LogCritical(const std::string& message, Arg&& arg, Args&&... args) const;
 };
 
+template <typename T>
+concept IsLoggerType = std::is_class_v<T>;
+
+template <IsLoggerType T>
+class ILoggerOf : public ILogger {};
+
 // ============================================================================
 // Implementation details for ILogger
 // ============================================================================

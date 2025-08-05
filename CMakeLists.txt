@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 
+set(CMAKE_POLICY_VERSION_MINIMUM 3.21)
+
 cmake_policy(VERSION ${CMAKE_VERSION})
 if(POLICY CMP0021)
   cmake_policy(SET CMP0021 NEW)

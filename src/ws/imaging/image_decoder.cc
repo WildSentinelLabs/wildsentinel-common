@@ -2,8 +2,9 @@
 namespace ws {
 namespace imaging {
 
-ImageDecoder::ImageDecoder(const ImageContext& context,
-                           std::unique_ptr<ws::logging::ILogger>&& logger)
+ImageDecoder::ImageDecoder(
+    const ImageContext& context,
+    std::unique_ptr<ws::logging::ILoggerOf<ImageDecoder>>&& logger)
     : context_(context), logger_(std::move(logger)) {};
 
 ImageDecoder::ImageDecoder(ImageDecoder&& other) noexcept
@@ -18,7 +19,8 @@ ImageDecoder& ImageDecoder::operator=(ImageDecoder&& other) noexcept {
   return *this;
 }
 
-void ImageDecoder::SetLogger(std::unique_ptr<ws::logging::ILogger>&& logger) {
+void ImageDecoder::SetLogger(
+    std::unique_ptr<ws::logging::ILoggerOf<ImageDecoder>>&& logger) {
   logger_ = std::move(logger);
 }
 }  // namespace imaging

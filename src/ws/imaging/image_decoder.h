@@ -18,15 +18,17 @@ class ImageDecoder {
 
   virtual ~ImageDecoder() = default;
 
-  void SetLogger(std::unique_ptr<ws::logging::ILogger>&& logger);
+  void SetLogger(
+      std::unique_ptr<ws::logging::ILoggerOf<ImageDecoder>>&& logger);
   virtual const ImageFormat& Format() const = 0;
   virtual StatusOr<Image> Decode(ws::io::Stream& stream) const = 0;
 
  protected:
-  ImageDecoder(const ImageContext& context,
-               std::unique_ptr<ws::logging::ILogger>&& logger = nullptr);
+  ImageDecoder(
+      const ImageContext& context,
+      std::unique_ptr<ws::logging::ILoggerOf<ImageDecoder>>&& logger = nullptr);
 
-  std::unique_ptr<ws::logging::ILogger> logger_;
+  std::unique_ptr<ws::logging::ILoggerOf<ImageDecoder>> logger_;
   ImageContext context_;
 };
 }  // namespace imaging

@@ -6,6 +6,7 @@
 #include "ws/logging/ilog_enricher.h"
 #include "ws/logging/logger.h"
 #include "ws/logging/sinks/console_log_sink.h"
+
 namespace ws {
 namespace logging {
 class LoggerConfiguration {
@@ -27,14 +28,11 @@ class LoggerConfiguration {
           "{Message:lj}{NewLine}{Exception}",
       bool enable_async = false);
   LoggerConfiguration&& AddEnricher(std::unique_ptr<ILogEnricher>&& enricher);
-
   template <IsEnricher T>
-  LoggerConfiguration&& AddEnricher() {
-    enrichers_.push_back(std::make_unique<T>());
-    return std::move(*this);
-  }
-
-  std::unique_ptr<Logger> CreateLogger(const std::string& source_context);
+  LoggerConfiguration&& AddEnricher();
+  std::unique_ptr<Logger> Create(const std::string& source_context);
+  template <typename T>
+  std::unique_ptr<ILoggerOf<T>> Create();
 
  private:
   friend class Logger;
@@ -43,5 +41,18 @@ class LoggerConfiguration {
   std::vector<std::unique_ptr<ILogSink>> sinks_;
   std::vector<std::unique_ptr<ILogEnricher>> enrichers_;
 };
+// ============================================================================
+// Implementation details for LoggerConfiguration
+// ============================================================================
+template <IsEnricher T>
+LoggerConfiguration&& LoggerConfiguration::AddEnricher() {
+  enrichers_.push_back(std::make_unique<T>());
+  return std::move(*this);
+}
+
+template <typename T>
+std::unique_ptr<ILoggerOf<T>> LoggerConfiguration::Create() {
+  return std::make_unique<LoggerOf<T>>(*this);
+}
 }  // namespace logging
 }  // namespace ws
