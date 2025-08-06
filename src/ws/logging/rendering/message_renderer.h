@@ -38,6 +38,7 @@ class MessageRenderer {
   static constexpr std::string_view kTimeStampKey = "Timestamp";
   static constexpr std::string_view kLevelKey = "Level";
   static constexpr std::string_view kMessageKey = "Message";
+  static constexpr std::string_view kNewLineKey = "NewLine";
 
   static std::string RenderPlaceholder(const TemplatePart& part,
                                        const ws::logging::LogEvent& event);
@@ -45,6 +46,7 @@ class MessageRenderer {
   static std::string FormatTimestamp(
       std::chrono::system_clock::time_point timestamp,
       const std::string& format);
+  static std::string FormatNewLine(const std::string& format);
   void ParseTemplate(const std::string& format);
 
   std::vector<TemplatePart> template_parts_;

@@ -269,86 +269,56 @@ inline int GetPid() {
 
 class Console {
  private:
-  static void WriteToConsole(const std::string& message, bool is_error,
-                             bool add_new_line);
+  static void WriteToConsole(std::string_view message, bool is_error);
 
  public:
   static void Write(const std::string& message) {
-    WriteToConsole(message, false, false);
+    WriteToConsole(message, false);
   }
 
   static void WriteLine(const std::string& message = "") {
-    WriteToConsole(message, false, true);
+    WriteToConsole(message + '\n', false);
   }
 
   class Output {
    public:
     static void Write(const std::string& message) {
-      WriteToConsole(message, false, false);
+      WriteToConsole(message, false);
     }
 
     static void WriteLine(const std::string& message = "") {
-      WriteToConsole(message, false, true);
+      WriteToConsole(message + '\n', false);
     }
   };
 
   class Error {
    public:
     static void Write(const std::string& message) {
-      WriteToConsole(message, true, false);
+      WriteToConsole(message, true);
     }
 
     static void WriteLine(const std::string& message = "") {
-      WriteToConsole(message, true, true);
+      WriteToConsole(message + '\n', true);
     }
   };
 };
 
-inline void Console::WriteToConsole(const std::string& message, bool is_error,
-                                    bool add_new_line) {
+inline void Console::WriteToConsole(std::string_view message, bool is_error) {
   std::lock_guard<std::mutex> lock(internal::console_mutex);
   static constexpr size_t kMaxBufferSize = 4096;
 #ifdef _WIN32
   HANDLE handle = is_error ? GetStdHandle(STD_ERROR_HANDLE)
                            : GetStdHandle(STD_OUTPUT_HANDLE);
   if (handle == INVALID_HANDLE_VALUE) return;
-  if (add_new_line && message.size() < kMaxBufferSize) {
-    thread_local std::string buffer;
-    buffer.clear();
-    buffer.reserve(message.size() + 1);
-    buffer.append(message);
-    buffer.append("\n");
-
-    DWORD written = 0;
-    WriteConsoleA(handle, buffer.c_str(), static_cast<DWORD>(buffer.size()),
-                  &written, nullptr);
-  } else {
-    DWORD written = 0;
-    WriteConsoleA(handle, message.c_str(), static_cast<DWORD>(message.size()),
-                  &written, nullptr);
-    if (add_new_line) WriteConsoleA(handle, "\n", 1, &written, nullptr);
-  }
+  DWORD written = 0;
+  WriteConsoleA(handle, message.data(), static_cast<DWORD>(message.size()),
+                &written, nullptr);
 #elif defined(__APPLE__) || defined(__linux__)
   int fd = is_error ? STDERR_FILENO : STDOUT_FILENO;
-  if (add_new_line && message.size() < kMaxBufferSize) {
-    thread_local std::string buffer;
-    buffer.clear();
-    buffer.reserve(message.size() + 1);
-    buffer.append(message);
-    buffer.append("\n");
-
-    ::write(fd, buffer.c_str(), buffer.size());
-  } else {
-    ::write(fd, message.c_str(), message.size());
-    if (add_new_line) ::write(fd, "\n", 1);
-  }
+  ::write(fd, message.data(), message.size());
 #else
   FILE* stream = is_error ? stderr : stdout;
-  if (add_new_line) {
-    fprintf(stream, "%s\n", message.c_str());
-  } else {
-    fprintf(stream, "%s", message.c_str());
-  }
+  fprintf(stream, "%s", message.data());
 #endif
 }
 

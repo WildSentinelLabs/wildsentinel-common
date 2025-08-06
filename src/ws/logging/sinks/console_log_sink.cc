@@ -30,7 +30,7 @@ void ConsoleLogSink::Display(ws::logging::LogEvent event) {
 }
 
 void ConsoleLogSink::Display(const std::string& message) const {
-  Console::WriteLine(message);
+  Console::Write(message);
 }
 
 }  // namespace logging
