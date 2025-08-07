@@ -22,6 +22,27 @@ class Status {
   const std::string& Message() const;
   std::string ToString() const;
 
+  static Status BadRequest(const std::string& message);
+  static Status Unauthorized(const std::string& message);
+  static Status Forbidden(const std::string& message);
+  static Status NotFound(const std::string& message);
+  static Status Conflict(const std::string& message);
+  static Status InternalError(const std::string& message);
+  static Status NotImplemented(const std::string& message);
+  static Status RequestAborted(const std::string& message);
+  static Status Timeout(const std::string& message);
+  static Status PreconditionFailed(const std::string& message);
+  static Status PayloadTooLarge(const std::string& message);
+  static Status Unsupported(const std::string& message);
+  static Status FailedDependency(const std::string& message);
+  static Status Unavailable(const std::string& message);
+  static Status InsufficientStorage(const std::string& message);
+  static Status OutOfRange(const std::string& message);
+  static Status BadAlloc(const std::string& message);
+  static Status RuntimeError(const std::string& message);
+  static Status DataLoss(const std::string& message);
+  static Status Unknown(const std::string& message);
+
   friend inline bool operator==(const Status&, const Status&);
   friend inline bool operator!=(const Status&, const Status&);
 
