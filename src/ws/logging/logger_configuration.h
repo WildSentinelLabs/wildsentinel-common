@@ -47,7 +47,7 @@ class LoggerConfiguration {
 
 template <IsEnricher T>
 inline LoggerConfiguration&& LoggerConfiguration::AddEnricher() {
-  enrichers_.push_back(std::make_unique<T>());
+  enrichers_.emplace_back(new T());
   return std::move(*this);
 }
 

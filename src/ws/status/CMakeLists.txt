@@ -8,5 +8,7 @@ wscommon_cc_library(
     status_code.h
     status_or.h
     status.h
+  PCHS
+    ws/config.h
   PUBLIC
 )

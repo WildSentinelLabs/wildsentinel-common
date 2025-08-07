@@ -8,7 +8,6 @@
 #include "ws/io/file_mode.h"
 #include "ws/io/file_share.h"
 #include "ws/io/file_stream.h"
-#include "ws/span.h"
 #include "ws/string/string_helpers.h"
 #include "ws/types.h"
 
@@ -16,6 +15,8 @@ namespace ws {
 namespace io {
 class File {
  public:
+  using container_type = Array<unsigned char>;
+
   static StatusOr<FileStream> Create(const std::string& path);
   static StatusOr<FileStream> Open(const std::string& path);
   static StatusOr<FileStream> Open(const std::string& path, FileMode mode);
@@ -28,8 +29,9 @@ class File {
                      const std::string& destinationPath);
   static Status Delete(const std::string& path);
   static StatusOr<std::string> ReadAllText(const std::string& path);
-  static StatusOr<Array<std::string>> ReadAllLines(const std::string& path);
-  static StatusOr<Array<unsigned char>> ReadAllBytes(const std::string& path);
+  static StatusOr<std::vector<std::string>> ReadAllLines(
+      const std::string& path);
+  static StatusOr<container_type> ReadAllBytes(const std::string& path);
 
  private:
   static constexpr FileShare kDefaultShare = FileShare::kRead;

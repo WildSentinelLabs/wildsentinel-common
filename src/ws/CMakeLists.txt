@@ -10,6 +10,8 @@ wscommon_cc_library(
     span.h
     system.h
     types.h
+  PCHS
+    ws/config.h
   DEPS
     Threads::Threads
   PUBLIC

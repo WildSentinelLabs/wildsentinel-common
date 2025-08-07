@@ -1,11 +1,10 @@
 #include "ws/imaging/image.h"
 namespace ws {
 namespace imaging {
-StatusOr<Image> Image::Create(Array<ImageComponent>&& components,
-                              uint32_t width, uint32_t height,
-                              ColorSpace color_space,
+StatusOr<Image> Image::Create(container_type&& components, uint32_t width,
+                              uint32_t height, ColorSpace color_space,
                               ChromaSubsampling chroma_subsampling) {
-  if (components.Empty()) {
+  if (components.empty()) {
     return Status(StatusCode::kBadRequest, "Components array cannot be empty");
   }
 
@@ -33,7 +32,7 @@ StatusOr<Image> Image::Create(Array<ImageComponent>&& components,
 }
 
 Image::Image()
-    : components_(Array<ImageComponent>()),
+    : components_(container_type()),
       context_(ImageContext()),
       width_(0),
       height_(0),
@@ -47,7 +46,7 @@ Image::Image(Image&& other) noexcept
       height_(other.height_),
       color_space_(other.color_space_),
       chroma_subsampling_(other.chroma_subsampling_) {
-  other.components_ = Array<ImageComponent>();
+  other.components_ = container_type();
   other.context_ = ImageContext();
   other.width_ = 0;
   other.height_ = 0;
@@ -64,7 +63,7 @@ Image& Image::operator=(Image&& other) noexcept {
     color_space_ = other.color_space_;
     chroma_subsampling_ = other.chroma_subsampling_;
 
-    other.components_ = Array<ImageComponent>();
+    other.components_ = container_type();
     other.context_ = ImageContext();
     other.width_ = 0;
     other.height_ = 0;
@@ -91,7 +90,7 @@ bool Image::HasAlpha() const {
 }
 
 bool Image::IsValid() const {
-  if (components_.Empty() || width_ == 0 || height_ == 0 ||
+  if (components_.empty() || width_ == 0 || height_ == 0 ||
       color_space_ == ColorSpace::kUnsupported ||
       chroma_subsampling_ == ChromaSubsampling::kUnsupported)
     return false;
@@ -110,7 +109,7 @@ std::string Image::ToString() const {
       width_, height_, ColorSpaceToString(color_space_),
       ChromaSubsamplingToString(chroma_subsampling_));
 
-  for (uint8_t c = 0; c < components_.Length(); ++c) {
+  for (uint8_t c = 0; c < components_.size(); ++c) {
     result += Format("\n=> Component {}: {}", static_cast<int>(c),
                      components_[c].ToString());
   }
@@ -119,9 +118,8 @@ std::string Image::ToString() const {
   return result;
 }
 
-Image::Image(Array<ImageComponent>&& components, uint32_t width,
-             uint32_t height, ColorSpace color_space,
-             ChromaSubsampling chroma_subsampling)
+Image::Image(container_type&& components, uint32_t width, uint32_t height,
+             ColorSpace color_space, ChromaSubsampling chroma_subsampling)
     : components_(std::move(components)),
       context_(ImageContext()),
       width_(width),

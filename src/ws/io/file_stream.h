@@ -3,9 +3,9 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
-#include <exception>
 #include <memory>
-#include <stdexcept>
+#include <span>
+#include <type_traits>
 
 #include "ws/io/file_access.h"
 #include "ws/io/file_handle.h"
@@ -23,11 +23,11 @@ class FileStream : public Stream {
                                      FileAccess access, FileShare share);
   static StatusOr<FileStream> Create(const std::string& path, FileMode mode,
                                      FileAccess access, FileShare share,
-                                     offset_t buffer_size);
+                                     size_type buffer_size);
   static StatusOr<FileStream> Create(const std::string& path, FileMode mode,
                                      FileAccess access, FileShare share,
-                                     offset_t buffer_size,
-                                     offset_t preallocation_size);
+                                     size_type buffer_size,
+                                     size_type preallocation_size);
 
   FileStream();
 
@@ -43,32 +43,37 @@ class FileStream : public Stream {
   bool CanSeek() override;
   bool CanRead() const override;
   bool CanWrite() const override;
-  offset_t Length() override;
-  offset_t Position() override;
-  Status SetPosition(offset_t value) override;
-  Status SetLength(offset_t value);
-  StatusOr<offset_t> Read(Span<unsigned char> buffer, offset_t offset,
-                          offset_t count) override;
-  StatusOr<offset_t> Read(Span<unsigned char> buffer) override;
+  size_type Length() override;
+  size_type Position() override;
+  Status SetPosition(size_type value) override;
+  Status SetLength(size_type value);
+  StatusOr<size_type> Read(std::span<value_type> buffer, size_type offset,
+                           size_type count) override;
+  StatusOr<size_type> Read(std::span<value_type> buffer) override;
   StatusOr<int16_t> ReadByte() override;
-  StatusOr<offset_t> Seek(offset_t offset, SeekOrigin origin) override;
-  Status Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
-               offset_t count) override;
-  Status Write(ReadOnlySpan<unsigned char> buffer) override;
-  Status WriteByte(unsigned char value) override;
-  StatusOr<Array<unsigned char>> ToArray() override;
+  StatusOr<size_type> Seek(size_type offset, SeekOrigin origin) override;
+  Status Write(std::span<const value_type> buffer, size_type offset,
+               size_type count) override;
+  Status Write(std::span<const value_type> buffer) override;
+  Status WriteByte(value_type value) override;
+  StatusOr<container_type> ToArray() override;
   void Close() override;
   void Dispose() override;
 
  private:
-  FileStream(FileHandle file_handle, offset_t position, offset_t append_start,
+  FileStream(FileHandle file_handle, size_type position, size_type append_start,
              FileAccess access);
 
-  static constexpr offset_t kDefaultBufferSize = 4096;
+  static constexpr size_type kDefaultBufferSize = 4096;
+
+  static_assert(std::is_same_v<FileHandle::value_type, Stream::value_type>,
+                "FileHandle::value_type must match Stream::value_type");
+  static_assert(std::is_same_v<FileHandle::size_type, Stream::size_type>,
+                "FileHandle::size_type must match Stream::size_type");
 
   FileHandle file_handle_;
-  offset_t position_;
-  offset_t append_start_;
+  size_type position_;
+  size_type append_start_;
   FileAccess access_;
 };
 

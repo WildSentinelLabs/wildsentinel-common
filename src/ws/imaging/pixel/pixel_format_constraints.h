@@ -15,11 +15,12 @@ namespace imaging {
 
 class PixelFormatConstraints {
  public:
+  using container_type = Array<Point>;
   static const PixelFormatDetails* GetFormat(PixelFormat pixel_format);
-  static Array<Point> GetDimensions(uint32_t width, uint32_t height,
-                                    uint8_t num_components,
-                                    ChromaSubsampling chroma_subsampling,
-                                    bool has_alpha);
+  static container_type GetDimensions(uint32_t width, uint32_t height,
+                                      uint8_t num_components,
+                                      ChromaSubsampling chroma_subsampling,
+                                      bool has_alpha);
 
   static std::vector<const PixelFormatDetails*> formats;
 

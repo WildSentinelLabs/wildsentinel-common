@@ -15,9 +15,10 @@ namespace imaging {
 
 class Image {
  public:
-  static StatusOr<Image> Create(Array<ImageComponent>&& components,
-                                uint32_t width, uint32_t height,
-                                ColorSpace color_space,
+  using container_type = Array<ImageComponent>;
+
+  static StatusOr<Image> Create(container_type&& components, uint32_t width,
+                                uint32_t height, ColorSpace color_space,
                                 ChromaSubsampling chroma_subsampling);
 
   Image();
@@ -32,7 +33,7 @@ class Image {
   ImageContext Context() const;
   uint8_t NumComponents() const;
   const ImageComponent& GetComponent(uint8_t comp_num) const;
-  const Array<ImageComponent>& Components() const;
+  const container_type& Components() const;
   constexpr uint32_t Width() const;
   constexpr uint32_t Height() const;
   constexpr ColorSpace GetColorSpace() const;
@@ -43,10 +44,10 @@ class Image {
   std::string ToString() const;
 
  private:
-  Image(Array<ImageComponent>&& components, uint32_t width, uint32_t height,
+  Image(container_type&& components, uint32_t width, uint32_t height,
         ColorSpace color_space, ChromaSubsampling chroma_subsampling);
 
-  Array<ImageComponent> components_;
+  container_type components_;
   ImageContext context_;
   uint32_t width_;
   uint32_t height_;
@@ -60,13 +61,13 @@ class Image {
 
 inline ImageContext Image::Context() const { return context_; }
 
-inline uint8_t Image::NumComponents() const { return components_.Length(); }
+inline uint8_t Image::NumComponents() const { return components_.size(); }
 
 inline const ImageComponent& Image::GetComponent(uint8_t comp_num) const {
   return components_[comp_num];
 }
 
-inline const Array<ImageComponent>& Image::Components() const {
+inline const Image::container_type& Image::Components() const {
   return components_;
 }
 
@@ -82,7 +83,7 @@ inline constexpr ChromaSubsampling Image::GetChromaSubsampling() const {
   return chroma_subsampling_;
 }
 
-inline bool Image::Empty() const { return components_.Empty(); }
+inline bool Image::Empty() const { return components_.empty(); }
 
 }  // namespace imaging
 }  // namespace ws

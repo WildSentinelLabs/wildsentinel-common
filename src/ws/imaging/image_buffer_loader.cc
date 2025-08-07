@@ -3,13 +3,13 @@ namespace ws {
 namespace imaging {
 template <ws::imaging::IsAllowedPixelNumericType T>
 StatusOr<Image> ImageBufferLoader<T>::LoadFromInterleavedBuffer(
-    ReadOnlySpan<T> buffer, uint32_t width, uint32_t height, uint8_t bit_depth,
-    const ws::imaging::PixelFormatDetails* pixel_format_details) {
+    std::span<const T> buffer, uint32_t width, uint32_t height,
+    uint8_t bit_depth, const PixelFormatDetails* pixel_format_details) {
   if (width == 0)
     return Status(StatusCode::kBadRequest, "Width must be greater than 0");
   if (height == 0)
     return Status(StatusCode::kBadRequest, "Height must be greater than 0");
-  if (buffer.Empty())
+  if (buffer.empty())
     return Status(StatusCode::kBadRequest, "Buffer must not be empty");
   if (DetermineImageBufferType(bit_depth) != ImageBufferTypeOf<T>::value)
     return Status(StatusCode::kBadRequest,
@@ -19,29 +19,29 @@ StatusOr<Image> ImageBufferLoader<T>::LoadFromInterleavedBuffer(
     return Status(StatusCode::kBadRequest,
                   "Pixel format details must not be null");
 
-  if ((pixel_format_details->layout &
-       ws::imaging::PixelLayoutFlag::kInterleaved) ==
-      static_cast<ws::imaging::PixelLayoutFlag>(0))
+  if ((pixel_format_details->layout & PixelLayoutFlag::kInterleaved) ==
+      static_cast<PixelLayoutFlag>(0))
     return Status(StatusCode::kBadRequest,
                   "Pixel format details must indicate interleaved layout");
 
   const uint8_t num_components = pixel_format_details->num_components;
-  Array<Point> dimensions = ws::imaging::PixelFormatConstraints::GetDimensions(
-      width, height, num_components, pixel_format_details->chroma_subsampling,
-      pixel_format_details->HasAlpha());
-  if (dimensions.Empty())
+  PixelFormatConstraints::container_type dimensions =
+      PixelFormatConstraints::GetDimensions(
+          width, height, num_components,
+          pixel_format_details->chroma_subsampling,
+          pixel_format_details->HasAlpha());
+  if (dimensions.empty())
     return Status(StatusCode::kBadRequest,
                   "Unsupported dimensions for the given pixel format");
 
-  ws::ReadOnlySpan<uint8_t> components_order =
-      pixel_format_details->components_order;
-  const size_t num_components_order = components_order.Length();
-  if (buffer.Length() % num_components_order != 0)
+  auto components_order = pixel_format_details->components_order;
+  const size_t num_components_order = components_order.size();
+  if (buffer.size() % num_components_order != 0)
     return Status(StatusCode::kBadRequest,
                   "Buffer length must be divisible by components order length");
 
   size_t comps_index[num_components] = {0};
-  Array<ImageComponent> components(num_components);
+  Image::container_type components(num_components);
   T* comps_buffer_in_order[num_components_order];
   size_t* comps_buffer_index_in_order[num_components_order];
   for (size_t i = 0; i < num_components_order; ++i) {
@@ -70,7 +70,7 @@ StatusOr<Image> ImageBufferLoader<T>::LoadFromInterleavedBuffer(
       comps_index[c] += components[c].Length();
     }
   } else {
-    for (size_t offset = 0; offset < buffer.Length();
+    for (size_t offset = 0; offset < buffer.size();
          offset += num_components_order) {
       for (size_t c = 0; c < num_components_order; ++c) {
         comps_buffer_in_order[c][(*comps_buffer_index_in_order[c])++] =
@@ -86,14 +86,14 @@ StatusOr<Image> ImageBufferLoader<T>::LoadFromInterleavedBuffer(
 
 template <ws::imaging::IsAllowedPixelNumericType T>
 StatusOr<Image> ImageBufferLoader<T>::LoadFromInterleavedBuffer(
-    ReadOnlySpan<T> buffer, uint32_t width, uint32_t height, uint8_t bit_depth,
-    const ws::imaging::PixelFormat pixel_format) {
-  const ws::imaging::PixelFormatDetails* pixel_format_details =
-      ws::imaging::PixelFormatConstraints::GetFormat(pixel_format);
+    std::span<const T> buffer, uint32_t width, uint32_t height,
+    uint8_t bit_depth, const PixelFormat pixel_format) {
+  const PixelFormatDetails* pixel_format_details =
+      PixelFormatConstraints::GetFormat(pixel_format);
   if (!pixel_format_details)
-    return Status(StatusCode::kBadRequest,
-                  "Unsupported pixel format " +
-                      ws::imaging::PixelFormatToString(pixel_format));
+    return Status(
+        StatusCode::kBadRequest,
+        "Unsupported pixel format " + PixelFormatToString(pixel_format));
 
   return ImageBufferLoader<T>::LoadFromInterleavedBuffer(
       buffer, width, height, bit_depth, pixel_format_details);
@@ -101,13 +101,13 @@ StatusOr<Image> ImageBufferLoader<T>::LoadFromInterleavedBuffer(
 
 template <ws::imaging::IsAllowedPixelNumericType T>
 StatusOr<Image> ImageBufferLoader<T>::LoadFromPlanarBuffer(
-    ReadOnlySpan<T> buffer, uint32_t width, uint32_t height, uint8_t bit_depth,
-    const ws::imaging::PixelFormatDetails* pixel_format_details) {
+    std::span<const T> buffer, uint32_t width, uint32_t height,
+    uint8_t bit_depth, const PixelFormatDetails* pixel_format_details) {
   if (width == 0)
     return Status(StatusCode::kBadRequest, "Width must be greater than 0");
   if (height == 0)
     return Status(StatusCode::kBadRequest, "Height must be greater than 0");
-  if (buffer.Empty())
+  if (buffer.empty())
     return Status(StatusCode::kBadRequest, "Buffer must not be empty");
   if (DetermineImageBufferType(bit_depth) != ImageBufferTypeOf<T>::value)
     return Status(StatusCode::kBadRequest,
@@ -117,28 +117,29 @@ StatusOr<Image> ImageBufferLoader<T>::LoadFromPlanarBuffer(
     return Status(StatusCode::kBadRequest,
                   "Pixel format details must not be null");
 
-  if ((pixel_format_details->layout & ws::imaging::PixelLayoutFlag::kPlanar) ==
-      static_cast<ws::imaging::PixelLayoutFlag>(0))
+  if ((pixel_format_details->layout & PixelLayoutFlag::kPlanar) ==
+      static_cast<PixelLayoutFlag>(0))
     return Status(StatusCode::kBadRequest,
                   "Pixel format details must indicate planar layout");
 
   const uint8_t num_components = pixel_format_details->num_components;
-  Array<Point> dimensions = ws::imaging::PixelFormatConstraints::GetDimensions(
-      width, height, num_components, pixel_format_details->chroma_subsampling,
-      pixel_format_details->HasAlpha());
-  if (dimensions.Empty())
+  PixelFormatConstraints::container_type dimensions =
+      PixelFormatConstraints::GetDimensions(
+          width, height, num_components,
+          pixel_format_details->chroma_subsampling,
+          pixel_format_details->HasAlpha());
+  if (dimensions.empty())
     return Status(StatusCode::kBadRequest,
                   "Unsupported dimensions for the given pixel format");
 
-  ws::ReadOnlySpan<uint8_t> components_order =
-      pixel_format_details->components_order;
-  const size_t num_components_order = components_order.Length();
-  if (buffer.Length() % num_components_order != 0)
+  auto components_order = pixel_format_details->components_order;
+  const size_t num_components_order = components_order.size();
+  if (buffer.size() % num_components_order != 0)
     return Status(StatusCode::kBadRequest,
                   "Buffer length must be divisible by components order length");
 
-  Array<ImageComponent> components(num_components);
-  const T* buffer_ptr = static_cast<const T*>(buffer);
+  Image::container_type components(num_components);
+  const T* buffer_ptr = buffer.data();
   for (size_t i = 0; i < num_components_order; ++i) {
     uint8_t c = components_order[i];
     ASSIGN_OR_RETURN(
@@ -158,14 +159,14 @@ StatusOr<Image> ImageBufferLoader<T>::LoadFromPlanarBuffer(
 
 template <ws::imaging::IsAllowedPixelNumericType T>
 StatusOr<Image> ImageBufferLoader<T>::LoadFromPlanarBuffer(
-    ReadOnlySpan<T> buffer, uint32_t width, uint32_t height, uint8_t bit_depth,
-    const ws::imaging::PixelFormat pixel_format) {
-  const ws::imaging::PixelFormatDetails* pixel_format_details =
-      ws::imaging::PixelFormatConstraints::GetFormat(pixel_format);
+    std::span<const T> buffer, uint32_t width, uint32_t height,
+    uint8_t bit_depth, const PixelFormat pixel_format) {
+  const PixelFormatDetails* pixel_format_details =
+      PixelFormatConstraints::GetFormat(pixel_format);
   if (!pixel_format_details)
-    return Status(StatusCode::kBadRequest,
-                  "Unsupported pixel format " +
-                      ws::imaging::PixelFormatToString(pixel_format));
+    return Status(
+        StatusCode::kBadRequest,
+        "Unsupported pixel format " + PixelFormatToString(pixel_format));
 
   return LoadFromPlanarBuffer(buffer, width, height, bit_depth,
                               pixel_format_details);

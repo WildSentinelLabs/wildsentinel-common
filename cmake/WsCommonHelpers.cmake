@@ -92,7 +92,7 @@ function(wscommon_cc_library)
   cmake_parse_arguments(WSCOMMON_CC_LIB
     "DISABLE_INSTALL;PUBLIC;TESTONLY"
     "NAME"
-    "HDRS;SRCS;COPTS;DEFINES;LINKOPTS;DEPS"
+    "HDRS;SRCS;PCHS;COPTS;DEFINES;LINKOPTS;DEPS"
     ${ARGN}
   )
 
@@ -125,9 +125,11 @@ function(wscommon_cc_library)
       target_compile_features(${_NAME} INTERFACE ${WSCOMMON_INTERNAL_CXX_STD_FEATURE})
     endif()
 
-    target_precompile_headers(${_NAME} INTERFACE
-      "$<$<COMPILE_LANGUAGE:CXX>:pch.h>"
-    )
+    if(WSCOMMON_CC_LIB_PCHS)
+      target_precompile_headers(${_NAME} INTERFACE
+        "$<$<COMPILE_LANGUAGE:CXX>:${WSCOMMON_CC_LIB_PCHS}>"
+      )
+    endif()
   else()
     if(WSCOMMON_BUILD_DLL)
       set(_build_type OBJECT)
@@ -198,9 +200,11 @@ function(wscommon_cc_library)
       target_compile_features(${_NAME} PUBLIC ${WSCOMMON_INTERNAL_CXX_STD_FEATURE})
     endif()
 
-    target_precompile_headers(${_NAME} PRIVATE
-      "$<$<COMPILE_LANGUAGE:CXX>:pch.h>"
-    )
+    if(WSCOMMON_CC_LIB_PCHS)
+      target_precompile_headers(${_NAME} PUBLIC
+        "$<$<COMPILE_LANGUAGE:CXX>:${WSCOMMON_CC_LIB_PCHS}>"
+      )
+    endif()
   endif()
 
   if(WSCOMMON_ENABLE_INSTALL)

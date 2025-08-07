@@ -16,8 +16,8 @@ class LogEvent {
   using key_view_type = std::string_view;
   using mapped_type = std::string;
 
-  using map_type = std::concurrent_unordered_map<key_type, mapped_type,
-                                                 StringHash, StringEqual>;
+  using map_type =
+      concurrent_unordered_map<key_type, mapped_type, StringHash, StringEqual>;
 
   LogEvent(const std::string& source_context, const std::string& message,
            LogLevel level = LogLevel::kInformation,

@@ -38,7 +38,7 @@ void MessageRenderer::ParseTemplate(const std::string& format) {
         colon_pos != std::string::npos ? key_format.substr(colon_pos + 1) : "";
 
     template_format_ += "{}";
-    placeholders_.push_back({key, fmt});
+    placeholders_.emplace_back(key, fmt);
     last_pos = end_pos + 1;
   }
 

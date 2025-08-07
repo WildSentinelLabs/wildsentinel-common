@@ -8,7 +8,6 @@
 #include "ws/array.h"
 #include "ws/imaging/image_buffer_type.h"
 #include "ws/imaging/pixel/pixel_allowed_types.h"
-#include "ws/span.h"
 #include "ws/status/status_or.h"
 #include "ws/string/format.h"
 #include "ws/types.h"

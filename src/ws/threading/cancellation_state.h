@@ -10,7 +10,7 @@ namespace threading {
 struct CancellationState {
   using key_type = std::size_t;
   using mapped_type = Delegate<void()>;
-  using map_type = std::concurrent_unordered_map<key_type, mapped_type>;
+  using map_type = concurrent_unordered_map<key_type, mapped_type>;
 
   std::atomic_bool cancelled{false};
   map_type callbacks;

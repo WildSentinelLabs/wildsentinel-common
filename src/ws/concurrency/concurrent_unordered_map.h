@@ -255,7 +255,7 @@ void Swap(ConcurrentUnorderedMap<TKey, T, THash, TKeyEqual, TAllocator>& lhs,
 }  // namespace concurrency
 }  // namespace ws
 
-namespace std {
+namespace ws {
 template <typename TKey, typename T, typename THash = std::hash<TKey>,
           typename TKeyEqual = std::equal_to<TKey>,
           typename TAllocator = std::allocator<std::pair<const TKey, T>>>
@@ -691,4 +691,4 @@ concurrent_unordered_map(std::initializer_list<std::pair<TKey, T>>, std::size_t,
                                 TAlloc>;
 
 #endif
-}  // namespace std
+}  // namespace ws

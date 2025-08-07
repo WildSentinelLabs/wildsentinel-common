@@ -9,9 +9,9 @@ static StatusOr<DWORD> ParseCreationDisposition(FileMode mode, bool exists);
 static DWORD ParseDesiredAccess(FileAccess access);
 static DWORD ParseShareMode(FileShare share);
 static OVERLAPPED OverlappedForSyncHandle(FileHandle& handle,
-                                          offset_t file_offset);
-static StatusOr<bool> IsEndOfFileForNoBuffering(FileHandle& handle,
-                                                offset_t file_offset);
+                                          FileHandle::size_type file_offset);
+static StatusOr<bool> IsEndOfFileForNoBuffering(
+    FileHandle& handle, FileHandle::size_type file_offset);
 
 FileHandle::FileHandle() : FileHandle(INVALID_HANDLE_VALUE) {}
 FileHandle::FileHandle(void* fd)
@@ -24,7 +24,7 @@ FileHandle::FileHandle(void* fd)
 StatusOr<FileHandle> FileHandle::Open(const std::filesystem::path& full_path,
                                       FileMode mode, FileAccess access,
                                       FileShare share,
-                                      offset_t preallocation_size) {
+                                      size_type preallocation_size) {
   DWORD attributes = GetFileAttributesW(full_path.c_str());
   bool exists = (attributes != INVALID_FILE_ATTRIBUTES);
   DWORD creation_disposition;
@@ -69,7 +69,7 @@ StatusOr<FileHandle> FileHandle::Open(const std::filesystem::path& full_path,
   return handle;
 }
 
-Status FileHandle::SetFileLength(FileHandle& handle, offset_t length) {
+Status FileHandle::SetFileLength(FileHandle& handle, size_type length) {
   FILE_END_OF_FILE_INFO eof_info = {};
   eof_info.EndOfFile.QuadPart = length;
   if (!SetFileInformationByHandle(handle.fd_, FileEndOfFileInfo, &eof_info,
@@ -88,20 +88,17 @@ Status FileHandle::SetFileLength(FileHandle& handle, offset_t length) {
   return Status();
 }
 
-StatusOr<offset_t> FileHandle::ReadAtOffset(FileHandle& handle,
-                                            Span<unsigned char> buffer,
-                                            offset_t file_offset) {
+StatusOr<FileHandle::size_type> FileHandle::ReadAtOffset(
+    FileHandle& handle, std::span<value_type> buffer, size_type file_offset) {
   OVERLAPPED overlapped = OverlappedForSyncHandle(handle, file_offset);
-  DWORD num_bytes_read = 0;
-  if (ReadFile(
-          static_cast<HANDLE>(handle.fd_), static_cast<unsigned char*>(buffer),
-          static_cast<DWORD>(buffer.Length()), &num_bytes_read, &overlapped)) {
-    return static_cast<offset_t>(num_bytes_read);
+  DWORD bytes_read = 0;
+  if (ReadFile(static_cast<HANDLE>(handle.fd_), buffer.data(),
+               static_cast<DWORD>(buffer.size()), &bytes_read, &overlapped)) {
+    return static_cast<size_type>(bytes_read);
   }
 
   DWORD error_code = GetLastError();
-  if (error_code == ERROR_HANDLE_EOF)
-    return static_cast<offset_t>(num_bytes_read);
+  if (error_code == ERROR_HANDLE_EOF) return static_cast<size_type>(bytes_read);
 
   if (!IsEndOfFile(error_code, handle, file_offset).ValueOr(false))
     return Status(StatusCode::kRuntimeError,
@@ -110,9 +107,10 @@ StatusOr<offset_t> FileHandle::ReadAtOffset(FileHandle& handle,
   return 0;
 }
 
-StatusOr<offset_t> FileHandle::Seek(FileHandle& handle, offset_t offset,
-                                    SeekOrigin origin,
-                                    bool close_invalid_handle) {
+StatusOr<FileHandle::size_type> FileHandle::Seek(FileHandle& handle,
+                                                 size_type offset,
+                                                 SeekOrigin origin,
+                                                 bool close_invalid_handle) {
   LARGE_INTEGER li_distance_to_move = {};
   li_distance_to_move.QuadPart = offset;
   LARGE_INTEGER li_new_file_pointer = {};
@@ -129,29 +127,28 @@ StatusOr<offset_t> FileHandle::Seek(FileHandle& handle, offset_t offset,
 }
 
 Status FileHandle::WriteAtOffset(FileHandle& handle,
-                                 ReadOnlySpan<unsigned char> buffer,
-                                 offset_t file_offset) {
-  if (buffer.Empty()) return Status();
+                                 std::span<const value_type> buffer,
+                                 size_type file_offset) {
+  if (buffer.empty()) return Status();
   OVERLAPPED overlapped = OverlappedForSyncHandle(handle, file_offset);
   DWORD num_bytes_written = 0;
-  if (!WriteFile(static_cast<HANDLE>(handle.fd_),
-                 static_cast<const unsigned char*>(buffer),
-                 static_cast<DWORD>(buffer.Length()), &num_bytes_written,
+  if (!WriteFile(static_cast<HANDLE>(handle.fd_), buffer.data(),
+                 static_cast<DWORD>(buffer.size()), &num_bytes_written,
                  &overlapped)) {
     DWORD error_code = GetLastError();
     return Status(StatusCode::kRuntimeError,
                   "IO Error: WriteFile failed: " + GetLastErrorMessage());
   }
 
-  if (num_bytes_written != buffer.Length())
+  if (num_bytes_written != buffer.size())
     return Status(StatusCode::kRuntimeError,
                   "IO Error: WriteFile wrote fewer bytes than expected.");
 
   return Status();
 }
 
-StatusOr<bool> FileHandle::IsEndOfFile(offset_t error_code, FileHandle& handle,
-                                       offset_t file_offset) {
+StatusOr<bool> FileHandle::IsEndOfFile(size_type error_code, FileHandle& handle,
+                                       size_type file_offset) {
   switch (error_code) {
     case ERROR_HANDLE_EOF:
     case ERROR_BROKEN_PIPE:
@@ -171,18 +168,18 @@ bool FileHandle::IsClosed() const {
 }
 
 bool FileHandle::CanSeek() {
-  StatusOr<offset_t> file_type_result = FileType();
+  StatusOr<size_type> file_type_result = FileType();
   if (!file_type_result.Ok()) return false;
   return !IsClosed() &&
          (file_type_result.Value() == static_cast<DWORD>(FILE_TYPE_DISK));
 }
 
-bool FileHandle::TryGetCachedLength(offset_t& cached_length) {
+bool FileHandle::TryGetCachedLength(size_type& cached_length) {
   cached_length = length_;
   return length_can_be_cached_ && cached_length >= 0;
 }
 
-StatusOr<offset_t> FileHandle::FileType() {
+StatusOr<FileHandle::size_type> FileHandle::FileType() {
   if (file_type_ == -1) {
     DWORD file_type = GetFileType(static_cast<HANDLE>(fd_));
     if (file_type == FILE_TYPE_UNKNOWN) {
@@ -192,12 +189,12 @@ StatusOr<offset_t> FileHandle::FileType() {
                       "IO Error: GetFileType failed: " + GetLastErrorMessage());
     }
 
-    file_type_ = static_cast<offset_t>(file_type);
+    file_type_ = static_cast<size_type>(file_type);
   }
   return file_type_;
 }
 
-StatusOr<offset_t> FileHandle::FileLength() {
+StatusOr<FileHandle::size_type> FileHandle::FileLength() {
   if (length_can_be_cached_ && length_ >= 0) return length_;
   LARGE_INTEGER file_size = {};
   if (!GetFileSizeEx(fd_, &file_size)) {
@@ -280,7 +277,8 @@ DWORD ParseShareMode(FileShare share) {
   return share_mode;
 }
 
-OVERLAPPED OverlappedForSyncHandle(FileHandle& handle, offset_t file_offset) {
+OVERLAPPED OverlappedForSyncHandle(FileHandle& handle,
+                                   FileHandle::size_type file_offset) {
   OVERLAPPED overlapped = {};
   if (handle.CanSeek()) {
     overlapped.Offset = static_cast<DWORD>(file_offset);
@@ -291,9 +289,9 @@ OVERLAPPED OverlappedForSyncHandle(FileHandle& handle, offset_t file_offset) {
 }
 
 StatusOr<bool> IsEndOfFileForNoBuffering(FileHandle& handle,
-                                         offset_t file_offset) {
+                                         FileHandle::size_type file_offset) {
   if (!handle.CanSeek()) return false;
-  offset_t length;
+  FileHandle::size_type length;
   ASSIGN_OR_RETURN(length, handle.FileLength());
   return file_offset >= length;
 }
@@ -315,7 +313,7 @@ FileHandle::FileHandle(int fd)
 StatusOr<FileHandle> FileHandle::Open(const std::filesystem::path& full_path,
                                       FileMode mode, FileAccess access,
                                       FileShare share,
-                                      offset_t preallocation_size) {
+                                      size_type preallocation_size) {
   bool exists = std::filesystem::exists(full_path);
   int creation_disposition;
   int desired_access;
@@ -364,7 +362,7 @@ StatusOr<FileHandle> FileHandle::Open(const std::filesystem::path& full_path,
   return handle;
 }
 
-Status FileHandle::SetFileLength(FileHandle& handle, offset_t length) {
+Status FileHandle::SetFileLength(FileHandle& handle, size_type length) {
   if (::ftruncate(handle.fd_, length) == -1) {
     if (errno == EFBIG || errno == EINVAL)
       return Status(StatusCode::kOutOfRange,
@@ -380,21 +378,21 @@ Status FileHandle::SetFileLength(FileHandle& handle, offset_t length) {
   return Status();
 }
 
-StatusOr<offset_t> FileHandle::ReadAtOffset(FileHandle& handle,
-                                            Span<unsigned char> buffer,
-                                            offset_t file_offset) {
-  ssize_t bytes_read = pread(handle.fd_, static_cast<unsigned char*>(buffer),
-                             buffer.Length(), file_offset);
+StatusOr<FileHandle::size_type> FileHandle::ReadAtOffset(
+    FileHandle& handle, std::span<value_type> buffer, size_type file_offset) {
+  ssize_t bytes_read =
+      pread(handle.fd_, buffer.data(), buffer.size(), file_offset);
   if (bytes_read == -1)
     return Status(StatusCode::kRuntimeError,
                   "IO Error: Failed to read file: " + GetLastErrorMessage());
 
-  return static_cast<offset_t>(bytes_read);
+  return static_cast<size_type>(bytes_read);
 }
 
-StatusOr<offset_t> FileHandle::Seek(FileHandle& handle, offset_t offset,
-                                    SeekOrigin origin,
-                                    bool close_invalid_handle) {
+StatusOr<FileHandle::size_type> FileHandle::Seek(FileHandle& handle,
+                                                 size_type offset,
+                                                 SeekOrigin origin,
+                                                 bool close_invalid_handle) {
   off_t new_offset = lseek(handle.fd_, offset, static_cast<int>(origin));
   if (new_offset == (off_t)-1) {
     if (close_invalid_handle) handle.Dispose();
@@ -406,26 +404,25 @@ StatusOr<offset_t> FileHandle::Seek(FileHandle& handle, offset_t offset,
 }
 
 Status FileHandle::WriteAtOffset(FileHandle& handle,
-                                 ReadOnlySpan<unsigned char> buffer,
-                                 offset_t file_offset) {
-  if (buffer.Empty()) return Status();
+                                 std::span<const value_type> buffer,
+                                 size_type file_offset) {
+  if (buffer.empty()) return Status();
   ssize_t bytes_written =
-      pwrite(handle.fd_, static_cast<const unsigned char*>(buffer),
-             buffer.Length(), file_offset);
+      pwrite(handle.fd_, buffer.data(), buffer.size(), file_offset);
   if (bytes_written == -1)
     return Status(StatusCode::kRuntimeError,
                   "IO Error: Failed to write file: " + GetLastErrorMessage());
 
-  if (static_cast<size_t>(bytes_written) != buffer.Length())
+  if (static_cast<size_t>(bytes_written) != buffer.size())
     return Status(StatusCode::kRuntimeError,
                   "IO Error: Wrote fewer bytes than expected.");
 
   return Status();
 }
 
-StatusOr<bool> FileHandle::IsEndOfFile(offset_t error_code, FileHandle& handle,
-                                       offset_t file_offset) {
-  offset_t length;
+StatusOr<bool> FileHandle::IsEndOfFile(size_type error_code, FileHandle& handle,
+                                       size_type file_offset) {
+  size_type length;
   ASSIGN_OR_RETURN(length, handle.FileLength());
   return file_offset >= length;
 }
@@ -434,17 +431,17 @@ bool FileHandle::IsClosed() const { return fd_ == -1; }
 
 bool FileHandle::CanSeek() {
   if (IsClosed()) return false;
-  StatusOr<offset_t> file_type_result = FileType();
+  StatusOr<size_type> file_type_result = FileType();
   if (!file_type_result.Ok()) return false;
   return S_ISREG(file_type_result.Value());
 }
 
-bool FileHandle::TryGetCachedLength(offset_t& cached_length) {
+bool FileHandle::TryGetCachedLength(size_type& cached_length) {
   cached_length = length_;
   return length_can_be_cached_ && length_ >= 0;
 }
 
-StatusOr<offset_t> FileHandle::FileType() {
+StatusOr<FileHandle::size_type> FileHandle::FileType() {
   if (file_type_ == -1) {
     struct stat st;
     if (fstat(fd_, &st) == -1) {
@@ -459,7 +456,7 @@ StatusOr<offset_t> FileHandle::FileType() {
   return file_type_;
 }
 
-StatusOr<offset_t> FileHandle::FileLength() {
+StatusOr<FileHandle::size_type> FileHandle::FileLength() {
   if (length_can_be_cached_ && length_ >= 0) return length_;
   struct stat st;
   if (fstat(fd_, &st) == -1)
@@ -523,7 +520,7 @@ StatusOr<int> ParseDesiredAccess(FileAccess access) {
                   "IO Error: Unsupported file access mode");
 }
 
-int ParseShareMode(FileShare /*share*/) { return 0; }
+int ParseShareMode(FileShare share) { return 0; }
 #endif
 }  // namespace io
 }  // namespace ws
