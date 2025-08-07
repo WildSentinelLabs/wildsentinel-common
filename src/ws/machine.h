@@ -2,9 +2,7 @@
 
 #include "ws/config.h"
 
-#ifdef _WIN32
-#include <windows.h>
-#else
+#ifndef _WIN32
 #define KEEP_LINUX_ORDER
 #include <sys/types.h>
 #undef KEEP_LINUX_ORDER

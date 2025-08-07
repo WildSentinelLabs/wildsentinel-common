@@ -4,9 +4,7 @@
 #include "ws/system.h"
 #undef KEEP_WS_ORDER
 
-#ifdef _WIN32
-#include <windows.h>
-#else
+#ifndef _WIN32
 #include <errno.h>
 #include <sys/stat.h>
 #endif
