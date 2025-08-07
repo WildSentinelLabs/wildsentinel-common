@@ -9,6 +9,8 @@ wscommon_cc_library(
     reflection.h
     span.h
     types.h
+  DEPS
+    Threads::Threads
   PUBLIC
 )
 

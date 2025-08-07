@@ -21,16 +21,5 @@ class ThreadIdEnricher : public ILogEnricher {
   std::string GetCachedThreadId() const;
 };
 
-// ============================================================================
-// Implementation details for ThreadIdEnricher
-// ============================================================================
-
-inline void ThreadIdEnricher::Enrich(ws::logging::LogEvent& event) const {
-  event.AddProperty(std::string(kKey), GetCachedThreadId());
-}
-
-inline std::string ThreadIdEnricher::GetCachedThreadId() const {
-  return Format("{}", std::this_thread::get_id());
-}
 }  // namespace logging
 }  // namespace ws

@@ -243,6 +243,5 @@ class PixelFormatConstraints {
                                                PixelLayoutFlag::kPlanar,
                                                true};
 };
-// TODO: Enhace pixel_format management and structures if needed
 }  // namespace imaging
 }  // namespace ws

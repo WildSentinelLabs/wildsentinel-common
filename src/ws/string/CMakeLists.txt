@@ -4,6 +4,8 @@ wscommon_cc_library(
   HDRS
     format.h
     string_helpers.h
-    transparent_hash.h
+    string_hash.h
+  DEPS
+    Threads::Threads
   PUBLIC
 )

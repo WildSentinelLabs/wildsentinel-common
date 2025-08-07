@@ -87,7 +87,6 @@ inline constexpr ImageBufferType ImageComponent::GetBufferType() const {
   return buffer_type_;
 }
 
-// TODO: VALIDATE BUFFER (IF)?
 template <ws::imaging::IsAllowedPixelNumericType T>
 inline T* ImageComponent::Buffer() const {
   assert(buffer_ != nullptr && "Buffer is null");

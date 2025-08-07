@@ -7,6 +7,8 @@ wscommon_cc_library(
     ilogger.cc
     logger.cc
     dispatchers/async_log_dispatcher.cc
+    enrichers/process_id_enricher.cc
+    enrichers/thread_id_enricher.cc
     events/log_event.cc
     rendering/message_renderer.cc
     sinks/console_log_sink.cc
@@ -27,6 +29,7 @@ wscommon_cc_library(
     rendering/message_renderer.h
     sinks/console_log_sink.h
   DEPS
+    Threads::Threads
     ws::concurrency
     ws::core
   PUBLIC

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "ws/concurrency/concurrent_unordered_map.h"
 #include "ws/logging/ilog_enricher.h"
 #include "ws/logging/log_level.h"
 #include "ws/string/format.h"
@@ -23,15 +24,9 @@ class MessageRenderer {
   std::string Render(const ws::logging::LogEvent& event) const;
 
  private:
-  struct TemplatePart {
-    enum class Type : int8_t { Text, Placeholder };
-
-    Type type;
+  struct Placeholder {
     std::string key;
     std::string format;
-
-    TemplatePart(Type type, const std::string& key = "",
-                 const std::string& format = "");
   };
 
   static constexpr std::string_view kSourceContextKey = "SourceContext";
@@ -39,18 +34,19 @@ class MessageRenderer {
   static constexpr std::string_view kLevelKey = "Level";
   static constexpr std::string_view kMessageKey = "Message";
   static constexpr std::string_view kNewLineKey = "NewLine";
+  static constexpr std::string_view kExceptionKey = "Exception";
 
-  static std::string RenderPlaceholder(const TemplatePart& part,
-                                       const ws::logging::LogEvent& event);
+  std::string ExtractValue(std::string_view key, const std::string& format,
+                           const ws::logging::LogEvent& event) const;
   static std::string FormatLogLevel(LogLevel level, const std::string& format);
   static std::string FormatTimestamp(
       std::chrono::system_clock::time_point timestamp,
       const std::string& format);
-  static std::string FormatNewLine(const std::string& format);
+  static std::string FormatNewLine();
   void ParseTemplate(const std::string& format);
 
-  std::vector<TemplatePart> template_parts_;
+  std::string template_format_;
+  std::vector<Placeholder> placeholders_;
 };
-// TODO: Enhance template rendering and formating
 }  // namespace logging
 }  // namespace ws
