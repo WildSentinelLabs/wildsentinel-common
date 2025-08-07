@@ -3,6 +3,12 @@
 
 #pragma once
 
+#include "ws/config.h"
+
+#define KEEP_ORDER
+#include "ws/concurrency/internal/allocator_traits.h"
+#undef KEEP_ORDER
+
 #include <algorithm>
 #include <atomic>
 #include <initializer_list>
@@ -11,12 +17,10 @@
 #include <type_traits>
 #include <utility>
 
-#include "ws/concurrency/internal/allocator_traits.h"
 #include "ws/concurrency/internal/hash_compare.h"
 #include "ws/concurrency/internal/helpers.h"
 #include "ws/concurrency/internal/node_handle.h"
 #include "ws/concurrency/internal/segment_table.h"
-#include "ws/config.h"
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 #pragma warning(push)

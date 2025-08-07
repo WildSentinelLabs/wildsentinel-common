@@ -3,12 +3,16 @@
 
 #pragma once
 
+#include "ws/config.h"
+
+#define KEEP_ORDER
 #include "ws/concurrency/internal/allocator_traits.h"
+#undef KEEP_ORDER
+
 #include "ws/concurrency/internal/atomic_backoff.h"
 #include "ws/concurrency/internal/concurrent_monitor.h"
 #include "ws/concurrency/internal/helpers.h"
 #include "ws/concurrency/spin_mutex.h"
-#include "ws/config.h"
 #include "ws/delegate.h"
 
 namespace ws {

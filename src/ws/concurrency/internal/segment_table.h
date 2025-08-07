@@ -3,16 +3,20 @@
 
 #pragma once
 
+#include "ws/config.h"
+
+#define KEEP_ORDER
+#include "ws/concurrency/internal/allocator_traits.h"
+#undef KEEP_ORDER
+
 #include <atomic>
 #include <cassert>
 #include <cstring>
 #include <memory>
 #include <type_traits>
 
-#include "ws/concurrency/internal/allocator_traits.h"
 #include "ws/concurrency/internal/atomic_backoff.h"
 #include "ws/concurrency/internal/helpers.h"
-#include "ws/config.h"
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 #pragma warning(push)
