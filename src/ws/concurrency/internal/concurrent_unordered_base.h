@@ -389,8 +389,6 @@ class ConcurrentUnorderedBase {
     }
   }
 
-  [[nodiscard]] bool Empty() const noexcept { return Size() == 0; }
-
   allocator_type get_allocator() const noexcept {
     return segments_.get_allocator();
   }
@@ -406,6 +404,8 @@ class ConcurrentUnorderedBase {
   iterator end() noexcept { return iterator(nullptr); }
   const_iterator end() const noexcept { return const_iterator(nullptr); }
   const_iterator cend() const noexcept { return const_iterator(nullptr); }
+
+  [[nodiscard]] bool Empty() const noexcept { return Size() == 0; }
 
   size_type Size() const noexcept {
     return size_.load(std::memory_order_relaxed);
@@ -1507,3 +1507,6 @@ bool operator!=(const ConcurrentUnorderedBase<Traits>& lhs,
 }  // namespace internal
 }  // namespace concurrency
 }  // namespace ws
+
+// is_noexcept_assignment
+// is_noexcept_swap

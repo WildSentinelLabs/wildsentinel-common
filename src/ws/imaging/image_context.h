@@ -18,7 +18,7 @@ class ImageContext {
   using key_type = std::string;
   using key_view_type = std::string_view;
   using mapped_type = std::int32_t;
-  //   using map_type = ws::concurrency::stl::concurrent_unordered_map<
+  //   using map_type = std::concurrent_unordered_map<
   //   key_type, mapped_type, TransparentHash,
   //   TransparentEqual>;
   // FIXME: Use concurrent unordered map when available

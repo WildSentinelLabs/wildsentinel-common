@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <functional>
 #include <utility>
 
 #include "ws/concurrency/internal/concurrent_queue_base.h"
@@ -190,12 +191,14 @@ template <typename TContainer, typename = std::allocator<TContainer>>
 ConcurrentQueue(TContainer)
     -> ConcurrentQueue<typename TContainer::value_type, TContainer>;
 #endif
+}  // namespace concurrency
+}  // namespace ws
 
-namespace stl {
+namespace std {
 template <typename T, typename TAllocator = std::allocator<T>>
 class concurrent_queue {
  public:
-  using queue_type = ConcurrentQueue<T, TAllocator>;
+  using queue_type = ws::concurrency::ConcurrentQueue<T, TAllocator>;
 
   using value_type = typename queue_type::value_type;
   using size_type = typename queue_type::size_type;
@@ -284,7 +287,4 @@ template <typename TContainer, typename = std::allocator<TContainer>>
 concurrent_queue(TContainer)
     -> concurrent_queue<typename TContainer::value_type, TContainer>;
 #endif
-
-}  // namespace stl
-}  // namespace concurrency
-}  // namespace ws
+}  // namespace std

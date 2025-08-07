@@ -119,9 +119,10 @@ class SynchronizedQueue {
   mutable std::mutex mutex_;
   std::condition_variable cv_;
 };
+}  // namespace concurrency
+}  // namespace ws
 
-namespace stl {
-
+namespace std {
 template <typename T>
 class synchronized_queue {
  public:
@@ -203,6 +204,4 @@ template <typename T>
 void swap(synchronized_queue<T>& lhs, synchronized_queue<T>& rhs) noexcept {
   lhs.swap(rhs);
 }
-}  // namespace stl
-}  // namespace concurrency
-}  // namespace ws
+}  // namespace std

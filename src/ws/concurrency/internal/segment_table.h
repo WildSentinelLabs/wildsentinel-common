@@ -127,7 +127,7 @@ class SegmentTable {
   }
 
   SegmentTable& operator=(SegmentTable&& other) noexcept(
-      derived_type::is_noexcept_assignment) {
+      derived_type::kIsNoExceptAssignment) {
     using pocma_type = typename segment_table_allocator_traits::
         propagate_on_container_move_assignment;
     using is_equal_type =

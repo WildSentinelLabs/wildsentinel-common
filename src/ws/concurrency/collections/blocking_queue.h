@@ -8,7 +8,6 @@
 
 namespace ws {
 namespace concurrency {
-
 template <typename T, typename Allocator = std::allocator<T>>
 class BlockingQueue {
   using allocator_traits_type = std::allocator_traits<Allocator>;
@@ -325,11 +324,19 @@ class BlockingQueue {
 #endif
 };
 
-namespace stl {
+#if _CPP17_DEDUCTION_GUIDES_PRESENT >= 201606
+template <typename TContainer, typename = std::allocator<TContainer>>
+BlockingQueue(TContainer)
+    -> BlockingQueue<typename TContainer::value_type, TContainer>;
+#endif
+}  // namespace concurrency
+}  // namespace ws
+
+namespace std {
 template <typename T, typename TAllocator = std::allocator<T>>
 class blocking_queue {
  public:
-  using queue_type = BlockingQueue<T, TAllocator>;
+  using queue_type = ws::concurrency::BlockingQueue<T, TAllocator>;
 
   using value_type = typename queue_type::value_type;
   using size_type = typename queue_type::size_type;
@@ -425,7 +432,4 @@ template <typename TContainer, typename = std::allocator<TContainer>>
 blocking_queue(TContainer)
     -> blocking_queue<typename TContainer::value_type, TContainer>;
 #endif
-
-}  // namespace stl
-}  // namespace concurrency
-}  // namespace ws
+}  // namespace std

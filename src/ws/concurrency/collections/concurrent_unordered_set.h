@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <functional>
+
 #include "ws/concurrency/internal/concurrent_unordered_base.h"
 #include "ws/concurrency/internal/helpers.h"
 
@@ -135,20 +137,20 @@ ConcurrentUnorderedSet(TIt, TIt, std::size_t, TAlloc) -> ConcurrentUnorderedSet<
     std::equal_to<ws::concurrency::internal::templates::iterator_value_t<TIt>>,
     TAlloc>;
 
-template <typename TIt, typename THash, typename Alloc,
+template <typename TIt, typename THash, typename TAlloc,
           typename = std::enable_if_t<
               ws::concurrency::internal::containers::is_input_iterator_v<TIt>>,
           typename = std::enable_if_t<
-              ws::concurrency::internal::templates::is_allocator_v<Alloc>>,
+              ws::concurrency::internal::templates::is_allocator_v<TAlloc>>,
           typename = std::enable_if_t<
               !ws::concurrency::internal::templates::is_allocator_v<THash>>,
           typename = std::enable_if_t<!std::is_integral_v<THash>>>
-ConcurrentUnorderedSet(TIt, TIt, std::size_t, THash, Alloc)
+ConcurrentUnorderedSet(TIt, TIt, std::size_t, THash, TAlloc)
     -> ConcurrentUnorderedSet<
         ws::concurrency::internal::templates::iterator_value_t<TIt>, THash,
         std::equal_to<
             ws::concurrency::internal::templates::iterator_value_t<TIt>>,
-        Alloc>;
+        TAlloc>;
 
 template <typename T, typename TAlloc,
           typename = std::enable_if_t<
@@ -162,14 +164,14 @@ template <typename T, typename TAlloc,
 ConcurrentUnorderedSet(std::initializer_list<T>, TAlloc)
     -> ConcurrentUnorderedSet<T, std::hash<T>, std::equal_to<T>, TAlloc>;
 
-template <typename T, typename Hash, typename TAlloc,
+template <typename T, typename THash, typename TAlloc,
           typename = std::enable_if_t<
               ws::concurrency::internal::templates::is_allocator_v<TAlloc>>,
           typename = std::enable_if_t<
-              !ws::concurrency::internal::templates::is_allocator_v<Hash>>,
-          typename = std::enable_if_t<!std::is_integral_v<Hash>>>
-ConcurrentUnorderedSet(std::initializer_list<T>, std::size_t, Hash, TAlloc)
-    -> ConcurrentUnorderedSet<T, Hash, std::equal_to<T>, TAlloc>;
+              !ws::concurrency::internal::templates::is_allocator_v<THash>>,
+          typename = std::enable_if_t<!std::is_integral_v<THash>>>
+ConcurrentUnorderedSet(std::initializer_list<T>, std::size_t, THash, TAlloc)
+    -> ConcurrentUnorderedSet<T, THash, std::equal_to<T>, TAlloc>;
 
 #endif
 
@@ -179,16 +181,18 @@ void Swap(ConcurrentUnorderedSet<TKey, THash, TKeyEqual, TAllocator>& lhs,
           ConcurrentUnorderedSet<TKey, THash, TKeyEqual, TAllocator>& rhs) {
   lhs.Swap(rhs);
 }
+}  // namespace concurrency
+}  // namespace ws
 
-namespace stl {
-
+namespace std {
 template <typename TKey, typename THash = std::hash<TKey>,
           typename TKeyEqual = std::equal_to<TKey>,
           typename TAllocator = std::allocator<TKey>>
 class concurrent_unordered_set {
  public:
   using hashtable_type =
-      ConcurrentUnorderedSet<TKey, THash, TKeyEqual, TAllocator>;
+      ws::concurrency::ConcurrentUnorderedSet<TKey, THash, TKeyEqual,
+                                              TAllocator>;
   using key_type = typename hashtable_type::key_type;
   using mapped_type = typename hashtable_type::mapped_type;
   using value_type = typename hashtable_type::value_type;
@@ -514,20 +518,20 @@ concurrent_unordered_set(TIt, TIt, std::size_t, TAlloc)
             ws::concurrency::internal::templates::iterator_value_t<TIt>>,
         TAlloc>;
 
-template <typename TIt, typename THash, typename Alloc,
+template <typename TIt, typename THash, typename TAlloc,
           typename = std::enable_if_t<
               ws::concurrency::internal::containers::is_input_iterator_v<TIt>>,
           typename = std::enable_if_t<
-              ws::concurrency::internal::templates::is_allocator_v<Alloc>>,
+              ws::concurrency::internal::templates::is_allocator_v<TAlloc>>,
           typename = std::enable_if_t<
               !ws::concurrency::internal::templates::is_allocator_v<THash>>,
           typename = std::enable_if_t<!std::is_integral_v<THash>>>
-concurrent_unordered_set(TIt, TIt, std::size_t, THash, Alloc)
+concurrent_unordered_set(TIt, TIt, std::size_t, THash, TAlloc)
     -> concurrent_unordered_set<
         ws::concurrency::internal::templates::iterator_value_t<TIt>, THash,
         std::equal_to<
             ws::concurrency::internal::templates::iterator_value_t<TIt>>,
-        Alloc>;
+        TAlloc>;
 
 template <typename T, typename TAlloc,
           typename = std::enable_if_t<
@@ -541,16 +545,14 @@ template <typename T, typename TAlloc,
 concurrent_unordered_set(std::initializer_list<T>, TAlloc)
     -> concurrent_unordered_set<T, std::hash<T>, std::equal_to<T>, TAlloc>;
 
-template <typename T, typename Hash, typename TAlloc,
+template <typename T, typename THash, typename TAlloc,
           typename = std::enable_if_t<
               ws::concurrency::internal::templates::is_allocator_v<TAlloc>>,
           typename = std::enable_if_t<
-              !ws::concurrency::internal::templates::is_allocator_v<Hash>>,
-          typename = std::enable_if_t<!std::is_integral_v<Hash>>>
-concurrent_unordered_set(std::initializer_list<T>, std::size_t, Hash, TAlloc)
-    -> concurrent_unordered_set<T, Hash, std::equal_to<T>, TAlloc>;
+              !ws::concurrency::internal::templates::is_allocator_v<THash>>,
+          typename = std::enable_if_t<!std::is_integral_v<THash>>>
+concurrent_unordered_set(std::initializer_list<T>, std::size_t, THash, TAlloc)
+    -> concurrent_unordered_set<T, THash, std::equal_to<T>, TAlloc>;
 
 #endif
-}  // namespace stl
-}  // namespace concurrency
-}  // namespace ws
+}  // namespace std

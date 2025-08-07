@@ -10,8 +10,7 @@ class LogEvent {
  public:
   using key_type = std::string;
   using mapped_type = std::string;
-  using map_type =
-      ws::concurrency::stl::concurrent_unordered_map<key_type, mapped_type>;
+  using map_type = std::concurrent_unordered_map<key_type, mapped_type>;
 
   LogEvent(const std::string& source_context, const std::string& message,
            LogLevel level = LogLevel::kInformation,
