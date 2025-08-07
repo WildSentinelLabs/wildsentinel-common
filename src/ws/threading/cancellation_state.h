@@ -3,7 +3,7 @@
 #include <atomic>
 #include <memory>
 
-#include "ws/concurrency/collections/concurrent_unordered_map.h"
+#include "ws/concurrency/concurrent_unordered_map.h"
 #include "ws/delegate.h"
 namespace ws {
 namespace threading {

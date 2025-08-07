@@ -3,11 +3,11 @@ wscommon_cc_library(
     concurrency
   HDRS
     spin_mutex.h
-    collections/blocking_queue.h
-    collections/concurrent_queue.h
-    collections/concurrent_unordered_map.h
-    collections/concurrent_unordered_set.h
-    collections/synchronized_queue.h
+    blocking_queue.h
+    concurrent_queue.h
+    concurrent_unordered_map.h
+    concurrent_unordered_set.h
+    synchronized_queue.h
     internal/aligned_space.h
     internal/allocator_traits.h
     internal/atomic_backoff.h

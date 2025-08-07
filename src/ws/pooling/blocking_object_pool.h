@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-#include "ws/concurrency/collections/blocking_queue.h"
+#include "ws/concurrency/blocking_queue.h"
 #include "ws/delegate.h"
 #include "ws/pooling/iobject_pool.h"
 #include "ws/status/status_or.h"

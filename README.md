@@ -39,11 +39,11 @@ Thread-safe data structures and synchronization primitives for concurrent progra
 
 **Key Components**:
 - `spin_mutex.h`: High-performance spinlock implementation
-- `collections/blocking_queue.h`: Thread-safe queue with blocking operations
-- `collections/concurrent_queue.h`: Lock-free concurrent queue (oneTBB-based)
-- `collections/concurrent_unordered_map.h`: Thread-safe hash map (oneTBB-based)
-- `collections/concurrent_unordered_set.h`: Thread-safe hash set (oneTBB-based)
-- `collections/synchronized_queue.h`: Mutex-protected queue operations
+- `blocking_queue.h`: Thread-safe queue with blocking operations
+- `concurrent_queue.h`: Lock-free concurrent queue (oneTBB-based)
+- `concurrent_unordered_map.h`: Thread-safe hash map (oneTBB-based)
+- `concurrent_unordered_set.h`: Thread-safe hash set (oneTBB-based)
+- `synchronized_queue.h`: Mutex-protected queue operations
 
 **Purpose**: Enables safe and efficient multi-threaded programming with battle-tested concurrent data structures and synchronization mechanisms.
 

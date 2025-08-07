@@ -2,7 +2,7 @@
 
 #include <atomic>
 
-#include "ws/concurrency/collections/concurrent_queue.h"
+#include "ws/concurrency/concurrent_queue.h"
 #include "ws/delegate.h"
 #include "ws/pooling/iobject_pool.h"
 #include "ws/status/status_or.h"

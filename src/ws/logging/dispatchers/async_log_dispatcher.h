@@ -3,7 +3,7 @@
 #include <condition_variable>
 #include <memory>
 
-#include "ws/concurrency/collections/concurrent_queue.h"
+#include "ws/concurrency/concurrent_queue.h"
 #include "ws/logging/ilog_dispatcher.h"
 #include "ws/logging/ilog_sink.h"
 #include "ws/logging/log_level.h"

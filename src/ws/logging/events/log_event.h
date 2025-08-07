@@ -2,7 +2,7 @@
 #include <chrono>
 #include <optional>
 
-#include "ws/concurrency/collections/concurrent_unordered_map.h"
+#include "ws/concurrency/concurrent_unordered_map.h"
 #include "ws/logging/log_level.h"
 namespace ws {
 namespace logging {
