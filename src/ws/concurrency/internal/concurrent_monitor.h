@@ -10,7 +10,6 @@
 #include "ws/concurrency/internal/concurrent_monitor_mutex.h"
 #include "ws/concurrency/internal/helpers.h"
 #include "ws/concurrency/spin_mutex.h"
-#include "ws/machine.h"
 
 namespace ws {
 namespace concurrency {

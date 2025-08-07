@@ -1,10 +1,17 @@
 #pragma once
 
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <errno.h>
+#include <sys/stat.h>
+#endif
+
 #include <filesystem>
 #include <string>
 
-#include "ws/machine.h"
 #include "ws/status/status_or.h"
+#include "ws/system.h"
 
 namespace ws {
 namespace io {

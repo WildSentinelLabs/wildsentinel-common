@@ -8,6 +8,7 @@ wscommon_cc_library(
     machine.h
     reflection.h
     span.h
+    system.h
     types.h
   DEPS
     Threads::Threads

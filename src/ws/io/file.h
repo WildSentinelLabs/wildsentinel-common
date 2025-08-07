@@ -8,7 +8,6 @@
 #include "ws/io/file_mode.h"
 #include "ws/io/file_share.h"
 #include "ws/io/file_stream.h"
-#include "ws/machine.h"
 #include "ws/span.h"
 #include "ws/string/string_helpers.h"
 #include "ws/types.h"

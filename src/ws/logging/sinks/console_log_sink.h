@@ -7,7 +7,7 @@
 #include "ws/logging/ilog_sink.h"
 #include "ws/logging/log_level.h"
 #include "ws/logging/rendering/message_renderer.h"
-#include "ws/machine.h"
+#include "ws/system.h"
 namespace ws {
 namespace logging {
 class ConsoleLogSink : public ILogSink {

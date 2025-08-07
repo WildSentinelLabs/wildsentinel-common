@@ -2,8 +2,8 @@
 
 #include "ws/logging/events/log_event.h"
 #include "ws/logging/ilog_enricher.h"
-#include "ws/machine.h"
 #include "ws/string/format.h"
+#include "ws/system.h"
 namespace ws {
 namespace logging {
 

@@ -1,4 +1,16 @@
 #pragma once
+
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#ifdef __APPLE__
+#include <sys/fcntl.h>
+#endif
+#endif
+
 #include <cerrno>
 #include <cstring>
 #include <filesystem>
@@ -8,9 +20,9 @@
 #include "ws/io/file_mode.h"
 #include "ws/io/file_share.h"
 #include "ws/io/seek_origin.h"
-#include "ws/machine.h"
 #include "ws/span.h"
 #include "ws/status/status_or.h"
+#include "ws/system.h"
 #include "ws/types.h"
 
 namespace ws {
