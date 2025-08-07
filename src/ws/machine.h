@@ -9,15 +9,12 @@
 #include <shlwapi.h>
 #include <windows.h>
 #else
-#include <dirent.h>
-#include <errno.h>
-#include <fcntl.h>
-#if defined(__linux__) && !defined(__GLIBC__)
-#include <bits/alltypes.h>
-#endif
 #define KEEP_LINUX_ORDER
 #include <sys/types.h>
 #undef KEEP_LINUX_ORDER
+#include <dirent.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #ifdef __APPLE__
