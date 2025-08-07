@@ -12,6 +12,8 @@ namespace imaging {
 template <ws::imaging::IsAllowedPixelNumericType T>
 class ImageBufferLoader {
  public:
+  using container_type = Array<T>;
+
   static StatusOr<Image> LoadFromInterleavedBuffer(
       std::span<const T> buffer, uint32_t width, uint32_t height,
       uint8_t bit_depth,

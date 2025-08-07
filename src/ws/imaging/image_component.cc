@@ -7,7 +7,7 @@ StatusOr<ImageComponent> ImageComponent::Create(uint32_t width, offset_t length,
                                                 bool is_alpha) {
   static_assert(
       std::is_same_v<
-          T, typename ImageBufferTType<ImageBufferTypeOf<T>::value>::type>,
+          T, typename ImageBufferTypeTraits<ImageBufferTypeOf<T>::value>::type>,
       "Unsupported buffer type");
 
   if (length <= 0)

@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+
 namespace ws {
 namespace imaging {
 
@@ -34,30 +35,30 @@ constexpr ImageBufferType DetermineImageBufferType(uint8_t bit_depth) {
 std::string ImageBufferTypeToString(ImageBufferType type);
 
 template <ImageBufferType>
-struct ImageBufferTType;
+struct ImageBufferTypeTraits;
 
 template <>
-struct ImageBufferTType<ImageBufferType::kInt8> {
+struct ImageBufferTypeTraits<ImageBufferType::kInt8> {
   using type = int8_t;
 };
 template <>
-struct ImageBufferTType<ImageBufferType::kUInt8> {
+struct ImageBufferTypeTraits<ImageBufferType::kUInt8> {
   using type = uint8_t;
 };
 template <>
-struct ImageBufferTType<ImageBufferType::kInt16> {
+struct ImageBufferTypeTraits<ImageBufferType::kInt16> {
   using type = int16_t;
 };
 template <>
-struct ImageBufferTType<ImageBufferType::kUInt16> {
+struct ImageBufferTypeTraits<ImageBufferType::kUInt16> {
   using type = uint16_t;
 };
 template <>
-struct ImageBufferTType<ImageBufferType::kInt32> {
+struct ImageBufferTypeTraits<ImageBufferType::kInt32> {
   using type = int32_t;
 };
 template <>
-struct ImageBufferTType<ImageBufferType::kUInt32> {
+struct ImageBufferTypeTraits<ImageBufferType::kUInt32> {
   using type = uint32_t;
 };
 

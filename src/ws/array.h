@@ -6,7 +6,6 @@
 #include <iterator>
 #include <limits>
 #include <memory>
-#include <span>
 #include <stdexcept>
 
 namespace ws {
