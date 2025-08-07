@@ -7,32 +7,27 @@ MessageRenderer::MessageRenderer(const std::string& template_format) {
 }
 
 std::string MessageRenderer::Render(const ws::logging::LogEvent& event) const {
-  std::string result;
-  for (const auto& part : template_parts_) {
-    switch (part.type) {
-      case TemplatePart::Type::Text:
-        result += part.key;
-        break;
-      default:
-        result += RenderPlaceholder(part, event);
-        break;
+  std::string result = template_format_;
+  for (const auto& placeholder : placeholders_) {
+    std::string value =
+        ExtractValue(placeholder.key, placeholder.format, event);
+
+    size_t pos = result.find("{}");
+    if (pos != std::string::npos) {
+      result.replace(pos, 2, value);
     }
   }
 
   return result;
 }
 
-MessageRenderer::TemplatePart::TemplatePart(Type type, const std::string& key,
-                                            const std::string& format)
-    : type(type), key(key), format(format) {};
-
 void MessageRenderer::ParseTemplate(const std::string& format) {
-  size_t last_pos = 0, pos;
+  size_t last_pos = 0, pos = 0;
+  placeholders_.clear();
+  template_format_.clear();
   while ((pos = format.find('{', last_pos)) != std::string::npos) {
-    if (pos > last_pos) {
-      template_parts_.emplace_back(TemplatePart::Type::Text,
-                                   format.substr(last_pos, pos - last_pos));
-    }
+    if (pos > last_pos)
+      template_format_ += format.substr(last_pos, pos - last_pos);
 
     size_t end_pos = format.find('}', pos);
     if (end_pos == std::string::npos) break;
@@ -42,30 +37,30 @@ void MessageRenderer::ParseTemplate(const std::string& format) {
     std::string fmt =
         colon_pos != std::string::npos ? key_format.substr(colon_pos + 1) : "";
 
-    template_parts_.emplace_back(TemplatePart::Type::Placeholder, key, fmt);
+    template_format_ += "{}";
+    placeholders_.push_back({key, fmt});
     last_pos = end_pos + 1;
   }
 
-  if (last_pos < format.size()) {
-    template_parts_.emplace_back(TemplatePart::Type::Text,
-                                 format.substr(last_pos));
-  }
+  if (last_pos < format.size()) template_format_ += format.substr(last_pos);
 }
 
-std::string MessageRenderer::RenderPlaceholder(
-    const TemplatePart& part, const ws::logging::LogEvent& event) {
-  if (part.key == kSourceContextKey) {
+std::string MessageRenderer::ExtractValue(
+    std::string_view key, const std::string& format,
+    const ws::logging::LogEvent& event) const {
+  if (key == kSourceContextKey) {
     return event.SourceContext();
-  } else if (part.key == kMessageKey) {
+  } else if (key == kMessageKey) {
     return event.Message();
-  } else if (part.key == kLevelKey) {
-    return FormatLogLevel(event.Level(), part.format);
-  } else if (part.key == kTimeStampKey) {
-    return FormatTimestamp(event.Timestamp(), part.format);
-  } else if (part.key == kNewLineKey) {
-    return FormatNewLine(part.format);
+  } else if (key == kLevelKey) {
+    return FormatLogLevel(event.Level(), format);
+  } else if (key == kTimeStampKey) {
+    return FormatTimestamp(event.Timestamp(), format);
+  } else if (key == kNewLineKey) {
+    return FormatNewLine();
   } else {
-    if (auto prop = event.GetProperty(part.key)) return *prop;
+    if (auto prop = event.GetProperty(key))
+      return Format("{" + format + "}", *prop);
   }
 
   return "";
@@ -73,9 +68,7 @@ std::string MessageRenderer::RenderPlaceholder(
 
 std::string MessageRenderer::FormatLogLevel(LogLevel level,
                                             const std::string& format) {
-  if (format.empty()) {
-    return LogLevelToString(level);
-  }
+  if (format.empty()) return LogLevelToString(level);
 
   std::string formatter_type = format.substr(0, 1);
   int formatter_value = 0;
@@ -140,8 +133,6 @@ std::string MessageRenderer::FormatTimestamp(
   return timeStr;
 }
 
-std::string MessageRenderer::FormatNewLine(const std::string& format) {
-  return "\n";
-}
+std::string MessageRenderer::FormatNewLine() { return "\n"; }
 }  // namespace logging
 }  // namespace ws

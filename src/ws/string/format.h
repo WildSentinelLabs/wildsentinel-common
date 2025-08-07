@@ -183,7 +183,6 @@ inline void FormatToImpl(std::string& out, std::string_view fmt, Arg&& arg,
     return;
   }
 }
-
 }  // namespace internal
 
 // Entry point

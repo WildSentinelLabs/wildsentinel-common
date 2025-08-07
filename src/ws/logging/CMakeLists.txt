@@ -7,6 +7,8 @@ wscommon_cc_library(
     ilogger.cc
     logger.cc
     dispatchers/async_log_dispatcher.cc
+    enrichers/process_id_enricher.cc
+    enrichers/thread_id_enricher.cc
     events/log_event.cc
     rendering/message_renderer.cc
     sinks/console_log_sink.cc

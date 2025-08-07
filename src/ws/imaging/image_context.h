@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <optional>
 #include <string>
+#include <string_view>
 
 #include "ws/concurrency/concurrent_unordered_map.h"
 #include "ws/string/format.h"

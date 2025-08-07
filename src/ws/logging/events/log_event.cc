@@ -11,6 +11,10 @@ LogEvent::LogEvent(const std::string& source_context,
   timestamp_ = std::chrono::system_clock::now();
 }
 
+std::string LogEvent::SourceContext() const { return source_context_; }
+
+std::string LogEvent::Message() const { return message_; }
+
 std::optional<LogEvent::mapped_type> LogEvent::GetProperty(
     const key_type& key) const {
   auto it = properties_.find(key);
@@ -19,7 +23,28 @@ std::optional<LogEvent::mapped_type> LogEvent::GetProperty(
 }
 
 void LogEvent::AddProperty(const key_type& key, const mapped_type& value) {
-  properties_[key] = value;
+  auto it = properties_.find(key);
+  if (it != properties_.end()) {
+    it->second = value;
+  } else {
+    properties_.insert({key, value});
+  }
+}
+
+std::optional<LogEvent::mapped_type> LogEvent::GetProperty(
+    key_view_type key) const {
+  auto it = properties_.find(key);
+  if (it != properties_.end()) return it->second;
+  return std::nullopt;
+}
+
+void LogEvent::AddProperty(key_view_type key, const mapped_type& value) {
+  auto it = properties_.find(key);
+  if (it != properties_.end()) {
+    it->second = value;
+  } else {
+    properties_.insert({key_type(key), value});
+  }
 }
 }  // namespace logging
 }  // namespace ws
