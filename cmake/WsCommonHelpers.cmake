@@ -101,8 +101,9 @@ function(wscommon_cc_library)
   endif()
 
   set(_NAME "wscommon_${WSCOMMON_CC_LIB_NAME}")
+
   set(_srcs ${WSCOMMON_CC_LIB_SRCS})
-  list(FILTER _srcs EXCLUDE REGEX ".*\\.(h|inc)$")
+  list(FILTER _srcs EXCLUDE REGEX ".*\\.(h|inc|hpp)$")
   list(LENGTH _srcs _n)
 
   if(_n EQUAL 0)
@@ -123,6 +124,10 @@ function(wscommon_cc_library)
     if(WSCOMMON_PROPAGATE_CXX_STD)
       target_compile_features(${_NAME} INTERFACE ${WSCOMMON_INTERNAL_CXX_STD_FEATURE})
     endif()
+
+    target_precompile_headers(${_NAME} INTERFACE
+      "$<$<COMPILE_LANGUAGE:CXX>:pch.h>"
+    )
   else()
     if(WSCOMMON_BUILD_DLL)
       set(_build_type OBJECT)
@@ -192,6 +197,10 @@ function(wscommon_cc_library)
     if(WSCOMMON_PROPAGATE_CXX_STD)
       target_compile_features(${_NAME} PUBLIC ${WSCOMMON_INTERNAL_CXX_STD_FEATURE})
     endif()
+
+    target_precompile_headers(${_NAME} PRIVATE
+      "$<$<COMPILE_LANGUAGE:CXX>:pch.h>"
+    )
   endif()
 
   if(WSCOMMON_ENABLE_INSTALL)

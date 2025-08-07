@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "ws/array.h"
-#include "ws/config.h"
 
 namespace ws {
 template <typename T>

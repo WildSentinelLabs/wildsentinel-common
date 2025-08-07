@@ -3,11 +3,7 @@
 
 #pragma once
 
-#include "ws/config.h"
-
-#define KEEP_ORDER
 #include "ws/concurrency/internal/allocator_traits.h"
-#undef KEEP_ORDER
 
 namespace ws {
 namespace concurrency {

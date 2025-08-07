@@ -4,7 +4,6 @@
 #pragma once
 
 #include "ws/concurrency/internal/helpers.h"
-#include "ws/config.h"
 
 namespace ws {
 namespace concurrency {

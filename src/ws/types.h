@@ -2,7 +2,6 @@
 
 #include <cstdint>
 
-#include "ws/config.h"
 namespace ws {
 #if defined(_WIN32)
 using offset_t = std::int64_t;

@@ -3,10 +3,9 @@
 
 #pragma once
 
-#include "ws/config.h"
-#define KEEP_LINUX_ORDER
+#define KEEP_WS_ORDER
 #include "ws/machine.h"
-#undef KEEP_LINUX_ORDER
+#undef KEEP_WS_ORDER
 
 #include <type_traits>
 

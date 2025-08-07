@@ -1,5 +1,9 @@
 #pragma once
 
+#define KEEP_WS_ORDER
+#include "ws/system.h"
+#undef KEEP_WS_ORDER
+
 #ifdef _WIN32
 #include <windows.h>
 #else
@@ -25,7 +29,6 @@
 #include "ws/io/seek_origin.h"
 #include "ws/span.h"
 #include "ws/status/status_or.h"
-#include "ws/system.h"
 #include "ws/types.h"
 
 namespace ws {
