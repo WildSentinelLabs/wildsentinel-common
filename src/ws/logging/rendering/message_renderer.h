@@ -39,6 +39,7 @@ class MessageRenderer {
   static constexpr std::string_view kLevelKey = "Level";
   static constexpr std::string_view kMessageKey = "Message";
   static constexpr std::string_view kNewLineKey = "NewLine";
+  static constexpr std::string_view kExceptionKey = "Exception";
 
   static std::string RenderPlaceholder(const TemplatePart& part,
                                        const ws::logging::LogEvent& event);

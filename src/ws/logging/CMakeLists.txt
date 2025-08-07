@@ -27,6 +27,7 @@ wscommon_cc_library(
     rendering/message_renderer.h
     sinks/console_log_sink.h
   DEPS
+    Threads::Threads
     ws::concurrency
     ws::core
   PUBLIC

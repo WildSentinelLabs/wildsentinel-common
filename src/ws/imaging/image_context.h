@@ -4,11 +4,9 @@
 #include <optional>
 #include <string>
 
-// #include "ws/concurrency/concurrent_unordered_map.h"
-#include <unordered_map>
-
+#include "ws/concurrency/concurrent_unordered_map.h"
 #include "ws/string/format.h"
-#include "ws/string/transparent_hash.h"
+#include "ws/string/string_hash.h"
 
 namespace ws {
 namespace imaging {
@@ -18,12 +16,8 @@ class ImageContext {
   using key_type = std::string;
   using key_view_type = std::string_view;
   using mapped_type = std::int32_t;
-  //   using map_type = std::concurrent_unordered_map<
-  //   key_type, mapped_type, TransparentHash,
-  //   TransparentEqual>;
-  // FIXME: Use concurrent unordered map when available
-  using map_type = std::unordered_map<key_type, mapped_type, TransparentHash,
-                                      TransparentEqual>;
+  using map_type = std::concurrent_unordered_map<key_type, mapped_type,
+                                                 StringHash, StringEqual>;
 
   ImageContext();
   ImageContext(const map_type& tags);

@@ -476,7 +476,17 @@ class concurrent_unordered_map {
 
   iterator find(const key_type& __x) { return internal_instance_.Find(__x); }
 
+  template <typename _Kt>
+  auto find(const _Kt& __x) -> decltype(internal_instance_.Find(__x)) {
+    return internal_instance_.Find(__x);
+  }
+
   const_iterator find(const key_type& __x) const {
+    return internal_instance_.Find(__x);
+  }
+
+  template <typename _Kt>
+  auto find(const _Kt& __x) const -> decltype(internal_instance_.Find(__x)) {
     return internal_instance_.Find(__x);
   }
 

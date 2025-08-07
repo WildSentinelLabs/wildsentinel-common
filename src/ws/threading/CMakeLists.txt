@@ -10,6 +10,7 @@ wscommon_cc_library(
     cancellation_token_source.h
     cancellation_token.h
   DEPS
+    Threads::Threads
     ws::concurrency
     ws::status
     ws::core

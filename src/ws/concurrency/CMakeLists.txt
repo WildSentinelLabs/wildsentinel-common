@@ -20,6 +20,7 @@ wscommon_cc_library(
     internal/node_handle.h
     internal/segment_table.h
   DEPS
+    Threads::Threads
     ws::core
   PUBLIC
 )
