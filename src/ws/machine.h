@@ -5,6 +5,10 @@
 #ifdef _WIN32
 #include <windows.h>
 #else
+#define KEEP_LINUX_ORDER
+#include <sys/types.h>
+#undef KEEP_LINUX_ORDER
+#include <sys/time.h>
 #include <unistd.h>
 #endif
 
