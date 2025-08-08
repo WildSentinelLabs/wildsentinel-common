@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <span>
 
 #include "ws/io/stream.h"
 #include "ws/status/status_or.h"
@@ -13,45 +14,46 @@ namespace io {
 
 class BufferStream : public Stream {
  public:
-  BufferStream(Span<unsigned char> buffer);
-  BufferStream(Span<unsigned char> buffer, bool writable);
-  BufferStream(Span<unsigned char> buffer, bool writable, bool visible);
+  BufferStream(std::span<value_type> buffer);
+  BufferStream(std::span<value_type> buffer, bool writable);
+  BufferStream(std::span<value_type> buffer, bool writable, bool visible);
 
   ~BufferStream() = default;
 
   bool CanSeek() override;
   bool CanRead() const override;
   bool CanWrite() const override;
-  offset_t Length() override;
-  offset_t Position() override;
-  bool TryGetBuffer(Span<unsigned char>& buffer) const;
-  Status SetPosition(offset_t value) override;
-  StatusOr<offset_t> Read(Span<unsigned char> buffer, offset_t offset,
-                          offset_t count) override;
-  StatusOr<offset_t> Read(Span<unsigned char> buffer) override;
+  size_type Length() override;
+  size_type Position() override;
+  bool TryGetBuffer(std::span<value_type>& buffer);
+  bool TryGetBuffer(std::span<const value_type>& buffer) const;
+  Status SetPosition(size_type value) override;
+  StatusOr<size_type> Read(std::span<value_type> buffer, size_type offset,
+                           size_type count) override;
+  StatusOr<size_type> Read(std::span<value_type> buffer) override;
   StatusOr<int16_t> ReadByte() override;
-  StatusOr<offset_t> Seek(offset_t offset, SeekOrigin origin) override;
-  Status Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
-               offset_t count) override;
-  Status Write(ReadOnlySpan<unsigned char> buffer) override;
-  Status WriteByte(unsigned char value) override;
+  StatusOr<size_type> Seek(size_type offset, SeekOrigin origin) override;
+  Status Write(std::span<const value_type> buffer, size_type offset,
+               size_type count) override;
+  Status Write(std::span<const value_type> buffer) override;
+  Status WriteByte(value_type value) override;
   Status WriteTo(Stream& stream);
-  StatusOr<Array<unsigned char>> ToArray() override;
+  StatusOr<container_type> ToArray() override;
   void Close() override;
   void Dispose() override;
 
  protected:
-  Status CopyTo(Stream& stream, offset_t buffer_size) override;
+  Status CopyTo(Stream& stream, size_type buffer_size) override;
 
  private:
   Status EnsureNotClosed() const;
   Status EnsureWriteable() const;
-  offset_t Skip(offset_t count);
+  size_type Skip(size_type count);
 
-  Span<unsigned char> buffer_;
-  offset_t origin_;
-  offset_t position_;
-  offset_t length_;
+  std::span<value_type> buffer_;
+  size_type origin_;
+  size_type position_;
+  size_type length_;
   bool is_open_;
   bool writable_;
   bool exposable_;

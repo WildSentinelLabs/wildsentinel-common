@@ -112,12 +112,9 @@
       "inherits": ["base"],
       "cacheVariables": {
         "CMAKE_CXX_COMPILER": "/usr/bin/clang++",
-        "CMAKE_OSX_SYSROOT": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk",
-        "CMAKE_INSTALL_PREFIX": "${sourceDir}/install/macOS",
-        "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "${sourceDir}/bin"
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/install",
+        "CMAKE_OSX_SYSROOT": "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk"
       },
-      "binaryDir": "${sourceDir}/build/macOS",
-      "installDir": "${sourceDir}/install/macOS",
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
           "hostOS": ["macOS"]
@@ -193,7 +190,8 @@
     },
     {
       "name": "macOS-build-debug",
-      "description": "Verbose and clean before build (--clean-first)",
+      "displayName": "MacOS Build Debug",
+      "description": "Build macOS debug version",
       "configurePreset": "macOS-debug",
       "inherits": ["core-build"],
       "cleanFirst": false,
@@ -201,6 +199,7 @@
     },
     {
       "name": "macOS-build-release",
+      "displayName": "MacOS Build Release",
       "description": "Build macOS release version",
       "configurePreset": "macOS-release",
       "inherits": ["core-build"],
@@ -243,6 +242,20 @@
       "description": "Install linux release version",
       "inherits": ["core-install"],
       "configurePreset": "linux-release"
+    },
+    {
+      "name": "macOS-install-debug",
+      "displayName": "MacOS Install Debug",
+      "description": "Install macOS debug version",
+      "inherits": ["core-install"],
+      "configurePreset": "macOS-debug"
+    },
+    {
+      "name": "macOS-install-release",
+      "displayName": "MacOS Install Release",
+      "description": "Install macOS release version",
+      "inherits": ["core-install"],
+      "configurePreset": "macOS-release"
     }
   ],
   "testPresets": [
@@ -336,6 +349,44 @@
         {
           "type": "build",
           "name": "linux-install-release"
+        }
+      ]
+    },
+    {
+      "name": "macOS-flow-debug",
+      "displayName": "MacOS Flow Debug",
+      "description": "Complete workflow for MacOS debug build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "macOS-debug"
+        },
+        {
+          "type": "build",
+          "name": "macOS-build-debug"
+        },
+        {
+          "type": "build",
+          "name": "macOS-install-debug"
+        }
+      ]
+    },
+    {
+      "name": "macOS-flow-release",
+      "displayName": "MacOS Flow Release",
+      "description": "Complete workflow for MacOS release build",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "macOS-release"
+        },
+        {
+          "type": "build",
+          "name": "macOS-build-release"
+        },
+        {
+          "type": "build",
+          "name": "macOS-install-release"
         }
       ]
     }

@@ -3,7 +3,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <stdexcept>
 
 #include "ws/io/stream.h"
 #include "ws/status/status_or.h"
@@ -13,11 +12,11 @@ namespace io {
 class MemoryStream : public Stream {
  public:
   MemoryStream();
-  MemoryStream(offset_t capacity);
-  MemoryStream(offset_t capacity, bool visible);
-  MemoryStream(Array<unsigned char>&& buffer);
-  MemoryStream(Array<unsigned char>&& buffer, bool writable);
-  MemoryStream(Array<unsigned char>&& buffer, bool writable, bool visible);
+  MemoryStream(size_type capacity);
+  MemoryStream(size_type capacity, bool visible);
+  MemoryStream(container_type&& buffer);
+  MemoryStream(container_type&& buffer, bool writable);
+  MemoryStream(container_type&& buffer, bool writable, bool visible);
   MemoryStream(MemoryStream&&) noexcept;
   MemoryStream(const MemoryStream&) = delete;
 
@@ -29,41 +28,42 @@ class MemoryStream : public Stream {
   bool CanSeek() override;
   bool CanRead() const override;
   bool CanWrite() const override;
-  offset_t Length() override;
-  offset_t Position() override;
-  offset_t Capacity() const;
-  bool TryGetBuffer(Span<unsigned char>& buffer) const;
-  Status SetPosition(offset_t value) override;
-  Status SetLength(offset_t value);
-  Status SetCapacity(offset_t value);
-  StatusOr<offset_t> Read(Span<unsigned char> buffer, offset_t offset,
-                          offset_t count) override;
-  StatusOr<offset_t> Read(Span<unsigned char> buffer) override;
+  size_type Length() override;
+  size_type Position() override;
+  size_type Capacity() const;
+  bool TryGetBuffer(std::span<value_type>& buffer);
+  bool TryGetBuffer(std::span<const value_type>& buffer) const;
+  Status SetPosition(size_type value) override;
+  Status SetLength(size_type value);
+  Status SetCapacity(size_type value);
+  StatusOr<size_type> Read(std::span<value_type> buffer, size_type offset,
+                           size_type count) override;
+  StatusOr<size_type> Read(std::span<value_type> buffer) override;
   StatusOr<int16_t> ReadByte() override;
-  StatusOr<offset_t> Seek(offset_t offset, SeekOrigin origin) override;
-  Status Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
-               offset_t count) override;
-  Status Write(ReadOnlySpan<unsigned char> buffer) override;
-  Status WriteByte(unsigned char value) override;
-  StatusOr<Array<unsigned char>> ToArray() override;
+  StatusOr<size_type> Seek(size_type offset, SeekOrigin origin) override;
+  Status Write(std::span<const value_type> buffer, size_type offset,
+               size_type count) override;
+  Status Write(std::span<const value_type> buffer) override;
+  Status WriteByte(value_type value) override;
+  StatusOr<container_type> ToArray() override;
   void Close() override;
   void Dispose() override;
 
  protected:
-  Status CopyTo(Stream& stream, offset_t buffer_size) override;
+  Status CopyTo(Stream& stream, size_type buffer_size) override;
 
  private:
   Status EnsureNotClosed() const;
   Status EnsureWriteable() const;
-  StatusOr<bool> EnsureCapacity(offset_t value);
-  offset_t Skip(offset_t count);
+  StatusOr<bool> EnsureCapacity(size_type value);
+  size_type Skip(size_type count);
 
-  static constexpr const offset_t k256 = 256;
+  static constexpr const size_type k256 = 256;
 
-  Array<unsigned char> buffer_;
-  offset_t position_;
-  offset_t length_;
-  offset_t capacity_;
+  container_type buffer_;
+  size_type position_;
+  size_type length_;
+  size_type capacity_;
   bool expandable_;
   bool writable_;
   bool exposable_;

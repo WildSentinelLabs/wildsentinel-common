@@ -4,7 +4,6 @@
 #pragma once
 
 #include "ws/concurrency/internal/allocator_traits.h"
-#include "ws/config.h"
 
 namespace ws {
 namespace concurrency {

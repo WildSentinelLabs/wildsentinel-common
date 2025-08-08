@@ -22,7 +22,7 @@ StatusOr<std::vector<std::string>> Directory::GetFiles(
 
   do {
     if (!(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
-      files.push_back(std::string(findData.cFileName));
+      files.emplace_back(findData.cFileName);
   } while (FindNextFileA(hFind, &findData));
 
   FindClose(hFind);
@@ -42,7 +42,7 @@ StatusOr<std::vector<std::string>> Directory::GetFiles(
       bool is_file;
       ASSIGN_OR_RETURN(is_file,
                        Path::IsFile(Path::NormalizePath(path) + entry->d_name));
-      if (is_file) files.push_back(std::string(entry->d_name));
+      if (is_file) files.emplace_back(entry->d_name);
     }
   }
 
@@ -72,7 +72,7 @@ StatusOr<std::vector<std::string>> Directory::GetDirectories(
     if ((findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) &&
         strcmp(findData.cFileName, ".") != 0 &&
         strcmp(findData.cFileName, "..") != 0) {
-      directories.push_back(std::string(findData.cFileName));
+      directories.emplace_back(findData.cFileName);
     }
   } while (FindNextFileA(hFind, &findData));
 
@@ -96,7 +96,7 @@ StatusOr<std::vector<std::string>> Directory::GetDirectories(
       bool is_dir;
       ASSIGN_OR_RETURN(
           is_dir, Path::IsDirectory(Path::NormalizePath(path) + entry->d_name));
-      if (is_dir) directories.push_back(std::string(entry->d_name));
+      if (is_dir) directories.emplace_back(entry->d_name);
     }
   }
 

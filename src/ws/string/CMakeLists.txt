@@ -5,6 +5,8 @@ wscommon_cc_library(
     format.h
     string_helpers.h
     string_hash.h
+  PCHS
+    ws/config.h
   DEPS
     Threads::Threads
   PUBLIC

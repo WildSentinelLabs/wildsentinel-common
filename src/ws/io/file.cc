@@ -168,31 +168,30 @@ StatusOr<std::string> File::ReadAllText(const std::string& path) {
   ASSIGN_OR_RETURN(stream, Open(path, FileMode::kOpen, FileAccess::kRead));
   offset_t length = stream.Length();
   if (length == 0) return std::string();
-  Array<unsigned char> buffer(static_cast<std::size_t>(length));
+  container_type buffer(static_cast<std::size_t>(length));
   offset_t bytes_read;
   ASSIGN_OR_RETURN(bytes_read, stream.Read(buffer));
   if (bytes_read < length)
     return Status(StatusCode::kInternalError, "Failed to read the entire file");
 
   return std::string(reinterpret_cast<const char*>(buffer.begin()),
-                     buffer.Length());
+                     buffer.size());
 }
 
-StatusOr<Array<std::string>> File::ReadAllLines(const std::string& path) {
+StatusOr<std::vector<std::string>> File::ReadAllLines(const std::string& path) {
   std::string content;
   ASSIGN_OR_RETURN(content, ReadAllText(path));
-  if (content.empty()) return Array<std::string>();
+  if (content.empty()) return std::vector<std::string>();
   NormalizeLineEndingsInPlace(content);
-  Array<std::string> lines = Split(content, '\n');
-  return lines;
+  return Split(content, '\n');
 }
 
-StatusOr<Array<unsigned char>> File::ReadAllBytes(const std::string& path) {
+StatusOr<File::container_type> File::ReadAllBytes(const std::string& path) {
   FileStream stream;
   ASSIGN_OR_RETURN(stream, Open(path));
   offset_t length = stream.Length();
-  if (length == 0) return Array<unsigned char>(0);
-  Array<unsigned char> buffer(length);
+  if (length == 0) return container_type(0);
+  container_type buffer(length);
   offset_t bytes_read;
   ASSIGN_OR_RETURN(bytes_read, stream.Read(buffer));
   if (bytes_read < length)

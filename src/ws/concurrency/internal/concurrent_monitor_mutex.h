@@ -3,11 +3,14 @@
 
 #pragma once
 
+#define KEEP_WS_ORDER
+#include "ws/machine.h"
+#undef KEEP_WS_ORDER
+
 #include <mutex>
 #include <semaphore>
 
 #include "ws/concurrency/internal/aligned_space.h"
-#include "ws/machine.h"
 
 namespace ws {
 namespace concurrency {

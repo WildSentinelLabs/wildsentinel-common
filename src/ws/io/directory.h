@@ -1,5 +1,14 @@
 #pragma once
 
+#ifndef _WIN32
+#define KEEP_LINUX_ORDER
+#include <sys/types.h>
+#undef KEEP_LINUX_ORDER
+#include <dirent.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
+
 #include <algorithm>
 #include <string>
 #include <vector>

@@ -2,6 +2,7 @@
 
 #include "ws/imaging/image.h"
 #include "ws/imaging/image_compression_options.h"
+#include "ws/imaging/image_context.h"
 #include "ws/imaging/image_format.h"
 #include "ws/io/stream.h"
 #include "ws/logging/ilogger.h"

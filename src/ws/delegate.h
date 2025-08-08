@@ -1,13 +1,14 @@
 #pragma once
 
+#define KEEP_WS_ORDER
+#include "ws/machine.h"
+#undef KEEP_WS_ORDER
+
 #include <cstddef>
 #include <cstring>
 #include <new>
 #include <type_traits>
 #include <utility>
-
-#include "ws/config.h"
-#include "ws/machine.h"
 
 namespace ws {
 struct bad_delegate_call_exception : public std::exception {

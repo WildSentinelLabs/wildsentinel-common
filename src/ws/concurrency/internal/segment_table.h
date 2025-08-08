@@ -12,7 +12,6 @@
 #include "ws/concurrency/internal/allocator_traits.h"
 #include "ws/concurrency/internal/atomic_backoff.h"
 #include "ws/concurrency/internal/helpers.h"
-#include "ws/config.h"
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 #pragma warning(push)

@@ -67,3 +67,18 @@
 #define _generic_arch 1
 #endif
 #endif
+
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
+#include <winsock2.h>
+#define KEEP_WIN_ORDER
+#include <windows.h>
+#undef KEEP_WIN_ORDER
+#include <ws2tcpip.h>
+#endif

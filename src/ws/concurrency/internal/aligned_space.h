@@ -5,7 +5,6 @@
 #include <cstddef>
 
 #include "ws/concurrency/internal/helpers.h"
-#include "ws/machine.h"
 
 namespace ws {
 namespace concurrency {

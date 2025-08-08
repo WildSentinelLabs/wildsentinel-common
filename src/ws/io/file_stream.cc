@@ -10,22 +10,22 @@ StatusOr<FileStream> FileStream::Create(const std::string& path, FileMode mode,
 
 StatusOr<FileStream> FileStream::Create(const std::string& path, FileMode mode,
                                         FileAccess access, FileShare share,
-                                        offset_t buffer_size) {
+                                        size_type buffer_size) {
   return Create(path, mode, access, share, buffer_size, 0);
 }
 
 StatusOr<FileStream> FileStream::Create(const std::string& path, FileMode mode,
                                         FileAccess access, FileShare share,
-                                        offset_t buffer_size,
-                                        offset_t preallocation_size) {
+                                        size_type buffer_size,
+                                        size_type preallocation_size) {
   std::filesystem::path full_path = Path::GetFullPath(path);
-  offset_t position = 0;
-  offset_t append_start = -1;
+  size_type position = 0;
+  size_type append_start = -1;
   FileHandle file_handle;
   ASSIGN_OR_RETURN(file_handle, FileHandle::Open(full_path, mode, access, share,
                                                  preallocation_size));
   if (mode == FileMode::kAppend && file_handle.CanSeek()) {
-    offset_t length;
+    size_type length;
     ASSIGN_OR_CLEANUP(length, file_handle.FileLength(),
                       { file_handle.Dispose(); });
     append_start = position = length;
@@ -40,8 +40,8 @@ FileStream::FileStream()
       append_start_(-1),
       access_(static_cast<FileAccess>(0)) {}
 
-FileStream::FileStream(FileHandle file_handle, offset_t position,
-                       offset_t append_start, FileAccess access)
+FileStream::FileStream(FileHandle file_handle, size_type position,
+                       size_type append_start, FileAccess access)
     : file_handle_(file_handle),
       position_(position),
       append_start_(append_start),
@@ -72,19 +72,19 @@ bool FileStream::CanWrite() const {
          (access_ & FileAccess::kWrite) != static_cast<FileAccess>(0);
 }
 
-offset_t FileStream::Length() {
+FileStream::size_type FileStream::Length() {
   auto length = file_handle_.FileLength();
   if (!length.Ok()) return 0;
   return length.Value();
 }
 
-offset_t FileStream::Position() { return position_; }
+FileStream::size_type FileStream::Position() { return position_; }
 
-Status FileStream::SetPosition(offset_t value) {
+Status FileStream::SetPosition(size_type value) {
   return Seek(value, SeekOrigin::kBegin).GetStatus();
 }
 
-Status FileStream::SetLength(offset_t value) {
+Status FileStream::SetLength(size_type value) {
   if (value < 0)
     return Status(StatusCode::kBadRequest, "Negative length not allowed");
 
@@ -94,7 +94,7 @@ Status FileStream::SetLength(offset_t value) {
                   "IO Error: SetLengthAppendTruncate");
 
   RETURN_IF_ERROR(FileHandle::SetFileLength(file_handle_, value));
-  offset_t cached_length;
+  size_type cached_length;
   assert(!file_handle_.TryGetCachedLength(cached_length) &&
          "If length can be cached (file opened for reading, not shared for "
          "writing), it should be impossible to modify file length");
@@ -102,20 +102,21 @@ Status FileStream::SetLength(offset_t value) {
   return Status();
 }
 
-StatusOr<offset_t> FileStream::Read(Span<unsigned char> buffer, offset_t offset,
-                                    offset_t count) {
+StatusOr<FileStream::size_type> FileStream::Read(std::span<value_type> buffer,
+                                                 size_type offset,
+                                                 size_type count) {
   RETURN_IF_ERROR(ValidateBufferArguments(buffer, offset, count));
-  Span<unsigned char> span(buffer, offset, count);
+  std::span<value_type> span(buffer.data() + offset, count);
   return Read(span);
 }
 
-StatusOr<offset_t> FileStream::Read(Span<unsigned char> buffer) {
+StatusOr<FileStream::size_type> FileStream::Read(std::span<value_type> buffer) {
   if (file_handle_.IsClosed())
     STREAM_THROW_CLOSED();
   else if ((access_ & FileAccess::kRead) == static_cast<FileAccess>(0))
     STREAM_THROW_UNREADABLE();
 
-  offset_t r;
+  size_type r;
   ASSIGN_OR_RETURN(r,
                    FileHandle::ReadAtOffset(file_handle_, buffer, position_));
   assert(r >= 0 && "ReadAtOffset failed");
@@ -124,16 +125,17 @@ StatusOr<offset_t> FileStream::Read(Span<unsigned char> buffer) {
 }
 
 StatusOr<int16_t> FileStream::ReadByte() {
-  unsigned char b = 0;
-  Span<unsigned char> span(&b, 1);
-  offset_t r;
+  value_type b = 0;
+  std::span<value_type> span(&b, 1);
+  size_type r;
   ASSIGN_OR_RETURN(r, Read(span));
   return r != 0 ? b : -1;
 }
 
-StatusOr<offset_t> FileStream::Seek(offset_t offset, SeekOrigin origin) {
-  offset_t old_pos = position_;
-  offset_t pos = 0;
+StatusOr<FileStream::size_type> FileStream::Seek(size_type offset,
+                                                 SeekOrigin origin) {
+  size_type old_pos = position_;
+  size_type pos = 0;
   switch (origin) {
     case SeekOrigin::kBegin:
       pos = offset;
@@ -164,42 +166,42 @@ StatusOr<offset_t> FileStream::Seek(offset_t offset, SeekOrigin origin) {
   return pos;
 }
 
-Status FileStream::Write(ReadOnlySpan<unsigned char> buffer, offset_t offset,
-                         offset_t count) {
+Status FileStream::Write(std::span<const value_type> buffer, size_type offset,
+                         size_type count) {
   RETURN_IF_ERROR(ValidateBufferArguments(buffer, offset, count));
-  ReadOnlySpan<unsigned char> span(buffer, offset, count);
+  std::span<const value_type> span(buffer.data() + offset, count);
   return Write(span);
 }
 
-Status FileStream::Write(ReadOnlySpan<unsigned char> buffer) {
+Status FileStream::Write(std::span<const value_type> buffer) {
   if (file_handle_.IsClosed())
     STREAM_THROW_CLOSED();
   else if ((access_ & FileAccess::kWrite) == static_cast<FileAccess>(0))
     STREAM_THROW_UNWRITABLE();
 
   RETURN_IF_ERROR(FileHandle::WriteAtOffset(file_handle_, buffer, position_));
-  position_ += buffer.Length();
+  position_ += buffer.size();
   return Status();
 }
 
-Status FileStream::WriteByte(unsigned char value) {
-  Span<unsigned char> span(&value, 1);
+Status FileStream::WriteByte(value_type value) {
+  std::span<value_type> span(&value, 1);
   return Write(span);
 }
 
-StatusOr<Array<unsigned char>> FileStream::ToArray() {
-  offset_t length = Length();
-  Array<unsigned char> array(length);
-  offset_t old_pos = position_;
+StatusOr<FileStream::container_type> FileStream::ToArray() {
+  size_type length = Length();
+  container_type buffer(length);
+  size_type old_pos = position_;
   RETURN_IF_ERROR(SetPosition(0));
-  offset_t bytes_read;
-  ASSIGN_OR_RETURN(bytes_read, Read(array, 0, array.Length()));
+  size_type bytes_read;
+  ASSIGN_OR_RETURN(bytes_read, Read(buffer, 0, buffer.size()));
   position_ = old_pos;
-  if (bytes_read != array.Length())
+  if (bytes_read != buffer.size())
     return Status(StatusCode::kRuntimeError,
                   "IO Error: Read did not read the expected number of bytes");
 
-  return array;
+  return buffer;
 }
 
 void FileStream::Close() { Dispose(); }

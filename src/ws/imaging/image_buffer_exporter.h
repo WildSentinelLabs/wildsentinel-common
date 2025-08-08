@@ -14,9 +14,11 @@ namespace imaging {
 template <ws::imaging::IsAllowedPixelNumericType T>
 class ImageBufferExporter {
  public:
-  static StatusOr<Array<T>> ExportToInterleavedBuffer(
+  using container_type = Array<T>;
+
+  static StatusOr<container_type> ExportToInterleavedBuffer(
       const Image& image, ws::imaging::PixelFormat pixel_format);
-  static StatusOr<Array<T>> ExportToPlanarBuffer(
+  static StatusOr<container_type> ExportToPlanarBuffer(
       const Image& image, ws::imaging::PixelFormat pixel_format);
 };
 }  // namespace imaging

@@ -1,11 +1,12 @@
 #pragma once
 
+#include <span>
+
 #include "ws/imaging/chroma_subsampling.h"
 #include "ws/imaging/color_space.h"
 #include "ws/imaging/pixel/pixel_allowed_types.h"
 #include "ws/imaging/pixel/pixel_format.h"
 #include "ws/imaging/pixel/pixel_layout_flag.h"
-#include "ws/span.h"
 
 namespace ws {
 namespace imaging {
@@ -15,7 +16,7 @@ struct PixelFormatDetails {
   ColorSpace color_space;
   ChromaSubsampling chroma_subsampling;
   uint8_t num_components;
-  ReadOnlySpan<uint8_t> components_order;
+  std::span<const uint8_t> components_order;
   int8_t alpha_index;
   PixelLayoutFlag layout;
   bool has_common_order;

@@ -332,7 +332,7 @@ BlockingQueue(TContainer)
 }  // namespace concurrency
 }  // namespace ws
 
-namespace std {
+namespace ws {
 template <typename T, typename TAllocator = std::allocator<T>>
 class blocking_queue {
  public:
@@ -432,4 +432,4 @@ template <typename TContainer, typename = std::allocator<TContainer>>
 blocking_queue(TContainer)
     -> blocking_queue<typename TContainer::value_type, TContainer>;
 #endif
-}  // namespace std
+}  // namespace ws

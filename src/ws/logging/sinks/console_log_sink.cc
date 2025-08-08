@@ -8,7 +8,7 @@ ConsoleLogSink::ConsoleLogSink(LogLevel min_log_level,
     : min_log_level_(min_log_level),
       renderer_(template_format),
       dispatcher_(nullptr) {
-  FormatConsoleOutput();
+  Console::FormatOutput();
 }
 
 ConsoleLogSink::~ConsoleLogSink() {

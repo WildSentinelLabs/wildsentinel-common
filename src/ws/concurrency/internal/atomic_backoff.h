@@ -3,8 +3,9 @@
 
 #pragma once
 
-#include "ws/config.h"
+#define KEEP_WS_ORDER
 #include "ws/machine.h"
+#undef KEEP_WS_ORDER
 
 namespace ws {
 namespace concurrency {

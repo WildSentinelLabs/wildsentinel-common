@@ -3,11 +3,12 @@ namespace ws {
 namespace imaging {
 
 template <ws::imaging::IsAllowedPixelNumericType T>
-StatusOr<Array<T>> ImageBufferExporter<T>::ExportToInterleavedBuffer(
-    const Image& image, ws::imaging::PixelFormat pixel_format) {
+StatusOr<typename ImageBufferExporter<T>::container_type>
+ImageBufferExporter<T>::ExportToInterleavedBuffer(const Image& image,
+                                                  PixelFormat pixel_format) {
   size_t image_size = 0;
   if (!image.IsValid()) return Status(StatusCode::kBadRequest, "Invalid image");
-  const Array<ImageComponent>& components = image.Components();
+  const Image::container_type& components = image.Components();
   for (const auto& comp : components) {
     if (comp.GetBufferType() != ImageBufferTypeOf<T>::value)
       return Status(StatusCode::kBadRequest, "Buffer type mismatch");
@@ -15,16 +16,15 @@ StatusOr<Array<T>> ImageBufferExporter<T>::ExportToInterleavedBuffer(
     image_size += comp.Length();
   }
 
-  const ws::imaging::PixelFormatDetails* pixel_format_details =
-      ws::imaging::PixelFormatConstraints::GetFormat(pixel_format);
+  const PixelFormatDetails* pixel_format_details =
+      PixelFormatConstraints::GetFormat(pixel_format);
   if (!pixel_format_details)
-    return Status(StatusCode::kBadRequest,
-                  "Unsupported pixel format " +
-                      ws::imaging::PixelFormatToString(pixel_format));
+    return Status(
+        StatusCode::kBadRequest,
+        "Unsupported pixel format " + PixelFormatToString(pixel_format));
 
-  if ((pixel_format_details->layout &
-       ws::imaging::PixelLayoutFlag::kInterleaved) ==
-      static_cast<ws::imaging::PixelLayoutFlag>(0))
+  if ((pixel_format_details->layout & PixelLayoutFlag::kInterleaved) ==
+      static_cast<PixelLayoutFlag>(0))
     return Status(StatusCode::kBadRequest,
                   "Pixel format details must indicate interleaved layout");
 
@@ -38,11 +38,12 @@ StatusOr<Array<T>> ImageBufferExporter<T>::ExportToInterleavedBuffer(
                   "Image properties do not match pixel format details");
   }
 
-  Array<Point> dimensions = ws::imaging::PixelFormatConstraints::GetDimensions(
-      image.GetComponent(0).Width(), image.GetComponent(0).Height(),
-      num_components, pixel_format_details->chroma_subsampling,
-      pixel_format_details->HasAlpha());
-  if (dimensions.Empty())
+  PixelFormatConstraints::container_type dimensions =
+      PixelFormatConstraints::GetDimensions(
+          image.GetComponent(0).Width(), image.GetComponent(0).Height(),
+          num_components, pixel_format_details->chroma_subsampling,
+          pixel_format_details->HasAlpha());
+  if (dimensions.empty())
     return Status(StatusCode::kBadRequest,
                   "Unsupported dimensions for the given pixel format");
 
@@ -55,9 +56,8 @@ StatusOr<Array<T>> ImageBufferExporter<T>::ExportToInterleavedBuffer(
     }
   }
 
-  ws::ReadOnlySpan<uint8_t> components_order =
-      pixel_format_details->components_order;
-  const size_t num_components_order = components_order.Length();
+  auto components_order = pixel_format_details->components_order;
+  const size_t num_components_order = components_order.size();
   size_t comps_index[num_components] = {0};
   T* comps_buffer_in_order[num_components_order];
   size_t* comps_buffer_index_in_order[num_components_order];
@@ -67,7 +67,7 @@ StatusOr<Array<T>> ImageBufferExporter<T>::ExportToInterleavedBuffer(
     comps_buffer_index_in_order[i] = &comps_index[c];
   }
 
-  Array<T> buffer(image_size);
+  container_type buffer(image_size);
   if (pixel_format_details->has_common_order) {
     const size_t num_pixels = image_size / num_components;
 #pragma omp parallel for
@@ -77,7 +77,7 @@ StatusOr<Array<T>> ImageBufferExporter<T>::ExportToInterleavedBuffer(
       }
     }
   } else {
-    for (size_t offset = 0; offset < buffer.Length();
+    for (size_t offset = 0; offset < buffer.size();
          offset += num_components_order) {
       for (size_t i = 0; i < num_components_order; ++i) {
         buffer[offset + i] =
@@ -90,11 +90,12 @@ StatusOr<Array<T>> ImageBufferExporter<T>::ExportToInterleavedBuffer(
 }
 
 template <ws::imaging::IsAllowedPixelNumericType T>
-StatusOr<Array<T>> ImageBufferExporter<T>::ExportToPlanarBuffer(
-    const Image& image, ws::imaging::PixelFormat pixel_format) {
+StatusOr<typename ImageBufferExporter<T>::container_type>
+ImageBufferExporter<T>::ExportToPlanarBuffer(const Image& image,
+                                             PixelFormat pixel_format) {
   size_t image_size = 0;
   if (!image.IsValid()) return Status(StatusCode::kBadRequest, "Invalid image");
-  const Array<ImageComponent>& components = image.Components();
+  const Image::container_type& components = image.Components();
   for (const auto& comp : components) {
     if (comp.GetBufferType() != ImageBufferTypeOf<T>::value)
       return Status(StatusCode::kBadRequest, "Buffer type mismatch");
@@ -102,15 +103,15 @@ StatusOr<Array<T>> ImageBufferExporter<T>::ExportToPlanarBuffer(
     image_size += comp.Length();
   }
 
-  const ws::imaging::PixelFormatDetails* pixel_format_details =
-      ws::imaging::PixelFormatConstraints::GetFormat(pixel_format);
+  const PixelFormatDetails* pixel_format_details =
+      PixelFormatConstraints::GetFormat(pixel_format);
   if (!pixel_format_details)
-    return Status(StatusCode::kBadRequest,
-                  "Unsupported pixel format " +
-                      ws::imaging::PixelFormatToString(pixel_format));
+    return Status(
+        StatusCode::kBadRequest,
+        "Unsupported pixel format " + PixelFormatToString(pixel_format));
 
-  if ((pixel_format_details->layout & ws::imaging::PixelLayoutFlag::kPlanar) ==
-      static_cast<ws::imaging::PixelLayoutFlag>(0))
+  if ((pixel_format_details->layout & PixelLayoutFlag::kPlanar) ==
+      static_cast<PixelLayoutFlag>(0))
     return Status(StatusCode::kBadRequest,
                   "Pixel format details must indicate planar layout");
 
@@ -124,11 +125,12 @@ StatusOr<Array<T>> ImageBufferExporter<T>::ExportToPlanarBuffer(
                   "Image properties do not match pixel format details");
   }
 
-  Array<Point> dimensions = ws::imaging::PixelFormatConstraints::GetDimensions(
-      image.GetComponent(0).Width(), image.GetComponent(0).Height(),
-      num_components, pixel_format_details->chroma_subsampling,
-      pixel_format_details->HasAlpha());
-  if (dimensions.Empty())
+  PixelFormatConstraints::container_type dimensions =
+      PixelFormatConstraints::GetDimensions(
+          image.GetComponent(0).Width(), image.GetComponent(0).Height(),
+          num_components, pixel_format_details->chroma_subsampling,
+          pixel_format_details->HasAlpha());
+  if (dimensions.empty())
     return Status(StatusCode::kBadRequest,
                   "Unsupported dimensions for the given pixel format");
 
@@ -141,11 +143,10 @@ StatusOr<Array<T>> ImageBufferExporter<T>::ExportToPlanarBuffer(
     }
   }
 
-  ws::ReadOnlySpan<uint8_t> components_order =
-      pixel_format_details->components_order;
-  const size_t num_components_order = components_order.Length();
-  Array<T> buffer(image_size);
-  T* buffer_ptr = static_cast<T*>(buffer);
+  auto components_order = pixel_format_details->components_order;
+  const size_t num_components_order = components_order.size();
+  container_type buffer(image_size);
+  T* buffer_ptr = buffer.data();
   for (size_t i = 0; i < num_components_order; ++i) {
     uint8_t c = components_order[i];
     std::memcpy(buffer_ptr, components[c].Buffer<T>(),

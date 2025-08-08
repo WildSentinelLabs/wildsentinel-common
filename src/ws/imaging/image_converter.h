@@ -2,6 +2,7 @@
 #include <string>
 
 #include "ws/imaging/image.h"
+#include "ws/imaging/image_context.h"
 #include "ws/imaging/image_traits.h"
 #include "ws/logging/ilogger.h"
 

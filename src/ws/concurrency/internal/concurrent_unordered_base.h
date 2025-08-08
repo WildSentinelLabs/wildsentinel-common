@@ -16,7 +16,6 @@
 #include "ws/concurrency/internal/helpers.h"
 #include "ws/concurrency/internal/node_handle.h"
 #include "ws/concurrency/internal/segment_table.h"
-#include "ws/config.h"
 
 #if defined(_MSC_VER) && !defined(__INTEL_COMPILER)
 #pragma warning(push)

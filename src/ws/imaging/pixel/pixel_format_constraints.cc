@@ -38,11 +38,11 @@ const PixelFormatDetails* PixelFormatConstraints::GetFormat(
   return nullptr;
 }
 
-Array<Point> PixelFormatConstraints::GetDimensions(
+PixelFormatConstraints::container_type PixelFormatConstraints::GetDimensions(
     uint32_t width, uint32_t height, uint8_t num_components,
     ChromaSubsampling chroma_subsampling, bool has_alpha) {
-  if (num_components < 1) return Array<Point>();
-  Array<Point> dimensions(num_components);
+  if (num_components < 1) return container_type();
+  container_type dimensions(num_components);
   uint8_t num_comps = num_components;
   if (has_alpha && num_components > 1) {
     uint8_t alpha_index = num_components - 1;
@@ -116,10 +116,10 @@ Array<Point> PixelFormatConstraints::GetDimensions(
       break;
 
     default:
-      return Array<Point>();
+      return container_type();
   }
 
-  return Array<Point>();
+  return container_type();
 }
 
 }  // namespace imaging

@@ -8,7 +8,6 @@
 #include "ws/concurrency/internal/concurrent_monitor.h"
 #include "ws/concurrency/internal/helpers.h"
 #include "ws/concurrency/spin_mutex.h"
-#include "ws/config.h"
 #include "ws/delegate.h"
 
 namespace ws {

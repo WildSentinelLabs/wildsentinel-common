@@ -1,9 +1,17 @@
 #pragma once
 
+#define KEEP_WS_ORDER
+#include "ws/system.h"
+#undef KEEP_WS_ORDER
+
+#ifndef _WIN32
+#include <errno.h>
+#include <sys/stat.h>
+#endif
+
 #include <filesystem>
 #include <string>
 
-#include "ws/machine.h"
 #include "ws/status/status_or.h"
 
 namespace ws {

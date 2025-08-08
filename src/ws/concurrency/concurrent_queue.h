@@ -194,7 +194,7 @@ ConcurrentQueue(TContainer)
 }  // namespace concurrency
 }  // namespace ws
 
-namespace std {
+namespace ws {
 template <typename T, typename TAllocator = std::allocator<T>>
 class concurrent_queue {
  public:
@@ -287,4 +287,4 @@ template <typename TContainer, typename = std::allocator<TContainer>>
 concurrent_queue(TContainer)
     -> concurrent_queue<typename TContainer::value_type, TContainer>;
 #endif
-}  // namespace std
+}  // namespace ws

@@ -106,23 +106,24 @@ inline std::string DetectLineEnding(std::string_view str) {
   return "\n";
 }
 
-inline Array<std::string> Split(std::string_view str, char delimiter) {
+inline std::vector<std::string> Split(std::string_view str, char delimiter) {
   std::size_t estimated_count = 1;
   for (char c : str) {
     if (c == delimiter) ++estimated_count;
   }
 
-  Array<std::string> tokens(estimated_count);
+  std::vector<std::string> tokens;
+  tokens.reserve(estimated_count);
   std::size_t index = 0;
   std::string::size_type start = 0;
   std::string::size_type end = str.find(delimiter);
   while (end != std::string::npos) {
-    tokens[index++] = std::string(str.substr(start, end - start));
+    tokens.emplace_back(str.substr(start, end - start));
     start = end + 1;
     end = str.find(delimiter, start);
   }
 
-  tokens[index] = std::string(str.substr(start));
+  tokens.emplace_back(str.substr(start));
   return tokens;
 }
 

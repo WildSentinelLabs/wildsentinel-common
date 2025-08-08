@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <ctime>
 #include <iomanip>
 #include <map>
 #include <memory>

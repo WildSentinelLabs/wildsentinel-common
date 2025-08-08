@@ -1,5 +1,9 @@
 #pragma once
 
+#define KEEP_WS_ORDER
+#include "ws/system.h"
+#undef KEEP_WS_ORDER
+
 #include "ws/logging/dispatchers/async_log_dispatcher.h"
 #include "ws/logging/dispatchers/sync_log_dispatcher.h"
 #include "ws/logging/ilog_dispatcher.h"
@@ -7,7 +11,6 @@
 #include "ws/logging/ilog_sink.h"
 #include "ws/logging/log_level.h"
 #include "ws/logging/rendering/message_renderer.h"
-#include "ws/machine.h"
 namespace ws {
 namespace logging {
 class ConsoleLogSink : public ILogSink {

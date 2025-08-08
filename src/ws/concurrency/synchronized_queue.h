@@ -122,7 +122,7 @@ class SynchronizedQueue {
 }  // namespace concurrency
 }  // namespace ws
 
-namespace std {
+namespace ws {
 template <typename T>
 class synchronized_queue {
  public:
@@ -204,4 +204,4 @@ template <typename T>
 void swap(synchronized_queue<T>& lhs, synchronized_queue<T>& rhs) noexcept {
   lhs.swap(rhs);
 }
-}  // namespace std
+}  // namespace ws
